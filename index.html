@@ -452,6 +452,7 @@ const ICONS={
   keyboard:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M8 14h8"/>',
   printer:'<path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/>',
   download:'<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>', upload:'<path d="M12 21V9M7 14l5-5 5 5M5 3h14"/>',
+  alert:'<path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>',
   table:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/>',
   refresh:'<path d="M3 12a9 9 0 1 0 2.6-6.4M3 4v4h4"/>', flip:'<path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v4h-4"/>',
   square:'<rect x="4" y="4" width="16" height="16" rx="2.5"/>',
@@ -3009,7 +3010,8 @@ function load(){
   loadCollapse();
 }
 let saveT;
-function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(store));}catch(e){}},250);}
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(store));}catch(e){}
+  if(typeof fileBackup!=='undefined'&&fileBackup.active())fileBackup.write();},250);}
 
 /* ============================================================
    Inline rendering (keycaps via backticks)
@@ -3396,7 +3398,10 @@ function openCollections(){
     const foot=document.createElement('div');foot.className='coll-foot';
     const nb=document.createElement('button');nb.className='btn ghost sm';nb.innerHTML=ico('plus',14)+'<span>New blank</span>';nb.onclick=()=>newCollection(close);
     const ib=document.createElement('button');ib.className='btn ghost sm';ib.innerHTML=ico('upload',14)+'<span>Import…</span>';ib.onclick=()=>$('#fileInput').click();
-    foot.append(nb,ib);box.appendChild(foot);
+    foot.append(nb,ib);
+    if(fileBackup.supported){const sb=document.createElement('button');sb.id='syncFileBtn';sb.className='btn ghost sm';
+      sb.onclick=()=>fileBackup.toggle();foot.appendChild(sb);fileBackup.updateUI();}
+    box.appendChild(foot);
     const l2=document.createElement('div');l2.className='fmh';l2.style.marginTop='14px';l2.textContent='Ready-made collections';box.appendChild(l2);
     READYMADE.forEach(t=>{
       const row=document.createElement('div');row.className='ready-row';
@@ -3692,6 +3697,55 @@ function csvTemplate(){
 }
 function download(name,text,type){const b=new Blob([text],{type:type||'text/plain'});const a=document.createElement('a');
   a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+
+/* ============================================================
+   File backup (File System Access API)
+   Auto-writes the whole store to a real on-disk file the user
+   picks once, so data survives a localStorage clear. Chrome/Edge
+   only; everywhere else this is inert and manual export stays the
+   backup. ponytail: handle kept in IDB, permission re-prompts per
+   session by design — that's the platform, not a bug to engineer around.
+   ============================================================ */
+const fileBackup=(()=>{
+  const supported=typeof window.showSaveFilePicker==='function';
+  let handle=null;
+  // tiny IDB get/set for the one handle (localStorage can't hold a FileSystemFileHandle)
+  function idb(mode,val){return new Promise((res,rej)=>{
+    const r=indexedDB.open('termdecks_fs',1);
+    r.onupgradeneeded=()=>r.result.createObjectStore('kv');
+    r.onerror=()=>rej(r.error);
+    r.onsuccess=()=>{const tx=r.result.transaction('kv',mode);const s=tx.objectStore('kv');
+      const op=mode==='readwrite'?s.put(val,'handle'):s.get('handle');
+      op.onsuccess=()=>res(op.result);op.onerror=()=>rej(op.error);};
+  });}
+  async function restore(){if(!supported)return;try{handle=await idb('readonly')||null;}catch(e){}updateUI();}
+  async function pick(){if(!supported){alert('Auto file sync needs Chrome or Edge. Use Export instead.');return;}
+    try{handle=await window.showSaveFilePicker({suggestedName:'termdecks.backup.json',
+      types:[{description:'TermDecks backup',accept:{'application/json':['.json']}}]});
+      await idb('readwrite',handle);await write();updateUI();
+    }catch(e){if(e&&e.name!=='AbortError')alert('Could not set up file sync: '+e.message);}}
+  async function ensurePerm(){if(!handle)return false;
+    try{const q=await handle.queryPermission({mode:'readwrite'});if(q==='granted')return true;
+      return (await handle.requestPermission({mode:'readwrite'}))==='granted';}catch(e){return false;}}
+  let failed=false;
+  async function write(){if(!handle)return;
+    if(!await ensurePerm()){failed=true;updateUI();return;}
+    try{const w=await handle.createWritable();await w.write(JSON.stringify(store));await w.close();failed=false;}
+    catch(e){failed=true;}
+    updateUI();}
+  function stop(){handle=null;failed=false;idb('readwrite',null).catch(()=>{});updateUI();}
+  function updateUI(){const b=$('#syncFileBtn');if(!b)return;
+    const st=!handle?'off':failed?'fail':'on';
+    const icon={off:'download',on:'check',fail:'alert'}[st];
+    const label={off:'Sync to file…',on:'Syncing to file',fail:'Sync paused — fix'}[st];
+    b.innerHTML=ico(icon,14)+'<span>'+label+'</span>';
+    b.classList.toggle('danger',st==='fail');
+    b.title={off:'Auto-save backups to a file on disk',
+      on:'Auto-saving to '+(handle&&handle.name||'file')+' · click to stop',
+      fail:'Last write failed (permission lost or file moved). Click to re-pick the file.'}[st];}
+  return {supported,restore,write,active:()=>!!handle,
+    toggle(){failed?pick():handle?stop():pick();},updateUI};
+})();
 function showCsvPreview(items){
   const sum=planSummary(items);
   const ov=document.createElement('div');ov.className='modal-ov';
@@ -3986,6 +4040,7 @@ function syncToolbar(){
 
 /* ---------- boot ---------- */
 load();
+fileBackup.restore();
 bindToolbar();
 applyAll();
 renderEditor();
