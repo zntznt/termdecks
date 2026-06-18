@@ -2978,6 +2978,25 @@ function normalizeCollection(c){
   if(typeof c.guides!=='boolean')c.guides=true; c.backStyle=c.backStyle||'minimal';
   if(!Array.isArray(c.categories))c.categories=[];
   if(!Array.isArray(c.decks))c.decks=[];
+  // Repair untrusted nested shape (imports, hand-edited/truncated JSON). Drop
+  // non-object junk; guarantee the arrays every render path assumes exist.
+  c.categories=c.categories.filter(x=>x&&typeof x==='object').map(cat=>{
+    if(!cat.id)cat.id=uid();
+    if(typeof cat.name!=='string')cat.name='';
+    if(cat.color!=null&&typeof cat.color!=='string')cat.color=null;
+    if(!Array.isArray(cat.sections))cat.sections=[];
+    cat.sections=cat.sections.filter(s=>s&&typeof s==='object').map(sec=>{
+      if(!sec.id)sec.id=uid();
+      if(typeof sec.name!=='string')sec.name='';
+      if(sec.color!=null&&typeof sec.color!=='string')sec.color=null;
+      if(!Array.isArray(sec.entries))sec.entries=[];
+      sec.entries=sec.entries.filter(e=>e&&typeof e==='object').map(e=>({
+        id:e.id||uid(),
+        cmd:typeof e.cmd==='string'?e.cmd:'',
+        desc:typeof e.desc==='string'?e.desc:'',
+        q:typeof e.q==='string'?e.q:''}));
+      return sec;});
+    return cat;});
   const ids=new Set();c.categories.forEach(x=>(x.sections||[]).forEach(s=>ids.add(s.id)));
   c.decks.forEach(d=>{d.secIds=(d.secIds||[]).filter(x=>ids.has(x));});
   if(c.activeDeck&&!c.decks.some(d=>d.id===c.activeDeck))c.activeDeck=null;
@@ -3948,9 +3967,10 @@ function bindToolbar(){
   $('#fileInput').addEventListener('change',ev=>{
     const f=ev.target.files[0];if(!f)return;const r=new FileReader();
     r.onload=()=>{try{const o=JSON.parse(r.result);let added=0;
-      if(o&&Array.isArray(o.collections)){o.collections.forEach(c=>{c.id=uid();normalizeCollection(c);store.collections.push(c);added++;});}
-      else if(o&&o.categories){o.id=uid();normalizeCollection(o);store.collections.push(o);added++;}
+      if(o&&Array.isArray(o.collections)){o.collections.filter(c=>c&&Array.isArray(c.categories)).forEach(c=>{c.id=uid();normalizeCollection(c);store.collections.push(c);added++;});}
+      else if(o&&Array.isArray(o.categories)){o.id=uid();normalizeCollection(o);store.collections.push(o);added++;}
       else throw 0;
+      if(!added)throw 0;
       if(added){store.activeId=store.collections[store.collections.length-1].id;applyCollectionSwitch();save();}
       document.querySelectorAll('.modal-ov').forEach(m=>m.remove());
     }catch(e){alert('Could not read that file — is it a TermDecks collection export?');}};
