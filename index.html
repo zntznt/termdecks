@@ -57,9 +57,11 @@ button{cursor:pointer}
 .title-input:hover{border-color:var(--line);background:var(--panel2)}
 .title-input:focus{outline:none;border-color:var(--accent);background:var(--panel2)}
 .spacer{flex:1}
-/* settings menu popover sizing */
-.settings-menu{min-width:268px;max-width:300px;padding:8px}
-.settings-menu .fmh:first-child{margin-top:2px}
+/* unobtrusive help button, bottom-right of the viewport */
+.help-fab{position:fixed;right:16px;bottom:14px;z-index:40;width:30px;height:30px;border-radius:99px;
+  background:var(--panel2);border:1px solid var(--line);color:var(--muted);font-weight:700;font-size:15px;
+  display:grid;place-items:center;box-shadow:0 4px 14px #0006}
+.help-fab:hover{color:var(--ink);border-color:var(--accent);background:#222936}
 .ctrl{display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);
   border-radius:8px;padding:5px 9px}
 .ctrl label{font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px}
@@ -201,6 +203,22 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .btn[disabled],.btn.primary[disabled]{opacity:.45;cursor:not-allowed}
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .collections-modal{max-width:560px}
+/* settings modal — same chip rows as the old popover, just roomier */
+.settings-modal{max-width:480px}
+.settings-modal .fmh:first-of-type{margin-top:2px}
+.settings-modal .dd-item{width:100%}
+/* help / about modal — 2 columns: identity+blurb left, shortcuts right */
+.help-modal{max-width:560px}
+.help-cols{display:flex;gap:22px}
+.help-left{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:12px}
+.help-right{flex:1 1 0;min-width:0}
+.help-logo{display:flex;align-items:center;gap:9px;font-family:var(--card-font);font-weight:700;font-size:18px;color:var(--ink)}
+.help-logo .logo-mark{height:26px}
+.help-blurb{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+.help-link{display:inline-flex;align-items:center;gap:7px;color:var(--accent);text-decoration:none;font-weight:600;font-size:13px;
+  border:1px solid var(--line);border-radius:8px;padding:7px 11px;align-self:flex-start}
+.help-link:hover{border-color:var(--accent);background:var(--panel2)}
+@media (max-width:520px){.help-cols{flex-direction:column;gap:16px}}
 .coll-list{display:flex;flex-direction:column;gap:6px}
 .coll-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2)}
 .coll-row.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
@@ -471,8 +489,7 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
     <div class="spacer"></div>
 
     <button class="btn ghost sm" id="collectionsBtn">Collections</button>
-    <div class="dd" id="settingsDD"><button class="btn ghost sm" id="settingsBtn">Settings <span class="dd-caret">▾</span></button><div class="dd-menu right settings-menu" id="settingsMenu" hidden></div></div>
-    <div id="kbdMenu" hidden></div><!-- shortcuts source; rendered into the Settings menu -->
+    <button class="btn ghost sm" id="settingsBtn">Settings</button>
     <button class="btn primary" id="printBtn">Print / Save PDF</button>
     <input type="file" id="fileInput" accept="application/json,.json" style="display:none">
     <input type="file" id="csvFile" accept=".csv,text/csv" style="display:none">
@@ -512,6 +529,7 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
       <div class="pv-body" id="pvBody"></div>
     </div>
   </div>
+  <button class="help-fab" id="helpBtn" title="About &amp; keyboard shortcuts" aria-label="About and keyboard shortcuts">?</button>
 </div>
 
 <div id="measure"></div>
@@ -3580,8 +3598,7 @@ function buildDropdown(cfg){
   btn.onclick=()=>{if(menu.hidden){rebuild();openMenu(menu);}else closeAllMenus();};
   ddRebuild[cfg.key]=rebuild;rebuild();
 }
-function buildKbdMenu(){const m=$('#kbdMenu');if(!m)return;
-  m.innerHTML='<div class="kbd-list">'
+function kbdHTML(){return '<div class="kbd-list">'
     +'<div><kbd>/</kbd> Focus search</div>'
     +'<div><kbd>←</kbd> <kbd>→</kbd> Previous / next card</div>'
     +'<div><kbd>F</kbd> Flip the current card</div>'
@@ -3635,25 +3652,59 @@ function buildPrintMenu(m){if(!m)return;
   toggleRow(m,'Show cut guides',()=>state.guides,v=>{state.guides=v;save();});
 }
 /* one combined Settings popover: Card + Print + Data (CSV) + Shortcuts, under subheaders */
-function buildSettingsMenu(){const m=$('#settingsMenu');if(!m)return;m.innerHTML='';
-  const head=t=>{const h=document.createElement('div');h.className='fmh';h.textContent=t;m.appendChild(h);};
-  head('Card design');buildCardMenu(m);
-  head('Print');buildPrintMenu(m);
-  head('Data');
+function openSettings(){
+  closeAllMenus();
+  const ov=document.createElement('div');ov.className='modal-ov';
+  ov.addEventListener('mousedown',e=>{if(e.target===ov)close();});
+  const box=document.createElement('div');box.className='modal settings-modal';
+  ov.appendChild(box);document.body.appendChild(ov);
+  function close(){ov.remove();document.removeEventListener('keydown',esc);}
+  function esc(e){if(e.key==='Escape')close();}
+  document.addEventListener('keydown',esc);
+  const head=document.createElement('div');head.className='modal-head';
+  const h=document.createElement('h3');h.textContent='Settings';
+  const xb=document.createElement('button');xb.className='iconbtn2';xb.innerHTML=ico('x',16);xb.title='Close';xb.onclick=close;
+  head.append(h,xb);box.appendChild(head);
+  const sec=t=>{const d=document.createElement('div');d.className='fmh';d.textContent=t;box.appendChild(d);};
+  sec('Card design');buildCardMenu(box);
+  sec('Print');buildPrintMenu(box);
+  sec('Data');
   const tpl=document.createElement('button');tpl.className='dd-item';tpl.innerHTML=ico('download',16)+'<span>Download CSV template</span>';
-  tpl.onclick=()=>{download(slugify(state.title,'cards')+'_template.csv',csvTemplate(),'text/csv');closeAllMenus();};
+  tpl.onclick=()=>{download(slugify(state.title,'cards')+'_template.csv',csvTemplate(),'text/csv');};
   const imp=document.createElement('button');imp.className='dd-item';imp.innerHTML=ico('upload',16)+'<span>Import from CSV…</span>';
-  imp.onclick=()=>{closeAllMenus();$('#csvFile').click();};
-  m.append(tpl,imp);
-  head('Keyboard shortcuts');
-  const kb=document.createElement('div');kb.innerHTML=$('#kbdMenu').innerHTML;m.appendChild(kb);
+  imp.onclick=()=>{close();$('#csvFile').click();};
+  box.append(tpl,imp);
+}
+function openHelp(){
+  closeAllMenus();
+  const ov=document.createElement('div');ov.className='modal-ov';
+  ov.addEventListener('mousedown',e=>{if(e.target===ov)close();});
+  const box=document.createElement('div');box.className='modal help-modal';
+  ov.appendChild(box);document.body.appendChild(ov);
+  function close(){ov.remove();document.removeEventListener('keydown',esc);}
+  function esc(e){if(e.key==='Escape')close();}
+  document.addEventListener('keydown',esc);
+  const head=document.createElement('div');head.className='modal-head';
+  const h=document.createElement('h3');h.textContent='About TermDecks';
+  const xb=document.createElement('button');xb.className='iconbtn2';xb.innerHTML=ico('x',16);xb.title='Close';xb.onclick=close;
+  head.append(h,xb);box.appendChild(head);
+  const cols=document.createElement('div');cols.className='help-cols';
+  const left=document.createElement('div');left.className='help-left';
+  left.innerHTML=
+    '<div class="help-logo">'+$('.logo-mark').outerHTML+'<span>TermDecks</span></div>'
+    +'<p class="help-blurb">Build printable, poker-sized reference cards for the terminal. Group commands into categories and sections, then print double-sided decks — or study them with the built-in spaced-repetition quiz.</p>'
+    +'<a class="help-link" href="https://github.com/zntznt/termdecks" target="_blank" rel="noopener noreferrer">'+ico('folder',14)+'<span>View on GitHub</span></a>';
+  const right=document.createElement('div');right.className='help-right';
+  const rh=document.createElement('div');rh.className='fmh';rh.textContent='Keyboard shortcuts';right.appendChild(rh);
+  const kb=document.createElement('div');kb.innerHTML=kbdHTML();right.appendChild(kb);
+  cols.append(left,right);box.appendChild(cols);
 }
 function applyIcons(){
   const set=(id,html)=>{const el=$('#'+id);if(el)el.innerHTML=html;};
   // unified toolbar anatomy: icon + label (+ caret only for dropdowns)
   set('printBtn',ico('printer',15)+'<span>Print / Save PDF</span>');
   set('collectionsBtn',ico('folder',15)+'<span>Collections</span>');
-  set('settingsBtn',ico('sliders',15)+'<span>Settings</span><span class="dd-caret">'+ico('chevronDown',12)+'</span>');
+  set('settingsBtn',ico('sliders',15)+'<span>Settings</span>');
   set('expandBtn',ico('maximize'));
   set('deckNew',ico('plus',15)+'<span>New</span>');
   set('deckRename',ico('pencil',15));
@@ -4465,9 +4516,9 @@ function applyEditorVisibility(){
 function bindToolbar(){
   const t=$('#title');t.value=state.title;t.addEventListener('input',()=>{state.title=t.value;save();});
   buildDropdown({key:'faces',get:()=>facesMode,set:v=>{facesMode=v;renderPreview();},opts:[['front','Fronts'],['back','Backs']]});
-  // Combined Settings popover (Card + Print + Data + Shortcuts), rebuilt on open
-  buildKbdMenu();
-  $('#settingsBtn').addEventListener('click',()=>{const m=$('#settingsMenu');if(m.hidden){buildSettingsMenu();openMenu(m);}else closeAllMenus();});
+  // Settings & Help modals (Card/Print/Data in Settings; about + shortcuts in Help)
+  $('#settingsBtn').addEventListener('click',openSettings);
+  $('#helpBtn').addEventListener('click',openHelp);
   // resizable divider (this is the "zoom" — the card auto-fits whatever width you give it)
   const divider=$('#divider'),pane=$('#pane'),main=$('.main');
   let drag=false;
