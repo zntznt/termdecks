@@ -101,6 +101,10 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .main{display:flex;flex:1;min-height:0}
 .editor{flex:1 1 auto;min-width:460px;overflow:auto;border-right:1px solid var(--line);
   background:var(--panel);padding:16px 20px 90px}
+/* editor hidden — collapse it + the divider so the card pane reflows to full width.
+   The pane is already flex with a wrapping grid, so cards re-lay themselves out. */
+.main.editor-hidden .editor,.main.editor-hidden .divider{display:none}
+.main.editor-hidden .pane{flex:1 1 auto!important;width:auto!important}
 .divider{flex:0 0 7px;cursor:col-resize;background:linear-gradient(180deg,#171c25,#12161d);
   border-left:1px solid var(--line);border-right:1px solid var(--line);position:relative;touch-action:none}
 .divider::after{content:"⋮";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--muted2);font-size:13px}
@@ -116,6 +120,9 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .seg-btn{background:transparent;border:none;color:var(--muted);padding:5px 12px;border-radius:7px;font-weight:600;font-size:12.5px}
 .seg-btn:hover{color:var(--ink)}
 .seg-btn.active{background:linear-gradient(180deg,var(--accent),#5d86e6);color:#0b1020}
+/* Edit toggle: a quieter on-state than the view tabs (it's a toggle, not a current-view) */
+#editToggle.on{background:var(--panel);color:var(--ink);box-shadow:inset 0 0 0 1px var(--accent)}
+#editToggle.on:hover{color:#fff}
 .iconbtn2{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:14px;line-height:1;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 .iconbtn2:hover{border-color:#3a4456;background:#222936}
 .iconbtn2 svg{display:block}
@@ -475,6 +482,9 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
         <span class="pill" id="deckInfo"></span>
       </div>
       <div class="pv-head">
+        <div class="seg">
+          <button class="seg-btn" id="editToggle" title="Show or hide the editor" aria-pressed="true">✎ Edit</button>
+        </div>
         <div class="seg">
           <button class="seg-btn" data-mode="single">◳ Single</button>
           <button class="seg-btn active" data-mode="grid">▦ Grid</button>
@@ -3081,6 +3091,7 @@ function normalizeStore(){
   }
   store.collections.forEach(normalizeCollection);
   if(!store.collections.some(c=>c.id===store.activeId))store.activeId=store.collections[0].id;
+  if(typeof store.editorOpen!=='boolean')store.editorOpen=true;  // workspace pref, defaults to showing the editor
 }
 function load(){
   store=null;let raw=null;try{raw=localStorage.getItem(STORAGE_KEY);}catch(e){}
@@ -3409,7 +3420,8 @@ function applyIcons(){
   set('deckRename',ico('pencil',15));
   set('deckDelete',ico('trash',15));
   set('filterBtn',ico('filter',15)+'<span>Filters</span><span class="fdot" id="filterDot" hidden></span>');
-  document.querySelectorAll('#pane .seg-btn').forEach(b=>{const m=b.dataset.mode;
+  set('editToggle',ico('pencil',15)+'<span>Edit</span>');
+  document.querySelectorAll('#pane .seg-btn[data-mode]').forEach(b=>{const m=b.dataset.mode;
     const conf={single:['square','Single'],grid:['grid','Grid'],quiz:['layers','Quiz']}[m]||['grid','Grid'];
     b.innerHTML=ico(conf[0],15)+'<span>'+conf[1]+'</span>';});
   const dc=document.querySelector('#deckBtn .dd-caret');if(dc)dc.innerHTML=ico('chevronDown',12);
@@ -4152,6 +4164,13 @@ function applyAll(){
   const gz=$('#gridSize');if(gz)gz.value=state.gridZoom;
   applyFont();applyPageStyle();
 }
+function applyEditorVisibility(){
+  const open=store.editorOpen!==false;
+  $('.main').classList.toggle('editor-hidden',!open);
+  const b=$('#editToggle');if(b){b.classList.toggle('on',open);b.setAttribute('aria-pressed',String(open));}
+  // pane width changed → re-fit the single-card preview
+  requestAnimationFrame(applyFit);
+}
 
 /* bind toolbar */
 function bindToolbar(){
@@ -4174,10 +4193,13 @@ function bindToolbar(){
   divider.addEventListener('pointerup',endDrag);divider.addEventListener('pointercancel',endDrag);
   let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(applyFit,80);});
 
-  // Single / Grid tabs + grid controls + fullscreen
-  pane.querySelectorAll('.seg-btn').forEach(b=>b.addEventListener('click',()=>{
+  // Single / Grid / Quiz tabs (only the ones with data-mode — not the Edit toggle)
+  const viewTabs=[...pane.querySelectorAll('.seg-btn[data-mode]')];
+  viewTabs.forEach(b=>b.addEventListener('click',()=>{
     viewMode=b.dataset.mode;selecting=false;if(viewMode==='quiz')quizRevealed=false;
-    pane.querySelectorAll('.seg-btn').forEach(x=>x.classList.toggle('active',x===b));renderPreview();}));
+    viewTabs.forEach(x=>x.classList.toggle('active',x===b));renderPreview();}));
+  // Edit toggle — show/hide the editor; the card pane reflows to fill
+  $('#editToggle').addEventListener('click',()=>{store.editorOpen=!store.editorOpen;applyEditorVisibility();save();});
 
   // decks
   refreshDeckOptions();
@@ -4260,6 +4282,7 @@ load();
 fileBackup.restore();
 bindToolbar();
 applyAll();
+applyEditorVisibility();
 renderEditor();
 (function(){const m=$('.main');const base=(m&&m.getBoundingClientRect().width)||window.innerWidth||1200;
   $('#pane').style.setProperty('--pane-w',clamp(Math.round(base*0.56),480,1200)+'px');})();
