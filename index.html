@@ -263,6 +263,11 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
   box-shadow:0 10px 30px #000a;opacity:0;visibility:hidden;transition:opacity .12s;pointer-events:none}
 .set-info:hover .set-tip,.set-info:focus-visible .set-tip{opacity:1;visibility:visible}
 .fmh-info{display:flex;align-items:center;gap:7px}
+/* shared delegated tooltip for any [data-tip] element (toolbar/preview-bar icons) */
+#tip{position:fixed;z-index:95;max-width:240px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+  border-radius:8px;padding:6px 9px;font-size:11.5px;font-weight:500;line-height:1.4;text-align:center;
+  box-shadow:0 10px 30px #000a;opacity:0;visibility:hidden;transition:opacity .12s;pointer-events:none}
+#tip.show{opacity:1;visibility:visible}
 .chips{display:flex;flex-wrap:wrap;gap:5px}
 .chip{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:7px;padding:5px 9px;font-size:12px;font-weight:600;cursor:pointer}
 .chip:hover{color:var(--ink);border-color:#3a4456}
@@ -555,11 +560,11 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="editor" id="editor"></div>
-    <div class="divider" id="divider" title="Drag to resize"></div>
+    <div class="divider" id="divider" data-tip="Drag to resize"></div>
     <div class="pane is-grid" id="pane">
       <div class="pv-head">
         <div class="seg">
-          <button class="seg-btn" id="editToggle" title="Show or hide the editor" aria-pressed="true">Edit</button>
+          <button class="seg-btn" id="editToggle" data-tip="Show or hide the editor" aria-pressed="true">Edit</button>
         </div>
         <div class="seg">
           <button class="seg-btn" data-mode="single">Single</button>
@@ -574,17 +579,17 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
           <button class="seg-btn solo dd-trigger" id="deckBtn"><span id="deckBtnLabel">Full collection</span><span class="dd-caret">▾</span></button>
           <div class="dd-menu right" id="deckMenu" hidden></div>
         </div>
-        <button class="seg-btn solo iconish" id="deckNew" title="New deck from a selection of cards">＋ New</button>
-        <button class="seg-btn solo iconish" id="deckRename" title="Rename deck"></button>
-        <button class="seg-btn solo iconish" id="deckDelete" title="Delete deck (keeps the cards)"></button>
+        <button class="seg-btn solo iconish" id="deckNew" data-tip="New deck from a selection of cards">＋ New</button>
+        <button class="seg-btn solo iconish" id="deckRename" data-tip="Rename deck"></button>
+        <button class="seg-btn solo iconish" id="deckDelete" data-tip="Delete deck (keeps the cards)"></button>
         <div class="ctrl gridonly"><label>Faces</label><div class="dd" id="facesDD"></div></div>
         <div class="ctrl gridonly"><label>Size</label><input id="gridSize" type="range" min="0.9" max="1.8" step="0.05" value="1.25" style="width:84px"></div>
-        <button class="seg-btn solo iconish" id="expandBtn" title="Fullscreen (Esc to exit)"></button>
+        <button class="seg-btn solo iconish" id="expandBtn" data-tip="Fullscreen (Esc to exit)"></button>
       </div>
       <div class="pv-body" id="pvBody"></div>
     </div>
   </div>
-  <button class="help-fab" id="helpBtn" title="About &amp; keyboard shortcuts" aria-label="About and keyboard shortcuts">?</button>
+  <button class="help-fab" id="helpBtn" data-tip="About &amp; keyboard shortcuts" aria-label="About and keyboard shortcuts">?</button>
 </div>
 
 <div id="measure"></div>
@@ -3730,6 +3735,25 @@ function makeInfo(hint){
   info.addEventListener('mouseenter',place);info.addEventListener('focus',place);
   return info;
 }
+/* delegated tooltips: any element with data-tip gets a styled hover tooltip
+   (after a short delay) instead of the native title. One shared floating node. */
+(function(){
+  let el,timer,cur;
+  function tipEl(){if(!el){el=document.createElement('div');el.id='tip';document.body.appendChild(el);}return el;}
+  function show(t){const e=tipEl();e.textContent=t.dataset.tip;e.classList.remove('show');
+    e.style.left='0';e.style.top='0';const r=t.getBoundingClientRect(),tr=e.getBoundingClientRect();
+    let left=clamp(r.left+r.width/2-tr.width/2,8,window.innerWidth-tr.width-8);
+    let top=r.bottom+7;if(top+tr.height>window.innerHeight-8)top=r.top-tr.height-7;  // flip above if no room below
+    e.style.left=left+'px';e.style.top=top+'px';e.classList.add('show');}
+  function hide(){clearTimeout(timer);cur=null;if(el)el.classList.remove('show');}
+  document.addEventListener('mouseover',e=>{const t=e.target.closest('[data-tip]');if(!t||t===cur)return;
+    cur=t;clearTimeout(timer);timer=setTimeout(()=>{if(cur===t)show(t);},400);});
+  document.addEventListener('mouseout',e=>{if(e.target.closest('[data-tip]'))hide();});
+  document.addEventListener('focusin',e=>{const t=e.target.closest('[data-tip]');if(t){cur=t;show(t);}});
+  document.addEventListener('focusout',hide);
+  // hide on scroll/click so a stale tip never lingers
+  window.addEventListener('scroll',hide,true);document.addEventListener('mousedown',hide);
+})();
 function setLabel(text,hint){
   const lab=document.createElement('div');lab.className='set-lab';
   const t=document.createElement('span');t.textContent=text;lab.appendChild(t);
