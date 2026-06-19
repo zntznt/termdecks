@@ -204,23 +204,27 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .btn[disabled],.btn.primary[disabled]{opacity:.45;cursor:not-allowed}
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .collections-modal{max-width:560px}
-/* settings modal — same chip rows as the old popover, just roomier */
-.settings-modal{max-width:560px}
+.settings-modal{max-width:600px}
 .settings-modal .fmh{margin:14px 4px 8px}
-.settings-modal .fmh:first-of-type{margin-top:2px}
-/* 2-column grid for Card design & Print sections */
-.set-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;align-items:start}
-.set-grid .set-row2{padding:0;border:none;gap:7px}
-.set-grid .set-toggle{grid-column:1 / -1;padding:8px 0 0;border:none}
-.set-grid .set-hint{grid-column:1 / -1;margin:0;padding:0}
-/* Data section: a horizontal bar of actions */
+/* two side-by-side columns: Card settings | Print settings, divider between */
+.settings-cols{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.settings-col{display:flex;flex-direction:column;gap:2px;padding:0 18px}
+.settings-col:first-child{padding-left:2px}
+.settings-col:last-child{padding-right:2px;border-left:1px solid var(--line)}
+.settings-col .set-row2{padding:8px 0;border:none}
+.settings-col .set-row2+.set-row2{border-top:1px solid #ffffff0d}
+.settings-col .set-toggle{padding:10px 0;border-top:1px solid #ffffff0d}
+.settings-col .set-hint{padding:0;margin:2px 0 0}
+/* Data — a full-width action bar spanning the modal */
 .data-bar{display:flex;gap:8px;flex-wrap:wrap}
 .data-btn{flex:1 1 0;min-width:120px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
   background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:10px 12px;font-weight:600;font-size:13px}
 .data-btn:hover{border-color:#3a4456;background:#222936}
 .data-btn.danger{color:var(--danger)}
 .data-btn.danger:hover{border-color:#43222a;background:#1c1418}
-@media (max-width:520px){.set-grid{grid-template-columns:1fr}}
+@media (max-width:560px){.settings-cols{grid-template-columns:1fr}
+  .settings-col:last-child{border-left:none;border-top:1px solid var(--line);padding:8px 2px 0}
+  .settings-col:first-child{padding:0 2px}}
 /* help / about modal — 2 columns: identity+blurb left, shortcuts right */
 .help-modal{max-width:560px}
 .help-cols{display:flex;gap:22px}
@@ -449,6 +453,7 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
 .card.back.nav .qmark{color:var(--accent-sec);font-weight:700}
 .card.back.nav .qtext{color:#3a4150;min-width:0;word-break:break-word;font-size:.94em}
 .card.back.nav .qnone{color:#9aa3b2;font-style:italic;font-size:.94em}
+.card.back.nav .nav-more{flex:none;font-size:.82em;font-style:italic;color:#9aa3b2;margin-top:2px}
 
 /* ---------- Card faces (preview + album) ---------- */
 .flip{width:var(--cw);height:var(--ch);perspective:1400px;cursor:pointer;flex:none}
@@ -3497,7 +3502,29 @@ function buildNavigatorFace(c){
   const qh=document.createElement('div');qh.className='nav-qh';qh.textContent='Questions';qzone.appendChild(qh);
   const qlist=document.createElement('div');qlist.className='nav-qlist';fillQuestionList(qlist,c);qzone.appendChild(qlist);
   card.append(band,qzone);
+  // After layout, clip overflowing question lines and append a "+N more" marker so the
+  // truncation is deliberate, not a mid-word cut. Fixed zone never grows — only its fill.
+  requestAnimationFrame(()=>navTruncate(qlist));
   return card;
+}
+// hide question lines that overflow the fixed band; append "+N more" if any were hidden.
+// rect-based (offsetTop is unreliable inside a flex container).
+function navTruncate(qlist){
+  const old=qlist.querySelector('.nav-more');if(old)old.remove();
+  const rows=[...qlist.querySelectorAll('.qline')];if(!rows.length)return;
+  rows.forEach(r=>{r.style.display='';});
+  const bottom=qlist.getBoundingClientRect().bottom;
+  let hidden=0;
+  for(const r of rows){if(r.getBoundingClientRect().bottom>bottom+0.5){r.style.display='none';hidden++;}}
+  if(!hidden)return;
+  const more=document.createElement('div');more.className='nav-more';more.textContent='+'+hidden+' more';
+  qlist.appendChild(more);
+  // make room for the marker if it overflows: hide trailing visible rows until it fits
+  let guard=0;
+  while(more.getBoundingClientRect().bottom>bottom+0.5&&guard++<rows.length){
+    const vis=rows.filter(r=>r.style.display!=='none');if(!vis.length)break;
+    vis[vis.length-1].style.display='none';hidden++;more.textContent='+'+hidden+' more';
+  }
 }
 // back-face dispatch (state.backStyle); default 'minimal' = the standard question back
 function buildBackFace(c){
@@ -3732,13 +3759,14 @@ function openSettings(){
   const h=document.createElement('h3');h.textContent='Settings';
   const xb=document.createElement('button');xb.className='iconbtn2';xb.innerHTML=ico('x',16);xb.title='Close';xb.onclick=close;
   head.append(h,xb);box.appendChild(head);
-  const sec=t=>{const d=document.createElement('div');d.className='fmh';d.textContent=t;box.appendChild(d);return d;};
-  // Card design — 2-column grid
-  sec('Card design');const cg=document.createElement('div');cg.className='set-grid';box.appendChild(cg);buildCardMenu(cg);
-  // Print — 2-column grid
-  sec('Print');const pg=document.createElement('div');pg.className='set-grid';box.appendChild(pg);buildPrintMenu(pg);
-  // Data — a horizontal action bar
-  sec('Data');
+  // two vertical columns: Card settings | Print settings, side by side
+  const cols=document.createElement('div');cols.className='settings-cols';box.appendChild(cols);
+  const colHead=(parent,t)=>{const d=document.createElement('div');d.className='fmh';d.style.margin='0 0 8px';d.textContent=t;parent.appendChild(d);};
+  const cardCol=document.createElement('div');cardCol.className='settings-col';colHead(cardCol,'Card design');buildCardMenu(cardCol);
+  const printCol=document.createElement('div');printCol.className='settings-col';colHead(printCol,'Print');buildPrintMenu(printCol);
+  cols.append(cardCol,printCol);
+  // Data — a full-width action bar spanning the modal
+  const dh=document.createElement('div');dh.className='fmh';dh.textContent='Data';box.appendChild(dh);
   const bar=document.createElement('div');bar.className='data-bar';
   const act=(icon,label,fn,cls)=>{const b=document.createElement('button');b.className='data-btn'+(cls?' '+cls:'');b.innerHTML=ico(icon,16)+'<span>'+label+'</span>';b.onclick=fn;return b;};
   bar.appendChild(act('download','CSV template',()=>download(slugify(state.title,'cards')+'_template.csv',csvTemplate(),'text/csv')));
