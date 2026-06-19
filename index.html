@@ -558,6 +558,7 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
     <button class="btn primary" id="printBtn">Print / Save PDF</button>
     <input type="file" id="fileInput" accept="application/json,.json" style="display:none">
     <input type="file" id="csvFile" accept=".csv,text/csv" style="display:none">
+    <input type="file" id="deckFile" accept="application/json,.json" style="display:none">
   </div>
 
   <div class="main">
@@ -4074,25 +4075,62 @@ function deleteDeck(coll,d,after){styledConfirm('Delete deck “'+d.name+'”? T
   if(coll.id===store.activeId&&state.activeDeck===d.id){state.activeDeck=null;selecting=false;refreshDeckOptions();renderPreview();}
   save();if(after)after();},'Delete');}
 // copy a deck (and the sections/cards it selects) into another collection, merging by name
-function copyDeckTo(srcColl,d,dstId,after){
-  const dst=store.collections.find(c=>c.id===dstId);if(!dst||dst===srcColl)return;
-  const low=s=>(s||'').toLowerCase();const newSecIds=[];
-  (srcColl.categories||[]).forEach(scat=>{
+// a self-contained slice of a deck: its name + only the categories/sections/entries it selects.
+// no ids, no collection association — portable for export/copy.
+function deckSlice(coll,d){
+  const cats=[];
+  (coll.categories||[]).forEach(scat=>{
+    const secs=[];
     (scat.sections||[]).forEach(ssec=>{
-      if(!(d.secIds||[]).includes(ssec.id))return;            // only sections this deck selects
-      let dcat=dst.categories.find(x=>low(x.name)===low(scat.name));
-      if(!dcat){dcat={id:uid(),name:scat.name||'New category',color:scat.color||null,sections:[]};dst.categories.push(dcat);}
+      if(!(d.secIds||[]).includes(ssec.id))return;
+      secs.push({name:ssec.name||'',color:ssec.color||null,
+        entries:(ssec.entries||[]).map(e=>({cmd:e.cmd,desc:e.desc,q:e.q}))});
+    });
+    if(secs.length)cats.push({name:scat.name||'',color:scat.color||null,sections:secs});
+  });
+  return {deck:d.name||'Untitled deck',categories:cats};
+}
+// merge a deck slice into a target collection (by name) and create the deck there.
+function mergeDeckSlice(slice,dst){
+  const low=s=>(s||'').toLowerCase();const newSecIds=[];
+  (slice.categories||[]).forEach(scat=>{
+    let dcat=dst.categories.find(x=>low(x.name)===low(scat.name));
+    if(!dcat){dcat={id:uid(),name:scat.name||'New category',color:scat.color||null,sections:[]};dst.categories.push(dcat);}
+    (scat.sections||[]).forEach(ssec=>{
       let dsec=dcat.sections.find(x=>low(x.name)===low(ssec.name));
       if(!dsec){dsec={id:uid(),name:ssec.name||'Section',color:ssec.color||null,entries:[]};dcat.sections.push(dsec);}
       (ssec.entries||[]).forEach(e=>dsec.entries.push({id:uid(),cmd:e.cmd,desc:e.desc,q:e.q}));
       newSecIds.push(dsec.id);
     });
   });
-  (dst.decks=dst.decks||[]).push({id:uid(),name:d.name,secIds:newSecIds});
+  (dst.decks=dst.decks||[]).push({id:uid(),name:slice.deck||'Imported deck',secIds:newSecIds});
   normalizeCollection(dst);
+}
+function copyDeckTo(srcColl,d,dstId,after){
+  const dst=store.collections.find(c=>c.id===dstId);if(!dst||dst===srcColl)return;
+  mergeDeckSlice(deckSlice(srcColl,d),dst);
   if(dst.id===store.activeId)applyCollectionSwitch(); else save();
   toast('Copied deck “'+d.name+'” into “'+(dst.title||'Untitled')+'”.','ok');
   if(after)after();
+}
+function exportDeck(coll,d){
+  const payload={type:'termdecks-deck',version:1,...deckSlice(coll,d)};
+  download(slugify(d.name,'deck')+'.deck.json',JSON.stringify(payload,null,2),'application/json');
+}
+function importDeckFile(file,after){
+  const r=new FileReader();
+  r.onload=()=>{let o;try{o=JSON.parse(r.result);}catch(e){alert('Could not read that file — is it a TermDecks deck export?');return;}
+    if(!o||!Array.isArray(o.categories)||typeof o.deck!=='string'){alert('That doesn’t look like a TermDecks deck file.');return;}
+    pickCollection('Import deck “'+o.deck+'” into…',id=>{
+      const dst=store.collections.find(c=>c.id===id);if(!dst)return;
+      mergeDeckSlice(o,dst);
+      if(dst.id===store.activeId)applyCollectionSwitch(); else save();
+      const n=(dst.decks[dst.decks.length-1].secIds||[]).length;
+      toast('Imported deck “'+o.deck+'” into “'+(dst.title||'Untitled')+'” — '+n+' card'+(n===1?'':'s')+'.','ok');
+      if(after)after();
+    });
+  };
+  r.readAsText(file);
 }
 function openDecks(){
   closeAllMenus();
@@ -4130,8 +4168,9 @@ function openDecks(){
         const cpy=makeIcon('copy','Copy to another collection');cpy.onclick=()=>{
           if(store.collections.length<2){toast('Make another collection first to copy a deck into it.','warn');return;}
           pickCollection('Copy deck “'+d.name+'” into…',id=>{if(id!==coll.id)copyDeckTo(coll,d,id,draw);else toast('That’s the deck’s own collection.','warn');});};
+        const exp=makeIcon('download','Export this deck');exp.onclick=()=>exportDeck(coll,d);
         const del=makeIcon('trash','Delete','danger');del.onclick=()=>deleteDeck(coll,d,draw);
-        acts.append(ren,cpy,del);row.appendChild(acts);
+        acts.append(ren,cpy,exp,del);row.appendChild(acts);
         list.appendChild(row);
       });
     });
@@ -4140,9 +4179,12 @@ function openDecks(){
     const foot=document.createElement('div');foot.className='coll-foot';
     const nb=document.createElement('button');nb.className='btn ghost sm';nb.innerHTML=ico('plus',14)+'<span>New deck in “'+(activeCollection().title||'current')+'”</span>';
     nb.onclick=()=>newDeckIn(activeCollection(),draw);
-    foot.appendChild(nb);box.appendChild(foot);
+    const ib=document.createElement('button');ib.className='btn ghost sm';ib.innerHTML=ico('upload',14)+'<span>Import deck…</span>';
+    ib.onclick=()=>{deckImportRedraw=draw;$('#deckFile').click();};
+    foot.append(nb,ib);box.appendChild(foot);
   }
 }
+let deckImportRedraw=null;
 /* ---- deck dropdown ---- */
 function refreshDeckOptions(){
   const lbl=$('#deckBtnLabel');if(lbl)lbl.innerHTML=ico('folder',15)+'<span>'+(activeDeckObj()?activeDeckObj().name:'Full collection')+'</span>';
@@ -4918,6 +4960,8 @@ function bindToolbar(){
   $('#csvFile').addEventListener('change',ev=>{const f=ev.target.files[0];if(!f)return;const rd=new FileReader();
     rd.onload=()=>{const res=csvToItems(rd.result);if(res&&res.error){alert(res.error);}else if(res){showCsvPreview(res.items);}};
     rd.readAsText(f);ev.target.value='';});
+  $('#deckFile').addEventListener('change',ev=>{const f=ev.target.files[0];if(!f)return;
+    importDeckFile(f,()=>{if(deckImportRedraw)deckImportRedraw();});ev.target.value='';});
   applyIcons();
   // drag-and-drop reordering
   setupDnd();
