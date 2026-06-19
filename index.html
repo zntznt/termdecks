@@ -251,7 +251,18 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .set-menu{min-width:258px;max-width:300px;padding:8px}
 .set-row2{display:flex;flex-direction:column;gap:6px;padding:8px 6px}
 .set-row2+.set-row2,.set-toggle{border-top:1px solid #ffffff0d}
-.set-lab{font-size:10.5px;color:var(--muted2);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.set-lab{font-size:10.5px;color:var(--muted2);font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:6px}
+/* hover-info "?" with a popover instead of a wall of hint text */
+.set-info{position:relative;width:14px;height:14px;border-radius:99px;border:1px solid var(--line);color:var(--muted2);
+  font-size:10px;font-weight:700;display:inline-grid;place-items:center;cursor:help;text-transform:none;letter-spacing:0;flex:none}
+.set-info:hover,.set-info:focus-visible{color:var(--ink);border-color:var(--accent);outline:none}
+.set-tip{position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);z-index:90;width:max-content;max-width:220px;
+  background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:7px 10px;
+  font-size:11.5px;font-weight:500;text-transform:none;letter-spacing:0;line-height:1.45;text-align:left;
+  box-shadow:0 10px 30px #000a;opacity:0;visibility:hidden;transition:opacity .12s;pointer-events:none}
+.set-info:hover .set-tip,.set-info:focus-visible .set-tip{opacity:1;visibility:visible}
+.fmh-info{display:flex;align-items:center;gap:7px}
+.set-tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--line)}
 .chips{display:flex;flex-wrap:wrap;gap:5px}
 .chip{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:7px;padding:5px 9px;font-size:12px;font-weight:600;cursor:pointer}
 .chip:hover{color:var(--ink);border-color:#3a4456}
@@ -3704,15 +3715,22 @@ function kbdHTML(){return '<div class="kbd-list">'
     +'<span class="kbd-hint">Quiz uses Leitner spaced repetition — weak cards recur more often. Drag handles to reorder entries.</span>'
     +'</div>';}
 /* chip-based setting rows for the Card / Print popovers (no nested dropdowns) */
+// a label with an optional hover-info "?" that reveals the hint text in a small popover
+function setLabel(text,hint){
+  const lab=document.createElement('div');lab.className='set-lab';
+  const t=document.createElement('span');t.textContent=text;lab.appendChild(t);
+  if(hint){const info=document.createElement('span');info.className='set-info';info.textContent='?';info.tabIndex=0;
+    const tip=document.createElement('span');tip.className='set-tip';tip.textContent=hint;info.appendChild(tip);lab.appendChild(info);}
+  return lab;
+}
 function settingRow(menu,label,getV,setV,opts,hint){
   const row=document.createElement('div');row.className='set-row2';
-  const lab=document.createElement('div');lab.className='set-lab';lab.textContent=label;row.appendChild(lab);
+  row.appendChild(setLabel(label,hint));
   const chips=document.createElement('div');chips.className='chips';
   opts.forEach(([v,t])=>{const b=document.createElement('button');b.className='chip'+(getV()===v?' on':'');b.textContent=t;
     b.onclick=()=>{setV(v);chips.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');};
     chips.appendChild(b);});
   row.appendChild(chips);menu.appendChild(row);
-  if(hint){const h=document.createElement('div');h.className='set-hint';h.textContent=hint;menu.appendChild(h);}
 }
 function rangeRow(menu,label,min,max,step,getV,setV,unit){
   const row=document.createElement('div');row.className='set-row2';
@@ -3767,7 +3785,10 @@ function openSettings(){
   const printCol=document.createElement('div');printCol.className='settings-col';colHead(printCol,'Print');buildPrintMenu(printCol);
   cols.append(cardCol,printCol);
   // Data — a full-width action bar spanning the modal
-  const dh=document.createElement('div');dh.className='fmh';dh.textContent='Data';box.appendChild(dh);
+  const dh=document.createElement('div');dh.className='fmh fmh-info';dh.appendChild(document.createTextNode('Data'));
+  const di=document.createElement('span');di.className='set-info';di.textContent='?';di.tabIndex=0;
+  const dt=document.createElement('span');dt.className='set-tip';dt.textContent='“Back up all” saves every collection and your study progress to one file. “Delete all” wipes everything on this device.';
+  di.appendChild(dt);dh.appendChild(di);box.appendChild(dh);
   const bar=document.createElement('div');bar.className='data-bar';
   const act=(icon,label,fn,cls)=>{const b=document.createElement('button');b.className='data-btn'+(cls?' '+cls:'');b.innerHTML=ico(icon,16)+'<span>'+label+'</span>';b.onclick=fn;return b;};
   bar.appendChild(act('download','CSV template',()=>download(slugify(state.title,'cards')+'_template.csv',csvTemplate(),'text/csv')));
@@ -3775,9 +3796,6 @@ function openSettings(){
   bar.appendChild(act('download','Back up all',()=>backupAll()));
   bar.appendChild(act('trash','Delete all',()=>{close();deleteAllData();},'danger'));
   box.appendChild(bar);
-  const hint=document.createElement('div');hint.className='set-hint';hint.style.padding='2px 2px 0';
-  hint.textContent='“Back up all” saves every collection and your study progress to one file. “Delete all” wipes everything on this device.';
-  box.appendChild(hint);
 }
 // export the entire store (all collections + study progress) to one file
 function backupAll(){download('termdecks-backup-'+(activeCollection().title?slugify(activeCollection().title,'all'):'all')+'.json',JSON.stringify(store,null,2),'application/json');}
