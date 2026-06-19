@@ -3969,7 +3969,7 @@ function openCollections(){
       const nEntries=(c.categories||[]).reduce((a,cat)=>a+(cat.sections||[]).reduce((b,s)=>b+(s.entries||[]).length,0),0);
       const meta=document.createElement('span');meta.className='meta';meta.textContent=nEntries+' entr'+(nEntries===1?'y':'ies');
       row.append(nm,meta);
-      if(c.readymade){const b=document.createElement('span');b.className='badge';b.textContent='sample';row.appendChild(b);}
+      if(c.readymade){const b=document.createElement('span');b.className='badge';b.textContent='expansion';row.appendChild(b);}
       const acts=document.createElement('div');acts.className='coll-actions';
       const ren=makeIcon('pencil','Rename');ren.onclick=()=>renameCollection(c,draw);
       const exp=makeIcon('download','Export this collection');exp.onclick=()=>{const cur=store.activeId;store.activeId=c.id;exportActive();store.activeId=cur;};
@@ -3984,7 +3984,7 @@ function openCollections(){
     if(fileBackup.supported){const sb=document.createElement('button');sb.id='syncFileBtn';sb.className='btn ghost sm';
       sb.onclick=()=>fileBackup.toggle();foot.appendChild(sb);fileBackup.updateUI(sb);}
     box.appendChild(foot);
-    const l2=document.createElement('div');l2.className='fmh';l2.style.marginTop='14px';l2.textContent='Ready-made collections';box.appendChild(l2);
+    const l2=document.createElement('div');l2.className='fmh';l2.style.marginTop='14px';l2.textContent='Expansions';box.appendChild(l2);
     READYMADE.forEach(t=>{
       const row=document.createElement('div');row.className='ready-row';
       const info=document.createElement('div');info.className='desc';
