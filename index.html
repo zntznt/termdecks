@@ -4232,11 +4232,18 @@ function renderPreview(){
   else if(viewMode==='grid')renderGrid();
   else renderSingle();
 }
+// context-aware empty-state HTML for the preview (single/grid). An empty deck over
+// a non-empty collection points the user at "Select cards" rather than the editor.
+function emptyStateMsg(){
+  if(search)return 'No cards match “'+search+'”.';
+  if(activeDeckObj()&&getCards().length)return 'This deck is empty.<br>Use <b>Select cards</b> above to add cards from the collection.';
+  return 'No cards yet —<br>add a category on the left.';
+}
 function renderSingle(){
   const body=$('#pvBody');body.innerHTML='';curFlip=curFit=null;
   const fc=deck();
   const stage=document.createElement('div');stage.className='side-stage';stage.id='sideStage';
-  if(fc.length===0){stage.innerHTML='<div class="empty-note">'+(search?('No cards match “'+search+'”.'):'No cards yet —<br>add a category on the left.')+'</div>';body.appendChild(stage);return;}
+  if(fc.length===0){stage.innerHTML='<div class="empty-note">'+emptyStateMsg()+'</div>';body.appendChild(stage);return;}
   previewIndex=clamp(previewIndex,0,fc.length-1);
   const c=fc[previewIndex];
   const flip=makeFlip(c,search);
@@ -4259,7 +4266,7 @@ function renderGrid(){
   body.innerHTML='';curFlip=curFit=null;gridEls=[];
   const fc=deck();const startBack=facesMode==='back';
   const grid=document.createElement('div');grid.className='album-grid';
-  if(fc.length===0){grid.innerHTML='<div class="empty-note">'+(search?('No cards match “'+search+'”.'):'No cards yet — add a category on the left.')+'</div>';body.appendChild(grid);return;}
+  if(fc.length===0){grid.innerHTML='<div class="empty-note">'+emptyStateMsg()+'</div>';body.appendChild(grid);return;}
   fc.forEach(c=>{const fl=makeFlip(c,search,startBack);gridEls.push(fl);grid.appendChild(fl);});
   body.appendChild(grid);
   previewIndex=clamp(previewIndex,0,gridEls.length-1);markCurrentGrid();
@@ -4318,7 +4325,7 @@ function renderQuiz(){
   const body=$('#pvBody');body.innerHTML='';curFlip=curFit=null;
   const items=quizItems();
   const stage=document.createElement('div');stage.className='quiz-stage';
-  if(items.length===0){stage.innerHTML='<div class="empty-note">'+(deck().length?'No questions to study yet — add a question (?) to an entry on the left.':(search?('No cards match “'+search+'”.'):'No cards yet — add a category on the left.'))+'</div>';body.appendChild(stage);return;}
+  if(items.length===0){stage.innerHTML='<div class="empty-note">'+(deck().length?'No questions to study yet — add a question (?) to an entry on the left.':emptyStateMsg())+'</div>';body.appendChild(stage);return;}
   ensureQuizOrder(items.length,items);
   const it=items[quizOrder[quizPos]];
   // progress header: mastery + a box pip row for the current card
