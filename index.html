@@ -486,10 +486,11 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
   .search-wrap{order:10;flex:1 1 100%;max-width:none}
   .search-input{min-width:0;width:100%}
   .main{flex-direction:column}
-  .editor{min-width:0;flex:none;border-right:none;border-bottom:1px solid var(--line);
+  /* viewer on top, editor below */
+  .pane{order:1;flex:none!important;width:auto!important;min-height:60vh}
+  .editor{order:2;min-width:0;flex:none;border-right:none;border-top:1px solid var(--line);
     max-height:55vh;padding-bottom:24px}
   .divider{display:none}
-  .pane{flex:none!important;width:auto!important;min-height:60vh}
   .pv-head{flex-wrap:wrap}
 }
 @media (max-width:560px){
