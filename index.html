@@ -203,9 +203,22 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .collections-modal{max-width:560px}
 /* settings modal — same chip rows as the old popover, just roomier */
-.settings-modal{max-width:480px}
+.settings-modal{max-width:560px}
+.settings-modal .fmh{margin:14px 4px 8px}
 .settings-modal .fmh:first-of-type{margin-top:2px}
-.settings-modal .dd-item{width:100%}
+/* 2-column grid for Card design & Print sections */
+.set-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;align-items:start}
+.set-grid .set-row2{padding:0;border:none;gap:7px}
+.set-grid .set-toggle{grid-column:1 / -1;padding:8px 0 0;border:none}
+.set-grid .set-hint{grid-column:1 / -1;margin:0;padding:0}
+/* Data section: a horizontal bar of actions */
+.data-bar{display:flex;gap:8px;flex-wrap:wrap}
+.data-btn{flex:1 1 0;min-width:120px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:10px 12px;font-weight:600;font-size:13px}
+.data-btn:hover{border-color:#3a4456;background:#222936}
+.data-btn.danger{color:var(--danger)}
+.data-btn.danger:hover{border-color:#43222a;background:#1c1418}
+@media (max-width:520px){.set-grid{grid-template-columns:1fr}}
 /* help / about modal — 2 columns: identity+blurb left, shortcuts right */
 .help-modal{max-width:560px}
 .help-cols{display:flex;gap:22px}
@@ -3646,7 +3659,6 @@ function buildPrintMenu(m){if(!m)return;
     'Long edge suits most printers; use short edge if backs print upside-down. Single-sided prints fronts only.');
   toggleRow(m,'Show cut guides',()=>state.guides,v=>{state.guides=v;save();});
 }
-/* one combined Settings popover: Card + Print + Data (CSV) + Shortcuts, under subheaders */
 function openSettings(){
   closeAllMenus();
   const ov=document.createElement('div');ov.className='modal-ov';
@@ -3660,15 +3672,37 @@ function openSettings(){
   const h=document.createElement('h3');h.textContent='Settings';
   const xb=document.createElement('button');xb.className='iconbtn2';xb.innerHTML=ico('x',16);xb.title='Close';xb.onclick=close;
   head.append(h,xb);box.appendChild(head);
-  const sec=t=>{const d=document.createElement('div');d.className='fmh';d.textContent=t;box.appendChild(d);};
-  sec('Card design');buildCardMenu(box);
-  sec('Print');buildPrintMenu(box);
+  const sec=t=>{const d=document.createElement('div');d.className='fmh';d.textContent=t;box.appendChild(d);return d;};
+  // Card design — 2-column grid
+  sec('Card design');const cg=document.createElement('div');cg.className='set-grid';box.appendChild(cg);buildCardMenu(cg);
+  // Print — 2-column grid
+  sec('Print');const pg=document.createElement('div');pg.className='set-grid';box.appendChild(pg);buildPrintMenu(pg);
+  // Data — a horizontal action bar
   sec('Data');
-  const tpl=document.createElement('button');tpl.className='dd-item';tpl.innerHTML=ico('download',16)+'<span>Download CSV template</span>';
-  tpl.onclick=()=>{download(slugify(state.title,'cards')+'_template.csv',csvTemplate(),'text/csv');};
-  const imp=document.createElement('button');imp.className='dd-item';imp.innerHTML=ico('upload',16)+'<span>Import from CSV…</span>';
-  imp.onclick=()=>{close();$('#csvFile').click();};
-  box.append(tpl,imp);
+  const bar=document.createElement('div');bar.className='data-bar';
+  const act=(icon,label,fn,cls)=>{const b=document.createElement('button');b.className='data-btn'+(cls?' '+cls:'');b.innerHTML=ico(icon,16)+'<span>'+label+'</span>';b.onclick=fn;return b;};
+  bar.appendChild(act('download','CSV template',()=>download(slugify(state.title,'cards')+'_template.csv',csvTemplate(),'text/csv')));
+  bar.appendChild(act('upload','Import CSV',()=>{close();$('#csvFile').click();}));
+  bar.appendChild(act('download','Back up all',()=>backupAll()));
+  bar.appendChild(act('trash','Delete all',()=>{close();deleteAllData();},'danger'));
+  box.appendChild(bar);
+  const hint=document.createElement('div');hint.className='set-hint';hint.style.padding='2px 2px 0';
+  hint.textContent='“Back up all” saves every collection and your study progress to one file. “Delete all” wipes everything on this device.';
+  box.appendChild(hint);
+}
+// export the entire store (all collections + study progress) to one file
+function backupAll(){download('termdecks-backup-'+(activeCollection().title?slugify(activeCollection().title,'all'):'all')+'.json',JSON.stringify(store,null,2),'application/json');}
+// wipe everything, behind a typed-confirm safeguard
+function deleteAllData(){
+  styledConfirm('Delete ALL data on this device? Every collection, deck and study record will be erased. This cannot be undone — back up first if unsure.',()=>{
+    styledPrompt('Type DELETE to confirm','',v=>{
+      if(v.trim().toUpperCase()!=='DELETE'){toast('Not deleted — confirmation text didn’t match.','warn');return;}
+      try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+      try{localStorage.removeItem('cardcheat_v2');}catch(e){}
+      try{indexedDB.deleteDatabase('termdecks_fs');}catch(e){}  // drop the file-sync handle too
+      location.reload();
+    },'Delete everything');
+  },'Continue');
 }
 function openHelp(){
   closeAllMenus();
