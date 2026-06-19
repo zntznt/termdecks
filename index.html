@@ -43,22 +43,25 @@ button{cursor:pointer}
   padding:10px 14px;background:linear-gradient(180deg,#171c25,#12161d);
   border-bottom:1px solid var(--line);z-index:5;
 }
-.brand{display:flex;align-items:baseline;gap:9px;margin-right:6px}
+.brand{display:flex;align-items:center;gap:9px;margin-right:4px;flex:none}
 /* muted wordmark — let the Print button own "blue = act"; the logo mark SVG keeps the accent */
 .brand .logo{font-family:var(--card-font);font-weight:700;font-size:17px;letter-spacing:-.5px;display:inline-flex;align-items:center;gap:8px;color:var(--ink)}
-.brand .tag{color:var(--muted2);font-size:11px;letter-spacing:.5px;text-transform:uppercase}
 .logo-mark{height:24px;width:auto;flex:none;filter:drop-shadow(0 1px 2px #0009)}
+/* deck title reads as the document name — quiet until you hover/focus it */
+.title-wrap{flex:0 1 240px;min-width:120px;display:flex;align-items:center}
 .title-input{
-  background:var(--panel2);border:1px solid var(--line);border-radius:8px;
-  padding:7px 11px;min-width:170px;font-weight:600;color:var(--ink);
+  width:100%;background:transparent;border:1px solid transparent;border-radius:8px;
+  padding:7px 10px;font-weight:700;font-size:15px;color:var(--ink);letter-spacing:-.01em;
 }
-.title-input:focus{outline:none;border-color:var(--accent)}
+.title-input::placeholder{color:var(--muted2);font-weight:600}
+.title-input:hover{border-color:var(--line);background:var(--panel2)}
+.title-input:focus{outline:none;border-color:var(--accent);background:var(--panel2)}
 .spacer{flex:1}
-/* group dividers in the toolbar — gives the right cluster rhythm instead of a wall of buttons */
-.tb-sep{width:1px;align-self:center;height:20px;background:var(--line);margin:0 2px;flex:none}
-/* settings popovers recede vs. primary actions until hovered */
-#cardBtn,#printSetBtn,#csvBtn{color:var(--muted)}
-#cardBtn:hover,#printSetBtn:hover,#csvBtn:hover{color:var(--ink)}
+/* unobtrusive help button, bottom-right of the viewport */
+.help-fab{position:fixed;right:16px;bottom:14px;z-index:40;width:30px;height:30px;border-radius:99px;
+  background:var(--panel2);border:1px solid var(--line);color:var(--muted);font-weight:700;font-size:15px;
+  display:grid;place-items:center;box-shadow:0 4px 14px #0006}
+.help-fab:hover{color:var(--ink);border-color:var(--accent);background:#222936}
 .ctrl{display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);
   border-radius:8px;padding:5px 9px}
 .ctrl label{font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px}
@@ -92,8 +95,8 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .grip,.dd-caret,.search-wrap .mag,.search-wrap .clr{display:inline-flex;align-items:center;justify-content:center}
 
 /* ---------- Main split ---------- */
-.search-wrap{position:relative;display:flex;align-items:center}
-.search-input{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 28px 7px 30px;min-width:250px;color:var(--ink)}
+.search-wrap{position:relative;display:flex;align-items:center;flex:1 1 200px;min-width:150px;max-width:380px}
+.search-input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 28px 7px 30px;color:var(--ink)}
 .search-input:focus{outline:none;border-color:var(--accent)}
 .search-wrap .mag{position:absolute;left:10px;color:var(--muted2);font-size:13px;pointer-events:none}
 .search-wrap .clr{position:absolute;right:6px;border:none;background:transparent;color:var(--muted2);font-size:14px;padding:2px 4px;border-radius:5px}
@@ -200,6 +203,22 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .btn[disabled],.btn.primary[disabled]{opacity:.45;cursor:not-allowed}
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .collections-modal{max-width:560px}
+/* settings modal — same chip rows as the old popover, just roomier */
+.settings-modal{max-width:480px}
+.settings-modal .fmh:first-of-type{margin-top:2px}
+.settings-modal .dd-item{width:100%}
+/* help / about modal — 2 columns: identity+blurb left, shortcuts right */
+.help-modal{max-width:560px}
+.help-cols{display:flex;gap:22px}
+.help-left{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:12px}
+.help-right{flex:1 1 0;min-width:0}
+.help-logo{display:flex;align-items:center;gap:9px;font-family:var(--card-font);font-weight:700;font-size:18px;color:var(--ink)}
+.help-logo .logo-mark{height:26px}
+.help-blurb{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+.help-link{display:inline-flex;align-items:center;gap:7px;color:var(--accent);text-decoration:none;font-weight:600;font-size:13px;
+  border:1px solid var(--line);border-radius:8px;padding:7px 11px;align-self:flex-start}
+.help-link:hover{border-color:var(--accent);background:var(--panel2)}
+@media (max-width:520px){.help-cols{flex-direction:column;gap:16px}}
 .coll-list{display:flex;flex-direction:column;gap:6px}
 .coll-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2)}
 .coll-row.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
@@ -418,9 +437,7 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
 @media (max-width:900px){
   .app{height:auto;min-height:100vh;overflow:visible}
   .toolbar{position:sticky;top:0}
-  .brand .tag{display:none}
-  .tb-sep{display:none}
-  .search-wrap{order:10;flex:1 1 100%}
+  .search-wrap{order:10;flex:1 1 100%;max-width:none}
   .search-input{min-width:0;width:100%}
   .main{flex-direction:column}
   .editor{min-width:0;flex:none;border-right:none;border-bottom:1px solid var(--line);
@@ -458,8 +475,8 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
 <body>
 <div class="app">
   <div class="toolbar">
-    <div class="brand"><span class="logo"><svg class="logo-mark" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="tdTab" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7aa2f7"/><stop offset="1" stop-color="#bb9af7"/></linearGradient></defs><rect x="22" y="8" width="30" height="44" rx="5" fill="#161a22" stroke="#2a313d" stroke-width="2"/><rect x="12" y="12" width="32" height="44" rx="5" fill="#0e1014" stroke="#7aa2f7" stroke-width="2.5"/><rect x="16" y="17" width="24" height="5" rx="2.5" fill="url(#tdTab)"/><path d="M18 31 L25 36 L18 41" stroke="#9ece6a" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="27" y="38.5" width="11" height="3.2" rx="1.6" fill="#9ece6a"/></svg>TermDecks</span><span class="tag">Terminal Reference Deckbuilder</span></div>
-    <input id="title" class="title-input" placeholder="Cheat sheet title" />
+    <div class="brand"><span class="logo"><svg class="logo-mark" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="tdTab" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7aa2f7"/><stop offset="1" stop-color="#bb9af7"/></linearGradient></defs><rect x="22" y="8" width="30" height="44" rx="5" fill="#161a22" stroke="#2a313d" stroke-width="2"/><rect x="12" y="12" width="32" height="44" rx="5" fill="#0e1014" stroke="#7aa2f7" stroke-width="2.5"/><rect x="16" y="17" width="24" height="5" rx="2.5" fill="url(#tdTab)"/><path d="M18 31 L25 36 L18 41" stroke="#9ece6a" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="27" y="38.5" width="11" height="3.2" rx="1.6" fill="#9ece6a"/></svg>TermDecks</span></div>
+    <div class="title-wrap"><input id="title" class="title-input" placeholder="Untitled deck" aria-label="Deck title" /></div>
     <div class="search-wrap">
       <span class="mag">⌕</span>
       <input id="search" class="search-input" type="search" placeholder="Search commands, sections, categories…" autocomplete="off">
@@ -471,14 +488,9 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
     </div>
     <div class="spacer"></div>
 
-    <button class="btn ghost sm" id="collectionsBtn">▤ Collections</button>
-    <span class="tb-sep"></span>
-    <div class="dd" id="cardDD"><button class="btn ghost sm" id="cardBtn">Card <span class="dd-caret">▾</span></button><div class="dd-menu right set-menu" id="cardMenu" hidden></div></div>
-    <div class="dd" id="printDD"><button class="btn ghost sm" id="printSetBtn">Print <span class="dd-caret">▾</span></button><div class="dd-menu right set-menu" id="printMenu" hidden></div></div>
-    <div class="dd" id="csvDD"><button class="btn ghost sm" id="csvBtn">CSV <span class="dd-caret">▾</span></button><div class="dd-menu right" id="csvMenu" hidden></div></div>
-    <div class="dd" id="kbdDD"><button class="btn ghost sm" id="kbdBtn" title="Keyboard shortcuts">⌨</button><div class="dd-menu right" id="kbdMenu" hidden></div></div>
-    <span class="tb-sep"></span>
-    <button class="btn primary" id="printBtn">⎙ Print / Save PDF</button>
+    <button class="btn ghost sm" id="collectionsBtn">Collections</button>
+    <button class="btn ghost sm" id="settingsBtn">Settings</button>
+    <button class="btn primary" id="printBtn">Print / Save PDF</button>
     <input type="file" id="fileInput" accept="application/json,.json" style="display:none">
     <input type="file" id="csvFile" accept=".csv,text/csv" style="display:none">
   </div>
@@ -517,6 +529,7 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
       <div class="pv-body" id="pvBody"></div>
     </div>
   </div>
+  <button class="help-fab" id="helpBtn" title="About &amp; keyboard shortcuts" aria-label="About and keyboard shortcuts">?</button>
 </div>
 
 <div id="measure"></div>
@@ -3585,14 +3598,7 @@ function buildDropdown(cfg){
   btn.onclick=()=>{if(menu.hidden){rebuild();openMenu(menu);}else closeAllMenus();};
   ddRebuild[cfg.key]=rebuild;rebuild();
 }
-function buildCsvMenu(){const m=$('#csvMenu');if(!m)return;m.innerHTML='';
-  const tpl=document.createElement('button');tpl.className='dd-item';tpl.innerHTML=ico('download',16)+'<span>Download CSV template</span>';
-  tpl.onclick=()=>{download(slugify(state.title,'cards')+'_template.csv',csvTemplate(),'text/csv');closeAllMenus();};
-  const imp=document.createElement('button');imp.className='dd-item';imp.innerHTML=ico('upload',16)+'<span>Import from CSV…</span>';
-  imp.onclick=()=>{closeAllMenus();$('#csvFile').click();};
-  m.append(tpl,imp);}
-function buildKbdMenu(){const m=$('#kbdMenu');if(!m)return;
-  m.innerHTML='<div class="kbd-list">'
+function kbdHTML(){return '<div class="kbd-list">'
     +'<div><kbd>/</kbd> Focus search</div>'
     +'<div><kbd>←</kbd> <kbd>→</kbd> Previous / next card</div>'
     +'<div><kbd>F</kbd> Flip the current card</div>'
@@ -3631,27 +3637,74 @@ function toggleRow(menu,label,getV,setV){
   b.onclick=()=>{const nv=!getV();setV(nv);b.classList.toggle('on',nv);b.textContent=nv?'On':'Off';};
   row.append(lab,b);menu.appendChild(row);
 }
-function buildCardMenu(){const m=$('#cardMenu');if(!m)return;m.innerHTML='';
+function buildCardMenu(m){if(!m)return;
   settingRow(m,'Color palette',()=>state.palette,v=>{state.palette=v;renderEditor();refresh();},
     [['auto','Auto'],['nord','Nord'],['catppuccin','Catppuccin'],['solarized','Solarized'],['pastel','Pastel'],['vibrant','Vibrant'],['mono','Graphite']]);
   settingRow(m,'Card font',()=>state.font,v=>{state.font=v;applyFont();save();},
     [['jb','JetBrains'],['plex','IBM Plex'],['fira','Fira Code'],['sys','System']]);
   rangeRow(m,'Card text size',7,11,0.25,()=>state.fs,v=>{state.fs=v;document.documentElement.style.setProperty('--card-fs',v+'px');refresh();},'px');
 }
-function buildPrintMenu(){const m=$('#printMenu');if(!m)return;m.innerHTML='';
+function buildPrintMenu(m){if(!m)return;
   settingRow(m,'Paper size',()=>state.paper,v=>{state.paper=v;applyPageStyle();save();},[['letter','US Letter'],['a4','A4']]);
   settingRow(m,'Print sides',()=>state.duplex,v=>{state.duplex=v;save();},
     [['long','2-sided · long edge'],['short','2-sided · short edge'],['none','Single-sided']],
     'Long edge suits most printers; use short edge if backs print upside-down. Single-sided prints fronts only.');
   toggleRow(m,'Show cut guides',()=>state.guides,v=>{state.guides=v;save();});
 }
+/* one combined Settings popover: Card + Print + Data (CSV) + Shortcuts, under subheaders */
+function openSettings(){
+  closeAllMenus();
+  const ov=document.createElement('div');ov.className='modal-ov';
+  ov.addEventListener('mousedown',e=>{if(e.target===ov)close();});
+  const box=document.createElement('div');box.className='modal settings-modal';
+  ov.appendChild(box);document.body.appendChild(ov);
+  function close(){ov.remove();document.removeEventListener('keydown',esc);}
+  function esc(e){if(e.key==='Escape')close();}
+  document.addEventListener('keydown',esc);
+  const head=document.createElement('div');head.className='modal-head';
+  const h=document.createElement('h3');h.textContent='Settings';
+  const xb=document.createElement('button');xb.className='iconbtn2';xb.innerHTML=ico('x',16);xb.title='Close';xb.onclick=close;
+  head.append(h,xb);box.appendChild(head);
+  const sec=t=>{const d=document.createElement('div');d.className='fmh';d.textContent=t;box.appendChild(d);};
+  sec('Card design');buildCardMenu(box);
+  sec('Print');buildPrintMenu(box);
+  sec('Data');
+  const tpl=document.createElement('button');tpl.className='dd-item';tpl.innerHTML=ico('download',16)+'<span>Download CSV template</span>';
+  tpl.onclick=()=>{download(slugify(state.title,'cards')+'_template.csv',csvTemplate(),'text/csv');};
+  const imp=document.createElement('button');imp.className='dd-item';imp.innerHTML=ico('upload',16)+'<span>Import from CSV…</span>';
+  imp.onclick=()=>{close();$('#csvFile').click();};
+  box.append(tpl,imp);
+}
+function openHelp(){
+  closeAllMenus();
+  const ov=document.createElement('div');ov.className='modal-ov';
+  ov.addEventListener('mousedown',e=>{if(e.target===ov)close();});
+  const box=document.createElement('div');box.className='modal help-modal';
+  ov.appendChild(box);document.body.appendChild(ov);
+  function close(){ov.remove();document.removeEventListener('keydown',esc);}
+  function esc(e){if(e.key==='Escape')close();}
+  document.addEventListener('keydown',esc);
+  const head=document.createElement('div');head.className='modal-head';
+  const h=document.createElement('h3');h.textContent='About TermDecks';
+  const xb=document.createElement('button');xb.className='iconbtn2';xb.innerHTML=ico('x',16);xb.title='Close';xb.onclick=close;
+  head.append(h,xb);box.appendChild(head);
+  const cols=document.createElement('div');cols.className='help-cols';
+  const left=document.createElement('div');left.className='help-left';
+  left.innerHTML=
+    '<div class="help-logo">'+$('.logo-mark').outerHTML+'<span>TermDecks</span></div>'
+    +'<p class="help-blurb">Build printable, poker-sized reference cards for the terminal. Group commands into categories and sections, then print double-sided decks — or study them with the built-in spaced-repetition quiz.</p>'
+    +'<a class="help-link" href="https://github.com/zntznt/termdecks" target="_blank" rel="noopener noreferrer">'+ico('folder',14)+'<span>View on GitHub</span></a>';
+  const right=document.createElement('div');right.className='help-right';
+  const rh=document.createElement('div');rh.className='fmh';rh.textContent='Keyboard shortcuts';right.appendChild(rh);
+  const kb=document.createElement('div');kb.innerHTML=kbdHTML();right.appendChild(kb);
+  cols.append(left,right);box.appendChild(cols);
+}
 function applyIcons(){
   const set=(id,html)=>{const el=$('#'+id);if(el)el.innerHTML=html;};
-  set('printBtn',ico('printer')+'<span>Print / Save PDF</span>');
-  set('kbdBtn',ico('keyboard'));
-  set('cardBtn',ico('layers',15)+'<span>Card</span><span class="dd-caret">'+ico('chevronDown',12)+'</span>');
-  set('printSetBtn',ico('sliders',15)+'<span>Print</span><span class="dd-caret">'+ico('chevronDown',12)+'</span>');
-  set('csvBtn',ico('table')+'<span>CSV</span><span class="dd-caret">'+ico('chevronDown',12)+'</span>');
+  // unified toolbar anatomy: icon + label (+ caret only for dropdowns)
+  set('printBtn',ico('printer',15)+'<span>Print / Save PDF</span>');
+  set('collectionsBtn',ico('folder',15)+'<span>Collections</span>');
+  set('settingsBtn',ico('sliders',15)+'<span>Settings</span>');
   set('expandBtn',ico('maximize'));
   set('deckNew',ico('plus',15)+'<span>New</span>');
   set('deckRename',ico('pencil',15));
@@ -3664,7 +3717,6 @@ function applyIcons(){
   const dc=document.querySelector('#deckBtn .dd-caret');if(dc)dc.innerHTML=ico('chevronDown',12);
   const mag=document.querySelector('.search-wrap .mag');if(mag)mag.innerHTML=ico('search',15);
   const clr=$('#searchClr');if(clr)clr.innerHTML=ico('x',13);
-  const cb=$('#collectionsBtn');if(cb)cb.innerHTML=ico('folder',15)+'<span>Collections</span>';
 }
 
 /* ============================================================
@@ -3739,8 +3791,8 @@ function openCollections(){
       const row=document.createElement('div');row.className='coll-row'+(c.id===store.activeId?' active':'');
       const nm=document.createElement('button');nm.className='nm';nm.textContent=c.title||'Untitled';
       nm.title='Switch to this collection';nm.onclick=()=>{setActiveCollection(c.id);close();};
-      const nCards=(c.categories||[]).reduce((a,cat)=>a+(cat.sections||[]).reduce((b,s)=>b+(s.entries||[]).length,0),0);
-      const meta=document.createElement('span');meta.className='meta';meta.textContent=nCards+' cards';
+      const nEntries=(c.categories||[]).reduce((a,cat)=>a+(cat.sections||[]).reduce((b,s)=>b+(s.entries||[]).length,0),0);
+      const meta=document.createElement('span');meta.className='meta';meta.textContent=nEntries+' entr'+(nEntries===1?'y':'ies');
       row.append(nm,meta);
       if(c.readymade){const b=document.createElement('span');b.className='badge';b.textContent='sample';row.appendChild(b);}
       const acts=document.createElement('div');acts.className='coll-actions';
@@ -4464,10 +4516,9 @@ function applyEditorVisibility(){
 function bindToolbar(){
   const t=$('#title');t.value=state.title;t.addEventListener('input',()=>{state.title=t.value;save();});
   buildDropdown({key:'faces',get:()=>facesMode,set:v=>{facesMode=v;renderPreview();},opts:[['front','Fronts'],['back','Backs']]});
-  // Card & Print settings popovers (rebuilt on open to reflect current state)
-  buildCardMenu();buildPrintMenu();
-  $('#cardBtn').addEventListener('click',()=>{const m=$('#cardMenu');if(m.hidden){buildCardMenu();openMenu(m);}else closeAllMenus();});
-  $('#printSetBtn').addEventListener('click',()=>{const m=$('#printMenu');if(m.hidden){buildPrintMenu();openMenu(m);}else closeAllMenus();});
+  // Settings & Help modals (Card/Print/Data in Settings; about + shortcuts in Help)
+  $('#settingsBtn').addEventListener('click',openSettings);
+  $('#helpBtn').addEventListener('click',openHelp);
   // resizable divider (this is the "zoom" — the card auto-fits whatever width you give it)
   const divider=$('#divider'),pane=$('#pane'),main=$('.main');
   let drag=false;
@@ -4532,15 +4583,10 @@ function bindToolbar(){
     r.readAsText(f);ev.target.value='';
   });
 
-  // CSV import (append-only) + template
-  buildCsvMenu();
-  $('#csvBtn').addEventListener('click',()=>{const m=$('#csvMenu');if(m.hidden)openMenu(m);else closeAllMenus();});
+  // CSV import (append-only) — triggered from the Settings ▸ Data section
   $('#csvFile').addEventListener('change',ev=>{const f=ev.target.files[0];if(!f)return;const rd=new FileReader();
     rd.onload=()=>{const res=csvToItems(rd.result);if(res&&res.error){alert(res.error);}else if(res){showCsvPreview(res.items);}};
     rd.readAsText(f);ev.target.value='';});
-  // shortcuts help
-  buildKbdMenu();
-  $('#kbdBtn').addEventListener('click',()=>{const m=$('#kbdMenu');if(m.hidden)openMenu(m);else closeAllMenus();});
   applyIcons();
   // drag-and-drop reordering
   setupDnd();
