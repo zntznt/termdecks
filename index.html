@@ -236,11 +236,20 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .side-cap{padding:2px 16px 4px;text-align:center;color:var(--muted);font-size:11.5px;min-height:15px;font-weight:500}
 .side-nav{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 16px 16px}
 /* quiz viewer — study UI, not a card; lives only in the on-screen viewer */
-.quiz-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:auto;padding:20px}
+.quiz-stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;overflow:auto;padding:20px}
+/* mastery progress */
+.quiz-progress{width:min(440px,92%);display:flex;align-items:center;gap:10px}
+.quiz-ptx{font-size:11.5px;color:var(--muted2);font-weight:600;white-space:nowrap}
+.quiz-bar{flex:1;height:6px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);overflow:hidden}
+.quiz-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--ok));transition:width .3s}
 .quiz-card{width:min(440px,92%);min-height:260px;display:flex;flex-direction:column;gap:16px;
   background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--qc);border-radius:14px;
   padding:22px 22px 20px;box-shadow:0 16px 44px #0007}
+.quiz-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .quiz-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted2);font-weight:700}
+.quiz-pips{display:inline-flex;gap:3px;flex:none}
+.quiz-pips i{width:7px;height:7px;border-radius:99px;background:var(--line)}
+.quiz-pips i.on{background:var(--qc)}
 .quiz-q{display:flex;gap:10px;align-items:baseline;font-size:21px;line-height:1.35;font-weight:600;color:var(--ink);flex:1}
 .quiz-qmark{color:var(--qc);font-weight:800;flex:none}
 .quiz-q .card-kbd,.quiz-q kbd{font-size:.8em}
@@ -248,6 +257,10 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .quiz-answer{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:6px}
 .quiz-cmd{font-family:var(--card-font);font-weight:700;font-size:19px;color:var(--accent)}
 .quiz-desc{color:var(--muted);font-size:14px}
+.quiz-grade{display:flex;gap:10px;margin-top:4px}
+.quiz-grade .btn{flex:1;justify-content:center}
+.quiz-again{background:var(--panel2);border-color:var(--line)}
+.quiz-again:hover{border-color:var(--danger);color:var(--danger)}
 .navbtn{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-weight:600;color:var(--ink);min-width:38px}
 .navbtn:hover{border-color:#3a4456;background:#222936}
 .navbtn:active{transform:translateY(1px)}
@@ -3032,7 +3045,7 @@ const READYMADE = [
   {key:'text',name:'jq + awk/sed/grep',blurb:'jq queries, awk one-liners, sed substitution, grep & ripgrep, cut/sort/uniq, xargs…',make:TEXT},
 ];
 function blankCollection(name){return {id:uid(),title:name||'Untitled',paper:'letter',palette:'nord',font:'jb',fs:8.5,
-  duplex:'long',guides:true,backStyle:'minimal',gridZoom:1.25,decks:[],activeDeck:null,collapsed:{cats:[],secs:[]},categories:[]};}
+  duplex:'long',guides:true,backStyle:'minimal',gridZoom:1.25,decks:[],activeDeck:null,collapsed:{cats:[],secs:[]},study:{boxes:{}},categories:[]};}
 
 let state, store;
 const STORAGE_KEY='cardcheat_v3';
@@ -3043,6 +3056,8 @@ function normalizeCollection(c){
   if(typeof c.fs!=='number')c.fs=8.5; c.duplex=c.duplex||'long';
   if(typeof c.guides!=='boolean')c.guides=true; c.backStyle=c.backStyle||'minimal';
   if(typeof c.gridZoom!=='number'||!(c.gridZoom>=0.9&&c.gridZoom<=1.8))c.gridZoom=1.25;
+  if(!c.study||typeof c.study!=='object')c.study={boxes:{}};
+  if(!c.study.boxes||typeof c.study.boxes!=='object')c.study.boxes={};
   if(!Array.isArray(c.categories))c.categories=[];
   if(!Array.isArray(c.decks))c.decks=[];
   // Repair untrusted nested shape (imports, hand-edited/truncated JSON). Drop
@@ -3351,10 +3366,13 @@ function buildKbdMenu(){const m=$('#kbdMenu');if(!m)return;
     +'<div><kbd>/</kbd> Focus search</div>'
     +'<div><kbd>←</kbd> <kbd>→</kbd> Previous / next card</div>'
     +'<div><kbd>F</kbd> Flip the current card</div>'
+    +'<div><kbd>Space</kbd> Quiz: reveal the answer</div>'
+    +'<div><kbd>1</kbd> <kbd>2</kbd> Quiz: grade Again / Got it</div>'
+    +'<div><kbd>S</kbd> Quiz: reshuffle</div>'
     +'<div><kbd>Enter</kbd> Next field, then add a new entry</div>'
     +'<div><kbd>Tab</kbd> Move between fields</div>'
     +'<div><kbd>Esc</kbd> Clear search / close menus</div>'
-    +'<span class="kbd-hint">Drag the handle to reorder, or drop an entry into another section.</span>'
+    +'<span class="kbd-hint">Quiz uses Leitner spaced repetition — weak cards recur more often. Drag handles to reorder entries.</span>'
     +'</div>';}
 /* chip-based setting rows for the Card / Print popovers (no nested dropdowns) */
 function settingRow(menu,label,getV,setV,opts,hint){
@@ -3639,53 +3657,97 @@ function renderGrid(){
 /* persistent "current card" outline in grid, so arrow/F keys have a visible anchor */
 function markCurrentGrid(){gridEls.forEach((el,i)=>el.classList.toggle('is-current',i===previewIndex));}
 
-/* ---- Quiz viewer (session-only; independent of how cards render/print) ---- */
+/* ---- Quiz viewer with Leitner spaced repetition ----
+   Each question (keyed by entry id) lives in a box 1..5. Box 1 = new/missed,
+   box 5 = mastered. The study queue is weighted toward low boxes so weak cards
+   recur far more often than strong ones. Boxes persist per-collection in
+   state.study; none of this affects how cards render or print. */
+const SR_MAX_BOX=5;
+function srBoxes(){return (state.study&&state.study.boxes)||{};}
+function srBox(id){const b=srBoxes()[id];return (b>=1&&b<=SR_MAX_BOX)?b:1;}
+function srSet(id,box){if(!state.study)state.study={boxes:{}};state.study.boxes[id]=clamp(box,1,SR_MAX_BOX);save();}
 // Flatten the visible deck into one item per entry that has a question.
 function quizItems(){
   const items=[];
   deck().forEach(c=>{(c.entries||[]).forEach(e=>{
-    if(e.q&&e.q.trim()!=='') items.push({q:e.q,cmd:e.cmd,desc:e.desc,catName:c.catName,secName:c.secName,secColor:c.secColor,catColor:c.catColor});
+    if(e.q&&e.q.trim()!=='') items.push({id:e.id,q:e.q,cmd:e.cmd,desc:e.desc,catName:c.catName,secName:c.secName,secColor:c.secColor,catColor:c.catColor,box:srBox(e.id)});
   });});
   return items;
 }
-function ensureQuizOrder(n){
-  if(!quizOrder||quizOrder.length!==n){quizOrder=Array.from({length:n},(_,i)=>i);quizPos=0;}
+function srMastered(items){return items.filter(it=>it.box>=SR_MAX_BOX).length;}
+// Build a stepping order weighted by box: a box-1 card is drawn ~16× as often as
+// a box-5 one. Produces a shuffled queue front-loaded with the cards you know least.
+function buildQuizOrder(items){
+  const weighted=[];
+  items.forEach((it,i)=>{const w=Math.pow(2,SR_MAX_BOX-it.box);for(let k=0;k<w;k++)weighted.push(i);});
+  // Fisher–Yates the weighted bag, then dedupe keeping first occurrence → due cards land earliest
+  for(let i=weighted.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=weighted[i];weighted[i]=weighted[j];weighted[j]=t;}
+  const seen=new Set(),order=[];
+  weighted.forEach(i=>{if(!seen.has(i)){seen.add(i);order.push(i);}});
+  // any item never sampled (shouldn't happen, but be safe) appended at the end
+  items.forEach((_,i)=>{if(!seen.has(i))order.push(i);});
+  return order;
+}
+function ensureQuizOrder(n,items){
+  if(!quizOrder||quizOrder.length!==n){quizOrder=items?buildQuizOrder(items):Array.from({length:n},(_,i)=>i);quizPos=0;}
   quizPos=clamp(quizPos,0,Math.max(0,n-1));
 }
-function shuffleQuiz(){const n=quizOrder?quizOrder.length:0;
-  // Fisher–Yates over the stepping order only — no Math.random ban here (browser runtime)
-  for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=quizOrder[i];quizOrder[i]=quizOrder[j];quizOrder[j]=t;}
-  quizPos=0;quizRevealed=false;renderQuiz();}
+function shuffleQuiz(){const items=quizItems();quizOrder=buildQuizOrder(items);quizPos=0;quizRevealed=false;renderQuiz();}
 function quizStep(d){const n=quizOrder?quizOrder.length:0;if(!n)return;quizPos=((quizPos+d)%n+n)%n;quizRevealed=false;renderQuiz();}
+function currentQuizItem(){const items=quizItems();if(!quizOrder||!items.length)return null;return items[quizOrder[clamp(quizPos,0,quizOrder.length-1)]]||null;}
+// Grade the current card, move its box, advance. again→box 1, got it→box+1.
+function srGrade(id,good){srSet(id,good?srBox(id)+1:1);
+  // advance to next card; rebuild order at the end of a pass so newly-demoted cards resurface
+  if(quizPos>=quizOrder.length-1){const items=quizItems();quizOrder=buildQuizOrder(items);quizPos=0;}
+  else quizPos++;
+  quizRevealed=false;renderQuiz();}
+function srReset(){styledConfirm('Reset study progress for this collection? All cards go back to box 1.',()=>{
+  if(state.study)state.study.boxes={};save();quizOrder=null;quizPos=0;quizRevealed=false;renderQuiz();},'Reset');}
 function renderQuiz(){
   const body=$('#pvBody');body.innerHTML='';curFlip=curFit=null;
   const items=quizItems();
   const stage=document.createElement('div');stage.className='quiz-stage';
   if(items.length===0){stage.innerHTML='<div class="empty-note">'+(deck().length?'No questions to study yet — add a question (?) to an entry on the left.':(search?('No cards match “'+search+'”.'):'No cards yet — add a category on the left.'))+'</div>';body.appendChild(stage);return;}
-  ensureQuizOrder(items.length);
+  ensureQuizOrder(items.length,items);
   const it=items[quizOrder[quizPos]];
+  // progress header: mastery + a box pip row for the current card
+  const mastered=srMastered(items);
+  const prog=document.createElement('div');prog.className='quiz-progress';
+  const bar=document.createElement('div');bar.className='quiz-bar';const fill=document.createElement('i');fill.style.width=Math.round(mastered/items.length*100)+'%';bar.appendChild(fill);
+  const ptx=document.createElement('span');ptx.className='quiz-ptx';ptx.textContent='Mastered '+mastered+' / '+items.length;
+  prog.append(ptx,bar);
   const card=document.createElement('div');card.className='quiz-card';card.style.setProperty('--qc',it.secColor);
+  const top=document.createElement('div');top.className='quiz-top';
   const eyebrow=document.createElement('div');eyebrow.className='quiz-eyebrow';eyebrow.textContent=(it.catName||'—')+' · '+(it.secName||'—');
+  const pips=document.createElement('div');pips.className='quiz-pips';pips.title='Leitner box '+it.box+' of '+SR_MAX_BOX;
+  for(let b=1;b<=SR_MAX_BOX;b++){const p=document.createElement('i');if(b<=it.box)p.className='on';pips.appendChild(p);}
+  top.append(eyebrow,pips);
   const qel=document.createElement('div');qel.className='quiz-q';const qmk=document.createElement('span');qmk.className='quiz-qmark';qmk.textContent='?';
   const qtx=document.createElement('span');renderInline(it.q,qtx,'');qel.append(qmk,qtx);
-  card.append(eyebrow,qel);
+  card.append(top,qel);
   if(quizRevealed){
     const ans=document.createElement('div');ans.className='quiz-answer';
     const acmd=document.createElement('div');acmd.className='quiz-cmd';renderInline(it.cmd||'',acmd,'');ans.appendChild(acmd);
     if(it.desc&&it.desc.trim()){const ad=document.createElement('div');ad.className='quiz-desc';renderInline(it.desc,ad,'');ans.appendChild(ad);}
     card.appendChild(ans);
+    // self-grade — drives the Leitner box
+    const grade=document.createElement('div');grade.className='quiz-grade';
+    const again=document.createElement('button');again.className='btn quiz-again';again.innerHTML='↺ Again';again.title='Missed it — back to box 1 (1)';again.onclick=()=>srGrade(it.id,false);
+    const got=document.createElement('button');got.className='btn primary quiz-got';got.innerHTML='✓ Got it';got.title='Recalled it — promote a box (2)';got.onclick=()=>srGrade(it.id,true);
+    grade.append(again,got);card.appendChild(grade);
   }else{
     const reveal=document.createElement('button');reveal.className='btn primary quiz-reveal';reveal.textContent='Reveal answer';
     reveal.onclick=()=>{quizRevealed=true;renderQuiz();};
     card.appendChild(reveal);
   }
-  stage.appendChild(card);
+  stage.append(prog,card);
   // nav row
   const nav=document.createElement('div');nav.className='side-nav';
   nav.appendChild(navBtn(ico('chevronLeft',18),()=>quizStep(-1),false,'Previous question'));
   const idx=document.createElement('span');idx.className='hint';idx.style.minWidth='64px';idx.style.textAlign='center';
   idx.textContent=(quizPos+1)+' / '+items.length;nav.appendChild(idx);
-  nav.appendChild(navBtn(ico('refresh',15)+' Shuffle',shuffleQuiz,true,'Shuffle questions'));
+  nav.appendChild(navBtn(ico('refresh',15)+' Shuffle',shuffleQuiz,true,'Reshuffle (weighted by box)'));
+  nav.appendChild(navBtn(ico('trash',15),srReset,false,'Reset study progress'));
   nav.appendChild(navBtn(ico('chevronRight',18),()=>quizStep(1),false,'Next question'));
   body.append(stage,nav);
 }
@@ -4245,8 +4307,11 @@ function bindToolbar(){
       else if(viewMode==='single'&&curFlip)curFlip.classList.toggle('flipped');
       else if(viewMode==='grid'){const el=gridEls[previewIndex]||gridEls[0];if(el){el.classList.toggle('flipped');highlightGridCard(gridEls.indexOf(el));}}
     }
-    else if(e.key===' '&&viewMode==='quiz'&&!typing){e.preventDefault();quizRevealed=!quizRevealed;renderQuiz();}
+    else if(e.key===' '&&viewMode==='quiz'&&!typing){e.preventDefault();if(!quizRevealed){quizRevealed=true;renderQuiz();}}
     else if((e.key==='s'||e.key==='S')&&viewMode==='quiz'&&!typing){shuffleQuiz();}
+    // self-grade once the answer is revealed: 1 = Again, 2 = Got it
+    else if(e.key==='1'&&viewMode==='quiz'&&quizRevealed&&!typing){const it=currentQuizItem();if(it)srGrade(it.id,false);}
+    else if(e.key==='2'&&viewMode==='quiz'&&quizRevealed&&!typing){const it=currentQuizItem();if(it)srGrade(it.id,true);}
   });
 }
 function syncToolbar(){
