@@ -379,7 +379,7 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
       <button class="clr" id="searchClr" title="Clear (Esc)" hidden>✕</button>
     </div>
     <div class="dd" id="filterDD">
-      <button class="btn ghost sm" id="filterBtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg> Filters <span class="fdot" id="filterDot" hidden></span></button>
+      <button class="btn ghost sm" id="filterBtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg> Filters</button>
       <div class="dd-menu filters-menu" id="filterMenu" hidden></div>
     </div>
     <div class="spacer"></div>
@@ -3183,12 +3183,12 @@ function scopedCards(){const all=getCards();const d=activeDeckObj();return d?all
 function passFilters(c){
   if(filters.excludeCats.has(c.catId))return false;
   if(filters.withQuestionOnly && !(c.entries||[]).some(e=>e.q&&e.q.trim()))return false;
-  if(filters.deckMembership!=='all'){const inAny=(state.decks||[]).some(d=>(d.secIds||[]).includes(c.secId));
+  if(filters.deckMembership!=='all'&&!activeDeckObj()){const inAny=(state.decks||[]).some(d=>(d.secIds||[]).includes(c.secId));
     if(filters.deckMembership==='in'&&!inAny)return false;
     if(filters.deckMembership==='out'&&inAny)return false;}
   return true;
 }
-function filtersActive(){return filters.excludeCats.size>0||filters.withQuestionOnly||filters.deckMembership!=='all';}
+function filtersActive(){return filters.excludeCats.size>0||filters.withQuestionOnly||(filters.deckMembership!=='all'&&!activeDeckObj());}
 function deck(){let cards=scopedCards().filter(passFilters);if(search)cards=cards.filter(c=>cardMatches(c,search));return cards;}
 
 /* ============================================================
@@ -3228,7 +3228,8 @@ function applyFit(){
 }
 let viewMode='grid';
 function updateCount(){
-  if(selecting&&activeDeckObj()){const n=scopedCards().length;$('#cardCount').textContent=n+' in deck';return;}
+  if(selecting&&activeDeckObj()){const all=getCards();let fc=all.filter(passFilters);if(search)fc=fc.filter(c=>cardMatches(c,search));
+    const total=getCards().length;$('#cardCount').textContent=(search||filtersActive())?(fc.length+' of '+total+' shown'):(total+' to choose from');return;}
   const cards=scopedCards();const fc=deck();
   const narrowed=search||filtersActive();
   $('#cardCount').textContent=narrowed?(fc.length+' of '+cards.length+' shown'):(cards.length+' card'+(cards.length===1?'':'s'));}
@@ -3467,11 +3468,14 @@ function buildFilterMenu(){
   qcb.addEventListener('change',()=>{filters.withQuestionOnly=qcb.checked;afterFilterChange();});
   const qn=document.createElement('span');qn.textContent='Only cards with a question';qrow.append(qcb,qn);menu.appendChild(qrow);
   const h3=document.createElement('div');h3.className='fmh';h3.textContent='Deck membership';menu.appendChild(h3);
-  const seg=document.createElement('div');seg.className='fseg';
+  const inDeck=!!activeDeckObj();
+  const seg=document.createElement('div');seg.className='fseg';if(inDeck)seg.style.opacity='.4';
   [['all','All'],['in','In a deck'],['out','Not in a deck']].forEach(([v,t])=>{
-    const b=document.createElement('button');b.className='fseg-btn'+(filters.deckMembership===v?' active':'');b.textContent=t;
-    b.onclick=()=>{filters.deckMembership=v;buildFilterMenu();afterFilterChange();};seg.appendChild(b);});
+    const b=document.createElement('button');b.className='fseg-btn'+(filters.deckMembership===v?' active':'');b.textContent=t;b.disabled=inDeck;
+    if(!inDeck)b.onclick=()=>{filters.deckMembership=v;buildFilterMenu();afterFilterChange();};seg.appendChild(b);});
   menu.appendChild(seg);
+  if(inDeck){const hint=document.createElement('div');hint.className='set-hint';hint.style.padding='4px 4px 0';
+    hint.textContent='Showing one deck — switch to “Full collection” to filter by membership.';menu.appendChild(hint);}
   const ft=document.createElement('div');ft.className='fmf';
   const rb=document.createElement('button');rb.className='btn ghost sm';rb.textContent='Reset filters';
   rb.onclick=()=>{filters.excludeCats.clear();filters.withQuestionOnly=false;filters.deckMembership='all';buildFilterMenu();afterFilterChange();};
