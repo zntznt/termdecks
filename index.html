@@ -3050,8 +3050,222 @@ const TEXT = () => ({
   ]
 });
 
+const TOYS = () => ({
+  title:"Terminal Toys",
+  paper:'letter', palette:'vibrant', font:'jb', fs:8.5, duplex:'long', guides:true,
+  backStyle:'minimal', decks:[], activeDeck:null, collapsed:{cats:[],secs:[]},
+  categories:[
+    {id:uid(),name:"Eye candy",color:null,sections:[
+      {id:uid(),name:"cmatrix",color:null,entries:[
+        {id:uid(),cmd:"cmatrix",desc:"Matrix rain (q quits)",q:"Make green code rain down the screen?"},
+        {id:uid(),cmd:"cmatrix -ba",desc:"async bold rain",q:"Run the rain with bold, async droplets?"},
+        {id:uid(),cmd:"cmatrix -C red",desc:"recolor the rain",q:"Change the Matrix rain to red?"},
+        {id:uid(),cmd:"unimatrix",desc:"Python rewrite",q:"Run a configurable Python clone of cmatrix?"},
+      ]},
+      {id:uid(),name:"Screensavers",color:null,entries:[
+        {id:uid(),cmd:"pipes.sh",desc:"drifting pipes",q:"Run the classic drifting-pipes screensaver?"},
+        {id:uid(),cmd:"aafire",desc:"ASCII flames",q:"Set your terminal on (ASCII) fire?"},
+        {id:uid(),cmd:"asciiquarium",desc:"ASCII aquarium",q:"Fill the terminal with swimming fish?"},
+        {id:uid(),cmd:"hollywood",desc:"fake hacker screen",q:"Look busy like a movie hacker?"},
+      ]},
+      {id:uid(),name:"Plants & weather",color:null,entries:[
+        {id:uid(),cmd:"cbonsai -l",desc:"live bonsai",q:"Watch a bonsai tree grow live?"},
+        {id:uid(),cmd:"cbonsai -p",desc:"one finished tree",q:"Print a single finished bonsai and exit?"},
+        {id:uid(),cmd:"rain",desc:"falling rain",q:"Make it rain in the terminal?"},
+        {id:uid(),cmd:"snow",desc:"falling snow",q:"Make it snow in the terminal?"},
+      ]},
+      {id:uid(),name:"Clocks",color:null,entries:[
+        {id:uid(),cmd:"tty-clock -c",desc:"centered clock",q:"Show a big centered digital clock?"},
+        {id:uid(),cmd:"tty-clock -s",desc:"clock with seconds",q:"Add a seconds display to the clock?"},
+        {id:uid(),cmd:"watch -n1 date",desc:"poor-man's clock",q:"Turn `date` into a ticking clock with watch?"},
+        {id:uid(),cmd:"peaclock",desc:"configurable clock",q:"Run a modern, themeable terminal clock?"},
+      ]},
+      {id:uid(),name:"Rainbow output",color:null,entries:[
+        {id:uid(),cmd:"<cmd> | lolcat",desc:"rainbow any output",q:"Pipe any output through a rainbow?"},
+        {id:uid(),cmd:"lolcat -a",desc:"animated rainbow",q:"Make the rainbow shimmer/animate?"},
+        {id:uid(),cmd:"lolcat -f <file>",desc:"force color to pipe",q:"Force lolcat color even when piped onward?"},
+        {id:uid(),cmd:"ls | lolcat",desc:"rainbow a listing",q:"Rainbow your directory listing?"},
+      ]},
+      {id:uid(),name:"Big text",color:null,entries:[
+        {id:uid(),cmd:"figlet <text>",desc:"big ASCII letters",q:"Turn text into a giant ASCII banner?"},
+        {id:uid(),cmd:"figlet -f slant <text>",desc:"slanted font",q:"Render the banner in a slanted font?"},
+        {id:uid(),cmd:"toilet -F gay <text>",desc:"colorful banner",q:"Make a rainbow-styled ASCII banner?"},
+        {id:uid(),cmd:"figlet <text> | lolcat",desc:"banner + rainbow",q:"Combine a giant banner with a rainbow?"},
+      ]},
+      {id:uid(),name:"System bling",color:null,entries:[
+        {id:uid(),cmd:"neofetch",desc:"info + distro logo",q:"Show system info beside a distro logo?"},
+        {id:uid(),cmd:"fastfetch",desc:"faster neofetch",q:"Run a faster, modern neofetch alternative?"},
+        {id:uid(),cmd:"screenfetch",desc:"the OG fetch tool",q:"Run the original screenshot-info tool?"},
+        {id:uid(),cmd:"cpufetch",desc:"CPU art",q:"Show your CPU with an ASCII logo?"},
+      ]},
+      {id:uid(),name:"Images in the shell",color:null,entries:[
+        {id:uid(),cmd:"chafa <img>",desc:"color-block image",q:"Render an image as color blocks?"},
+        {id:uid(),cmd:"jp2a <img>",desc:"image to ASCII",q:"Convert a JPEG to ASCII art?"},
+        {id:uid(),cmd:"timg <img>",desc:"true-color image",q:"Show an image in true color?"},
+        {id:uid(),cmd:"viu <img>",desc:"quick preview",q:"Quickly preview an image inline?"},
+      ]},
+      {id:uid(),name:"Visualizers",color:null,entries:[
+        {id:uid(),cmd:"cava",desc:"audio spectrum",q:"Show a bouncing audio spectrum analyzer?"},
+        {id:uid(),cmd:"pipes.sh -t 2",desc:"different pipe style",q:"Switch pipes.sh to another pipe character set?"},
+        {id:uid(),cmd:"glmark2",desc:"GPU benchmark show",q:"Run a flashy GPU benchmark animation?"},
+        {id:uid(),cmd:"btop",desc:"slick resource monitor",q:"Open a colorful, mouse-driven system monitor?"},
+      ]},
+    ]},
+    {id:uid(),name:"Party tricks",color:null,sections:[
+      {id:uid(),name:"cowsay",color:null,entries:[
+        {id:uid(),cmd:"cowsay <text>",desc:"a cow says it",q:"Make a cow say something?"},
+        {id:uid(),cmd:"cowsay -f tux <text>",desc:"Tux says it",q:"Swap the cow for Tux the penguin?"},
+        {id:uid(),cmd:"cowsay -f dragon <text>",desc:"a dragon says it",q:"Have a dragon deliver your message?"},
+        {id:uid(),cmd:"cowsay -l",desc:"list characters",q:"List every available cowsay character?"},
+      ]},
+      {id:uid(),name:"cowsay moods",color:null,entries:[
+        {id:uid(),cmd:"cowsay -d <text>",desc:"dead cow (X eyes)",q:"Make the cow look dead?"},
+        {id:uid(),cmd:"cowsay -p <text>",desc:"paranoid cow",q:"Give the cow paranoid eyes?"},
+        {id:uid(),cmd:"cowsay -s <text>",desc:"stoned cow",q:"Make the cow look stoned?"},
+        {id:uid(),cmd:"cowthink <text>",desc:"a thought bubble",q:"Have the cow think instead of speak?"},
+      ]},
+      {id:uid(),name:"Fortunes",color:null,entries:[
+        {id:uid(),cmd:"fortune",desc:"random quip",q:"Print a random fortune-cookie quote?"},
+        {id:uid(),cmd:"fortune -s",desc:"short only",q:"Limit fortunes to short ones?"},
+        {id:uid(),cmd:"fortune | cowsay",desc:"cow quotes you",q:"Have a cow deliver a random fortune?"},
+        {id:uid(),cmd:"fortune | cowsay | lolcat",desc:"the full combo",q:"Chain fortune, cowsay and lolcat together?"},
+      ]},
+      {id:uid(),name:"More animals",color:null,entries:[
+        {id:uid(),cmd:"ponysay <text>",desc:"cowsay with ponies",q:"Make a colorful pony say something?"},
+        {id:uid(),cmd:"figlet <text> | cowsay -n",desc:"big-text cow",q:"Feed a giant banner into the cow verbatim?"},
+        {id:uid(),cmd:"xcowsay <text>",desc:"a GUI cow popup",q:"Pop the cow up as a desktop bubble?"},
+        {id:uid(),cmd:"asciiquarium",desc:"a whole tank",q:"Skip one animal and run a whole aquarium?"},
+      ]},
+      {id:uid(),name:"The sl train",color:null,entries:[
+        {id:uid(),cmd:"sl",desc:"train for ls typos",q:"What chugs across when you fat-finger `ls`?"},
+        {id:uid(),cmd:"sl -l",desc:"a little train",q:"Run a smaller version of the train?"},
+        {id:uid(),cmd:"sl -F",desc:"a flying train",q:"Make the locomotive fly?"},
+        {id:uid(),cmd:"sl -e",desc:"un-interruptible",q:"Run the train so Ctrl-C can't stop it?"},
+      ]},
+      {id:uid(),name:"Reverse & repeat",color:null,entries:[
+        {id:uid(),cmd:"rev",desc:"reverse each line",q:"!txet ruoy esreveR"},
+        {id:uid(),cmd:"echo \"<text>\" | rev",desc:"reverse a string",q:"Reverse a one-off string in a pipe?"},
+        {id:uid(),cmd:"yes",desc:"infinite 'y'",q:"Print 'y' forever until you Ctrl-C?"},
+        {id:uid(),cmd:"yes <word>",desc:"spam a word",q:"Repeat a word of your choosing forever?"},
+      ]},
+      {id:uid(),name:"Internet toys",color:null,entries:[
+        {id:uid(),cmd:"telnet towel.blinkenlights.nl",desc:"ASCII Star Wars",q:"Watch Star Wars in ASCII over telnet?"},
+        {id:uid(),cmd:"curl parrot.live",desc:"a dancing parrot",q:"Stream a dancing party parrot to your terminal?"},
+        {id:uid(),cmd:"nc rainmaker.wunderground.com 3000",desc:"old weather BBS",q:"Dial a retro weather service over netcat?"},
+        {id:uid(),cmd:"curl ascii.live/rick",desc:"ASCII rickroll",q:"Rickroll yourself in pure ASCII?"},
+      ]},
+      {id:uid(),name:"Beeps & noise",color:null,entries:[
+        {id:uid(),cmd:"beep",desc:"PC speaker beep",q:"Make the machine actually beep?"},
+        {id:uid(),cmd:"echo -e '\\a'",desc:"terminal bell",q:"Ring the terminal bell with an escape?"},
+        {id:uid(),cmd:"say <text>",desc:"text to speech (mac)",q:"Have macOS read text aloud?"},
+        {id:uid(),cmd:"espeak <text>",desc:"text to speech (linux)",q:"Have Linux speak text aloud?"},
+      ]},
+      {id:uid(),name:"Terminal games",color:null,entries:[
+        {id:uid(),cmd:"nethack",desc:"roguelike classic",q:"Launch the legendary ASCII dungeon crawler?"},
+        {id:uid(),cmd:"2048",desc:"2048 in the shell",q:"Play 2048 without a browser?"},
+        {id:uid(),cmd:"bastet",desc:"evil Tetris",q:"Play a Tetris that actively fights you?"},
+        {id:uid(),cmd:"nsnake",desc:"the snake game",q:"Play Snake in the terminal?"},
+      ]},
+    ]},
+    {id:uid(),name:"Useful magic",color:null,sections:[
+      {id:uid(),name:"Instant servers",color:null,entries:[
+        {id:uid(),cmd:"python3 -m http.server",desc:"serve this folder",q:"Spin up a web server for the current folder?"},
+        {id:uid(),cmd:"python3 -m http.server 8080",desc:"on a chosen port",q:"Serve the folder on a specific port?"},
+        {id:uid(),cmd:"php -S localhost:8000",desc:"PHP dev server",q:"Start a quick PHP server?"},
+        {id:uid(),cmd:"npx serve",desc:"static server (node)",q:"Serve a static folder with one npx command?"},
+      ]},
+      {id:uid(),name:"curl the web",color:null,entries:[
+        {id:uid(),cmd:"curl wttr.in",desc:"weather as ASCII",q:"Get the weather forecast in the terminal?"},
+        {id:uid(),cmd:"curl wttr.in/Moon",desc:"the moon phase",q:"Check the current moon phase?"},
+        {id:uid(),cmd:"curl cheat.sh/<cmd>",desc:"cheat sheet for X",q:"Pull up a cheat sheet for any command?"},
+        {id:uid(),cmd:"curl ifconfig.me",desc:"your public IP",q:"Find your public IP with one curl?"},
+      ]},
+      {id:uid(),name:"QR & encoding",color:null,entries:[
+        {id:uid(),cmd:"qrencode -t ANSI \"<text>\"",desc:"QR in terminal",q:"Render a QR code right in the terminal?"},
+        {id:uid(),cmd:"curl qrenco.de/<text>",desc:"QR via curl",q:"Generate a QR code without installing anything?"},
+        {id:uid(),cmd:"base64 <file>",desc:"encode to base64",q:"Base64-encode a file?"},
+        {id:uid(),cmd:"echo <text> | base64 -d",desc:"decode base64",q:"Decode a base64 string?"},
+      ]},
+      {id:uid(),name:"Clipboard",color:null,entries:[
+        {id:uid(),cmd:"<cmd> | pbcopy",desc:"copy output (mac)",q:"Pipe command output to the clipboard on macOS?"},
+        {id:uid(),cmd:"pbpaste",desc:"paste clipboard (mac)",q:"Dump the macOS clipboard into a pipe?"},
+        {id:uid(),cmd:"<cmd> | xclip -sel clip",desc:"copy output (linux)",q:"Copy output to the clipboard on Linux?"},
+        {id:uid(),cmd:"<cmd> | wl-copy",desc:"copy (wayland)",q:"Copy to the clipboard under Wayland?"},
+      ]},
+      {id:uid(),name:"Better help",color:null,entries:[
+        {id:uid(),cmd:"tldr <cmd>",desc:"example-first help",q:"See practical examples instead of a full man page?"},
+        {id:uid(),cmd:"cheat <cmd>",desc:"community cheats",q:"Look up community-written cheat sheets?"},
+        {id:uid(),cmd:"man <cmd>",desc:"the full manual",q:"Open the complete manual page?"},
+        {id:uid(),cmd:"<cmd> --help | less",desc:"page the help",q:"Scroll through a command's help comfortably?"},
+      ]},
+      {id:uid(),name:"Disk & files",color:null,entries:[
+        {id:uid(),cmd:"ncdu",desc:"visual disk usage",q:"Explore what's eating your disk interactively?"},
+        {id:uid(),cmd:"tree -L 2",desc:"directory tree",q:"Draw a tree of folders two levels deep?"},
+        {id:uid(),cmd:"duf",desc:"pretty df",q:"See mounted disks in a colorful table?"},
+        {id:uid(),cmd:"fd <name>",desc:"friendly find",q:"Find files with a simpler, faster find?"},
+      ]},
+      {id:uid(),name:"Bang history",color:null,entries:[
+        {id:uid(),cmd:"!!",desc:"rerun last command",q:"Repeat the previous command exactly?"},
+        {id:uid(),cmd:"sudo !!",desc:"rerun with sudo",q:"Rerun the last command, this time as root?"},
+        {id:uid(),cmd:"!$",desc:"last arg of last cmd",q:"Reuse just the final argument of the previous command?"},
+        {id:uid(),cmd:"!<n>",desc:"run history line n",q:"Re-run a specific numbered history entry?"},
+      ]},
+      {id:uid(),name:"Quick fixes",color:null,entries:[
+        {id:uid(),cmd:"^old^new",desc:"fix-and-rerun",q:"Rerun the last command with one substring swapped?"},
+        {id:uid(),cmd:"cd -",desc:"previous directory",q:"Jump back to the directory you were just in?"},
+        {id:uid(),cmd:"`Ctrl`+`r`",desc:"search history",q:"Fuzzy-search backwards through your shell history?"},
+        {id:uid(),cmd:"fc",desc:"edit then run",q:"Open the last command in your editor to fix it?"},
+      ]},
+    ]},
+    {id:uid(),name:"Hidden built-ins",color:null,sections:[
+      {id:uid(),name:"Dates & calendar",color:null,entries:[
+        {id:uid(),cmd:"cal",desc:"this month",q:"Print a calendar for this month?"},
+        {id:uid(),cmd:"cal 2026",desc:"a whole year",q:"Print the full year's calendar?"},
+        {id:uid(),cmd:"date -d \"next friday\"",desc:"natural-language date",q:"Ask what date next Friday falls on?"},
+        {id:uid(),cmd:"date +%s",desc:"unix timestamp",q:"Print the current Unix epoch seconds?"},
+      ]},
+      {id:uid(),name:"Calculators",color:null,entries:[
+        {id:uid(),cmd:"bc -l",desc:"calculator (math lib)",q:"Open an interactive calculator with real math?"},
+        {id:uid(),cmd:"echo \"3*7\" | bc",desc:"one-shot math",q:"Do a quick calculation in a pipe?"},
+        {id:uid(),cmd:"factor <n>",desc:"prime factors",q:"Break a number into its prime factors?"},
+        {id:uid(),cmd:"seq 1 100 | paste -sd+ | bc",desc:"sum 1..100",q:"Add every number from 1 to 100 in a pipeline?"},
+      ]},
+      {id:uid(),name:"Number bases",color:null,entries:[
+        {id:uid(),cmd:"echo $((16#FF))",desc:"hex to decimal",q:"Convert a hex number to decimal in the shell?"},
+        {id:uid(),cmd:"echo \"obase=2;42\" | bc",desc:"decimal to binary",q:"Show a number in binary with bc?"},
+        {id:uid(),cmd:"printf '%x\\n' 255",desc:"decimal to hex",q:"Print a number in hexadecimal?"},
+        {id:uid(),cmd:"printf '%o\\n' 64",desc:"decimal to octal",q:"Print a number in octal?"},
+      ]},
+      {id:uid(),name:"Randomness",color:null,entries:[
+        {id:uid(),cmd:"echo $RANDOM",desc:"random 0..32767",q:"Get a quick pseudo-random number in bash?"},
+        {id:uid(),cmd:"shuf -i 1-100 -n1",desc:"random in a range",q:"Roll a random number from 1 to 100?"},
+        {id:uid(),cmd:"shuf -n1 <file>",desc:"random line",q:"Pick one random line from a file?"},
+        {id:uid(),cmd:"openssl rand -hex 8",desc:"random hex token",q:"Generate a random hex token?"},
+      ]},
+      {id:uid(),name:"Brace expansion",color:null,entries:[
+        {id:uid(),cmd:"echo {1..10}",desc:"number sequence",q:"Generate the numbers 1 through 10 inline?"},
+        {id:uid(),cmd:"echo {a..z}",desc:"letter sequence",q:"Print the whole alphabet with one echo?"},
+        {id:uid(),cmd:"mkdir -p proj/{src,test,docs}",desc:"many dirs at once",q:"Create several sibling folders in one command?"},
+        {id:uid(),cmd:"cp file{,.bak}",desc:"quick backup copy",q:"Copy a file to file.bak with brace expansion?"},
+      ]},
+      {id:uid(),name:"Text flips",color:null,entries:[
+        {id:uid(),cmd:"tac <file>",desc:"cat, reversed",q:"Print a file from the last line to the first?"},
+        {id:uid(),cmd:"nl <file>",desc:"number the lines",q:"Add line numbers to a file's output?"},
+        {id:uid(),cmd:"sort -R <file>",desc:"shuffle lines",q:"Randomly shuffle the lines of a file?"},
+        {id:uid(),cmd:"column -t <file>",desc:"align columns",q:"Line up messy columns into a neat table?"},
+      ]},
+      {id:uid(),name:"Watch & repeat",color:null,entries:[
+        {id:uid(),cmd:"watch -n2 <cmd>",desc:"rerun every 2s",q:"Re-run a command every two seconds and show changes?"},
+        {id:uid(),cmd:"watch -d <cmd>",desc:"highlight changes",q:"Highlight what changed between runs?"},
+        {id:uid(),cmd:"time <cmd>",desc:"how long it took",q:"Measure how long a command takes?"},
+        {id:uid(),cmd:"yes '' | head -5",desc:"five blank lines",q:"Emit exactly five blank lines?"},
+      ]},
+    ]},
+  ]
+});
 const READYMADE = [
   {key:'linux',name:'Linux Command Line',blurb:'Files, processes, networking, packages, scripting, Vim, Git, tmux…',make:SAMPLE},
+  {key:'toys',name:'Terminal Toys',blurb:'cowsay, lolcat, cmatrix, sl, ASCII Star Wars, wttr.in, fortune, party tricks & hidden built-ins…',make:TOYS},
   {key:'devops',name:'DevOps',blurb:'Docker, Kubernetes, Helm, Git, CI, Terraform, Ansible, cloud, TLS…',make:DEVOPS},
   {key:'ai',name:'AI-Assisted Engineering',blurb:'Claude Code, aider, Copilot, ollama, prompting, APIs, MCP, RAG, evals…',make:AI},
   {key:'vim',name:'Vim & Neovim',blurb:'Modes, motions, text objects, search & substitute, registers, macros, splits, folds, LSP, .vimrc…',make:VIM},
