@@ -256,13 +256,13 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .set-info{position:relative;width:14px;height:14px;border-radius:99px;border:1px solid var(--line);color:var(--muted2);
   font-size:10px;font-weight:700;display:inline-grid;place-items:center;cursor:help;text-transform:none;letter-spacing:0;flex:none}
 .set-info:hover,.set-info:focus-visible{color:var(--ink);border-color:var(--accent);outline:none}
-.set-tip{position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);z-index:90;width:max-content;max-width:220px;
+/* fixed-positioned (JS-placed) so it escapes the modal's overflow:auto clipping */
+.set-tip{position:fixed;z-index:95;width:max-content;max-width:240px;
   background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:7px 10px;
   font-size:11.5px;font-weight:500;text-transform:none;letter-spacing:0;line-height:1.45;text-align:left;
   box-shadow:0 10px 30px #000a;opacity:0;visibility:hidden;transition:opacity .12s;pointer-events:none}
 .set-info:hover .set-tip,.set-info:focus-visible .set-tip{opacity:1;visibility:visible}
 .fmh-info{display:flex;align-items:center;gap:7px}
-.set-tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--line)}
 .chips{display:flex;flex-wrap:wrap;gap:5px}
 .chip{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:7px;padding:5px 9px;font-size:12px;font-weight:600;cursor:pointer}
 .chip:hover{color:var(--ink);border-color:#3a4456}
@@ -3716,11 +3716,24 @@ function kbdHTML(){return '<div class="kbd-list">'
     +'</div>';}
 /* chip-based setting rows for the Card / Print popovers (no nested dropdowns) */
 // a label with an optional hover-info "?" that reveals the hint text in a small popover
+// a "?" info button whose tip is position:fixed (escapes the modal's overflow clip),
+// placed just-in-time above the button and clamped to the viewport.
+function makeInfo(hint){
+  const info=document.createElement('span');info.className='set-info';info.textContent='?';info.tabIndex=0;
+  const tip=document.createElement('span');tip.className='set-tip';tip.textContent=hint;info.appendChild(tip);
+  const place=()=>{const r=info.getBoundingClientRect();
+    tip.style.left='0';tip.style.top='0';tip.style.visibility='hidden';tip.style.opacity='0';
+    const tr=tip.getBoundingClientRect();
+    let left=r.left+r.width/2-tr.width/2;left=clamp(left,8,window.innerWidth-tr.width-8);
+    let top=r.top-tr.height-7;if(top<8)top=r.bottom+7;        // flip below if no room above
+    tip.style.left=left+'px';tip.style.top=top+'px';tip.style.visibility='';tip.style.opacity='';};
+  info.addEventListener('mouseenter',place);info.addEventListener('focus',place);
+  return info;
+}
 function setLabel(text,hint){
   const lab=document.createElement('div');lab.className='set-lab';
   const t=document.createElement('span');t.textContent=text;lab.appendChild(t);
-  if(hint){const info=document.createElement('span');info.className='set-info';info.textContent='?';info.tabIndex=0;
-    const tip=document.createElement('span');tip.className='set-tip';tip.textContent=hint;info.appendChild(tip);lab.appendChild(info);}
+  if(hint)lab.appendChild(makeInfo(hint));
   return lab;
 }
 function settingRow(menu,label,getV,setV,opts,hint){
@@ -3786,9 +3799,8 @@ function openSettings(){
   cols.append(cardCol,printCol);
   // Data — a full-width action bar spanning the modal
   const dh=document.createElement('div');dh.className='fmh fmh-info';dh.appendChild(document.createTextNode('Data'));
-  const di=document.createElement('span');di.className='set-info';di.textContent='?';di.tabIndex=0;
-  const dt=document.createElement('span');dt.className='set-tip';dt.textContent='“Back up all” saves every collection and your study progress to one file. “Delete all” wipes everything on this device.';
-  di.appendChild(dt);dh.appendChild(di);box.appendChild(dh);
+  dh.appendChild(makeInfo('“Back up all” saves every collection and your study progress to one file. “Delete all” wipes everything on this device.'));
+  box.appendChild(dh);
   const bar=document.createElement('div');bar.className='data-bar';
   const act=(icon,label,fn,cls)=>{const b=document.createElement('button');b.className='data-btn'+(cls?' '+cls:'');b.innerHTML=ico(icon,16)+'<span>'+label+'</span>';b.onclick=fn;return b;};
   bar.appendChild(act('download','CSV template',()=>download(slugify(state.title,'cards')+'_template.csv',csvTemplate(),'text/csv')));
