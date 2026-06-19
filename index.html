@@ -3956,6 +3956,26 @@ function pickCollection(title,onPick){
 }
 function addReadymade(key){const t=READYMADE.find(r=>r.key===key);if(!t)return;
   const c=t.make();c.id=uid();c.readymade=key;store.collections.push(c);store.activeId=c.id;applyCollectionSwitch();save();}
+// merge an expansion's contents into an existing collection, matching categories &
+// sections by name (case-insensitive) and appending entries — same idea as CSV import.
+function mergeExpansionInto(targetId,key){
+  const t=READYMADE.find(r=>r.key===key);if(!t)return;
+  const dst=store.collections.find(c=>c.id===targetId);if(!dst)return;
+  const src=t.make();const low=s=>(s||'').toLowerCase();
+  let added=0;
+  (src.categories||[]).forEach(scat=>{
+    let dcat=dst.categories.find(x=>low(x.name)===low(scat.name));
+    if(!dcat){dcat={id:uid(),name:scat.name||'New category',color:scat.color||null,sections:[]};dst.categories.push(dcat);}
+    (scat.sections||[]).forEach(ssec=>{
+      let dsec=dcat.sections.find(x=>low(x.name)===low(ssec.name));
+      if(!dsec){dsec={id:uid(),name:ssec.name||'Section',color:ssec.color||null,entries:[]};dcat.sections.push(dsec);}
+      (ssec.entries||[]).forEach(e=>{dsec.entries.push({id:uid(),cmd:e.cmd,desc:e.desc,q:e.q});added++;});
+    });
+  });
+  normalizeCollection(dst);
+  if(store.activeId===targetId)applyCollectionSwitch(); else save();
+  toast('Merged '+t.name+' — added '+added+' entr'+(added===1?'y':'ies')+' to “'+(dst.title||'Untitled')+'”.','ok');
+}
 function newCollection(after){styledPrompt('Name this collection','My collection',nm=>{
   const c=blankCollection(nm);store.collections.push(c);store.activeId=c.id;applyCollectionSwitch();save();if(after)after();});}
 function renameCollection(c,after){styledPrompt('Rename collection',c.title||'',nm=>{
@@ -3989,7 +4009,7 @@ function openCollections(){
       const nEntries=(c.categories||[]).reduce((a,cat)=>a+(cat.sections||[]).reduce((b,s)=>b+(s.entries||[]).length,0),0);
       const meta=document.createElement('span');meta.className='meta';meta.textContent=nEntries+' entr'+(nEntries===1?'y':'ies');
       row.append(nm,meta);
-      if(c.readymade){const b=document.createElement('span');b.className='badge';b.textContent='sample';row.appendChild(b);}
+      if(c.readymade){const b=document.createElement('span');b.className='badge';b.textContent='expansion';row.appendChild(b);}
       const acts=document.createElement('div');acts.className='coll-actions';
       const ren=makeIcon('pencil','Rename');ren.onclick=()=>renameCollection(c,draw);
       const exp=makeIcon('download','Export this collection');exp.onclick=()=>{const cur=store.activeId;store.activeId=c.id;exportActive();store.activeId=cur;};
@@ -4004,15 +4024,29 @@ function openCollections(){
     if(fileBackup.supported){const sb=document.createElement('button');sb.id='syncFileBtn';sb.className='btn ghost sm';
       sb.onclick=()=>fileBackup.toggle();foot.appendChild(sb);fileBackup.updateUI(sb);}
     box.appendChild(foot);
-    const l2=document.createElement('div');l2.className='fmh';l2.style.marginTop='14px';l2.textContent='Ready-made collections';box.appendChild(l2);
+    const l2=document.createElement('div');l2.className='fmh';l2.style.marginTop='14px';l2.textContent='Expansions';box.appendChild(l2);
     READYMADE.forEach(t=>{
       const row=document.createElement('div');row.className='ready-row';
       const info=document.createElement('div');info.className='desc';
       const nm=document.createElement('div');nm.style.color='var(--ink)';nm.style.fontWeight='600';nm.textContent=t.name;
       const bl=document.createElement('div');bl.style.fontSize='11px';bl.style.color='var(--muted2)';bl.textContent=t.blurb;
       info.append(nm,bl);
-      const add=document.createElement('button');add.className='btn sm';add.textContent='Add';add.onclick=()=>{addReadymade(t.key);close();};
-      row.append(info,add);box.appendChild(row);
+      // Add ▾ split menu: new collection, or merge into the active / another collection
+      const dd=document.createElement('div');dd.className='dd';
+      const add=document.createElement('button');add.className='btn sm';add.innerHTML='Add <span class="dd-caret">▾</span>';
+      const menu=document.createElement('div');menu.className='dd-menu right';menu.hidden=true;
+      const item=(label,fn)=>{const b=document.createElement('button');b.className='dd-item';b.textContent=label;
+        b.onclick=()=>{closeAllMenus();fn();};return b;};
+      menu.appendChild(item('As a new collection',()=>{addReadymade(t.key);close();}));
+      const active=activeCollection();
+      menu.appendChild(item('Merge into “'+((active&&active.title)||'current')+'”',()=>{mergeExpansionInto(active.id,t.key);draw();}));
+      // "Merge into…" — pick another collection (only if there's more than one)
+      if(store.collections.length>1){
+        menu.appendChild(item('Merge into…',()=>{pickCollection('Merge “'+t.name+'” into…',id=>{mergeExpansionInto(id,t.key);draw();});}));
+      }
+      add.onclick=()=>{if(menu.hidden)openMenu(menu);else closeAllMenus();};
+      dd.append(add,menu);
+      row.append(info,dd);box.appendChild(row);
     });
   }
 }
