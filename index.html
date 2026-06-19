@@ -3257,7 +3257,7 @@ function buildDropdown(cfg){
 }
 function buildCsvMenu(){const m=$('#csvMenu');if(!m)return;m.innerHTML='';
   const tpl=document.createElement('button');tpl.className='dd-item';tpl.innerHTML=ico('download',16)+'<span>Download CSV template</span>';
-  tpl.onclick=()=>{download((state.title||'cards').replace(/[^a-z0-9_-]+/gi,'_')+'_template.csv',csvTemplate(),'text/csv');closeAllMenus();};
+  tpl.onclick=()=>{download(slugify(state.title,'cards')+'_template.csv',csvTemplate(),'text/csv');closeAllMenus();};
   const imp=document.createElement('button');imp.className='dd-item';imp.innerHTML=ico('upload',16)+'<span>Import from CSV…</span>';
   imp.onclick=()=>{closeAllMenus();$('#csvFile').click();};
   m.append(tpl,imp);}
@@ -3344,7 +3344,7 @@ function applyCollectionSwitch(){
 }
 function setActiveCollection(id){store.activeId=id;applyCollectionSwitch();save();}
 function exportActive(){const c=activeCollection();
-  download((c.title||'collection').replace(/[^a-z0-9_-]+/gi,'_')+'.termdecks.json',JSON.stringify(c,null,2),'application/json');}
+  download(slugify(c.title,'collection')+'.termdecks.json',JSON.stringify(c,null,2),'application/json');}
 function styledConfirm(message,onYes,yesLabel){
   const ov=document.createElement('div');ov.className='modal-ov';
   ov.addEventListener('mousedown',e=>{if(e.target===ov)done();});
@@ -3721,6 +3721,8 @@ function csvTemplate(){
 }
 function download(name,text,type){const b=new Blob([text],{type:type||'text/plain'});const a=document.createElement('a');
   a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+// sanitize a title into a filename stem; fall back if it strips to nothing (e.g. symbol-only titles)
+function slugify(s,fallback){const out=String(s||'').replace(/[^a-z0-9_-]+/gi,'_').replace(/^_+|_+$/g,'');return out||fallback;}
 
 /* ============================================================
    File backup (File System Access API)
@@ -3938,7 +3940,8 @@ function renderEditor(){
   root.appendChild(addCat);
 }
 function addEntry(sec,at){const e={id:uid(),cmd:'',desc:''};if(at==null)sec.entries.push(e);else sec.entries.splice(at,0,e);commit();
-  setTimeout(()=>{const row=document.querySelector('.entry-row[data-entry="'+e.id+'"]');const ic=row&&row.querySelector('input.cmd');if(ic)ic.focus();},0);}
+  // commit() renders synchronously, so the new row exists now — focus it directly.
+  const row=document.querySelector('.entry-row[data-entry="'+e.id+'"]');const ic=row&&row.querySelector('input.cmd');if(ic)ic.focus();}
 
 /* ============================================================
    Glue
