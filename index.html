@@ -44,8 +44,8 @@ button{cursor:pointer}
   border-bottom:1px solid var(--line);z-index:5;
 }
 .brand{display:flex;align-items:baseline;gap:9px;margin-right:6px}
-.brand .logo{font-family:var(--card-font);font-weight:700;font-size:17px;letter-spacing:-.5px;display:inline-flex;align-items:center;gap:8px;
-  background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+/* muted wordmark — let the Print button own "blue = act"; the logo mark SVG keeps the accent */
+.brand .logo{font-family:var(--card-font);font-weight:700;font-size:17px;letter-spacing:-.5px;display:inline-flex;align-items:center;gap:8px;color:var(--ink)}
 .brand .tag{color:var(--muted2);font-size:11px;letter-spacing:.5px;text-transform:uppercase}
 .logo-mark{height:24px;width:auto;flex:none;filter:drop-shadow(0 1px 2px #0009)}
 .title-input{
@@ -54,6 +54,11 @@ button{cursor:pointer}
 }
 .title-input:focus{outline:none;border-color:var(--accent)}
 .spacer{flex:1}
+/* group dividers in the toolbar — gives the right cluster rhythm instead of a wall of buttons */
+.tb-sep{width:1px;align-self:center;height:20px;background:var(--line);margin:0 2px;flex:none}
+/* settings popovers recede vs. primary actions until hovered */
+#cardBtn,#printSetBtn,#csvBtn{color:var(--muted)}
+#cardBtn:hover,#printSetBtn:hover,#csvBtn:hover{color:var(--ink)}
 .ctrl{display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);
   border-radius:8px;padding:5px 9px}
 .ctrl label{font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px}
@@ -289,10 +294,22 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
 .q-row .qinput::placeholder{color:var(--muted2)}
 .q-row .qinput:focus{outline:none;border-color:var(--accent);color:var(--ink)}
 .iconbtn.qbtn.has{color:var(--accent2);border-color:#3a3358}
+/* declutter: row action icons hide until the row is hovered or focused (180 always-on icons → quiet).
+   The question toggle stays visible when it holds a question (.has), since that's state, not an action. */
+.entry-row .grip,.entry-row .iconbtn{opacity:0;transition:opacity .12s}
+.entry-row:hover .grip,.entry-row:hover .iconbtn,
+.entry-row:focus-within .grip,.entry-row:focus-within .iconbtn,
+.entry-row .iconbtn.qbtn.has{opacity:1}
+.iconbtn:focus-visible{opacity:1}
+/* same treatment for the dup/delete cluster on category & section headers */
+.cat-head .iconbtn,.sec-head .iconbtn,.cat-head .grip,.sec-head .grip{opacity:0;transition:opacity .12s}
+.cat-head:hover .iconbtn,.cat-head:hover .grip,.cat-head:focus-within .iconbtn,.cat-head:focus-within .grip,
+.sec-head:hover .iconbtn,.sec-head:hover .grip,.sec-head:focus-within .iconbtn,.sec-head:focus-within .grip{opacity:1}
+@media (hover:none){.entry-row .grip,.entry-row .iconbtn,.cat-head .iconbtn,.sec-head .iconbtn,.cat-head .grip,.sec-head .grip{opacity:1}}
 .addline{display:flex;gap:8px;margin-top:6px}
 .minihead{display:flex;align-items:center;justify-content:space-between;margin:2px 0 4px}
 .minihead span{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted2)}
-.warnote{color:var(--warn);font-size:10px;display:flex;align-items:center;gap:4px;margin:4px 0 0 2px}
+.swatch.lowc{box-shadow:0 0 0 2px var(--warn)}
 .colorgroup{display:flex;align-items:center;gap:5px}
 .autobadge{font-size:9px;color:var(--muted2);border:1px solid var(--line);border-radius:5px;padding:1px 4px;cursor:pointer}
 .autobadge:hover{color:var(--ink);border-color:var(--accent)}
@@ -305,40 +322,39 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
 .card .tab{
-  padding:4px 7px 5px;display:flex;flex-direction:column;gap:0px;flex:none;
+  padding:5px 8px 6px 10px;display:flex;flex-direction:column;gap:1px;flex:none;
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
-.card .tab .eyebrow{font-size:.72em;font-weight:700;letter-spacing:.13em;text-transform:uppercase;opacity:.92;line-height:1.1}
-.card .tab .sect{font-size:1.18em;font-weight:700;letter-spacing:-.01em;line-height:1.12}
-.card .body{flex:1;min-height:0;overflow:hidden;padding:5px 7px 2px;border-left:3px solid var(--accent-sec)}
-.card .entry{display:flex;justify-content:space-between;gap:7px;align-items:baseline;padding:1.5px 0}
-.card .entry .cmd{font-weight:600;white-space:normal;word-break:break-word;flex:0 1 auto}
-.card .entry .desc{flex:1 1 42%;text-align:right;color:#586073;font-weight:400}
+/* eyebrow recedes, title leads — ~2:1 ratio so category→section reads as hierarchy */
+.card .tab .eyebrow{font-size:.62em;font-weight:600;letter-spacing:.16em;text-transform:uppercase;opacity:.8;line-height:1.1}
+.card .tab .sect{font-size:1.34em;font-weight:700;letter-spacing:-.015em;line-height:1.1}
+.card .body{flex:1;min-height:0;overflow:hidden;padding:6px 8px 2px 10px}
+/* two real columns: command left, description left in a fixed second column — no ragged gutter */
+.card .entry{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:8px;align-items:baseline;padding:1.5px 0}
+.card .entry .cmd{font-weight:600;white-space:normal;word-break:break-word;min-width:0}
+.card .entry .desc{color:#586073;font-weight:400;min-width:0}
+.card .entry.full{grid-template-columns:1fr}
 .card kbd{font-family:var(--card-font);font-size:.86em;padding:0 .28em;margin:0 .03em;border:.5px solid #00000033;
   border-bottom-width:1.4px;border-radius:3px;background:#f1f3f6;color:#1b1f27;white-space:nowrap}
 .card .foot{flex:none;display:flex;align-items:center;justify-content:space-between;
-  padding:2px 7px 4px;font-size:.72em;color:#8a93a6}
-.card .foot .dot{display:inline-flex;align-items:center;gap:4px}
+  padding:2px 8px 4px 10px;font-size:.72em;color:#8a93a6}
+.card .foot .dot{display:inline-flex;align-items:center;gap:5px}
 .card .foot .dot i{width:7px;height:7px;border-radius:99px;background:var(--accent-cat);display:inline-block}
 .card .foot .pg{font-variant-numeric:tabular-nums;letter-spacing:.04em}
-/* back face — category side (restrained color) */
-.card.back{align-items:center;justify-content:center;text-align:center;padding:12px;background:#fff;color:#14171c}
-.card.back .chip{width:13px;height:13px;border-radius:99px;background:var(--bk);margin-bottom:9px}
-.card.back .cat-name{font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:1.9em;line-height:1.06;word-break:break-word}
-.card.back .rule{width:34%;height:3px;border-radius:2px;background:var(--bk);margin:9px 0}
-.card.back .sub{font-size:.8em;letter-spacing:.2em;text-transform:uppercase;opacity:.6}
-.card.back.strip{padding-left:22px}
-.card.back.strip .chip{display:none}
-.card.back.strip::before{content:"";position:absolute;left:0;top:0;bottom:0;width:13px;background:var(--bk);-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.card.back.solid .chip{background:currentColor;opacity:.85}
-.card.back.solid .rule{background:currentColor;opacity:.5}
-.card.back.solid .sub{opacity:.75}
-/* optional questions — a quiet bonus appended under the back's sorting label */
-.card.back .q-extra{margin-top:10px;max-width:86%;display:flex;flex-direction:column;gap:2px;
-  font-size:.78em;line-height:1.22;color:#717a8a;text-align:center}
-.card.back .q-extra .qx::before{content:"? ";color:var(--bk);font-weight:700}
-.card.back.solid .q-extra{color:inherit;opacity:.82}
-.card.back.solid .q-extra .qx::before{color:inherit}
+/* category color band on the left edge — sortable when the deck is stacked/fanned */
+.card.front::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--accent-sec);
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
+.card .foot .gidx{font-variant-numeric:tabular-nums;color:#aab2c0;font-size:.92em}
+/* question face — shares the front shell; questions as a hanging-? list */
+.card.qface .body{display:flex;flex-direction:column;gap:5px}
+.card.qface .qline{display:grid;grid-template-columns:auto 1fr;gap:6px;align-items:baseline;line-height:1.24}
+.card.qface .qmark{color:var(--accent-sec);font-weight:700}
+.card.qface .qtext{color:#2b3038;min-width:0;word-break:break-word}
+.card.qface .qnone{color:#9aa3b2;font-style:italic}
+/* quiz mode: the prompt face centers its single/few questions as a recall pause */
+.card.qface.prompt .body{justify-content:center;gap:9px}
+.card.qface.prompt .qtext{font-size:1.18em;line-height:1.3;color:#14171c}
+.card.qface.prompt .qmark{font-size:1.18em}
 
 /* ---------- Card faces (preview + album) ---------- */
 .flip{width:var(--cw);height:var(--ch);perspective:1400px;cursor:pointer;flex:none}
@@ -349,8 +365,10 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
 .flip .face.b{transform:rotateY(180deg)}
 .flip.pulse{animation:cardpulse 1.25s ease}
 @keyframes cardpulse{0%{box-shadow:0 0 0 3px var(--accent),0 12px 30px #0009}55%{box-shadow:0 0 0 3px var(--accent),0 12px 30px #0009}100%{box-shadow:0 0 0 0 #0000,0 0 0 0 #0000}}
-.flip .nub{position:absolute;bottom:5px;right:7px;font-size:8px;color:#ffffffaa;z-index:2;pointer-events:none;
-  font-family:Inter,sans-serif;text-shadow:0 1px 2px #0009}
+/* preview-only hint — dark pill at the top so it never fights the printed footer; not part of the card */
+.flip .nub{position:absolute;top:7px;right:7px;font-size:8px;color:#fff;z-index:3;pointer-events:none;
+  font-family:Inter,sans-serif;background:#0b0d11cc;border:1px solid #ffffff2a;border-radius:99px;padding:2px 7px;opacity:0;transition:opacity .15s}
+.flip:hover .nub{opacity:1}
 .album-grid .nub{display:none}
 .album-grid .flip.is-current .face{box-shadow:0 0 0 3px var(--accent),0 6px 16px #0008,0 1px 0 #ffffff55 inset}
 .empty-note{color:var(--muted2);font-size:13px;padding:30px;text-align:center}
@@ -367,6 +385,7 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
   .app{height:auto;min-height:100vh;overflow:visible}
   .toolbar{position:sticky;top:0}
   .brand .tag{display:none}
+  .tb-sep{display:none}
   .search-wrap{order:10;flex:1 1 100%}
   .search-input{min-width:0;width:100%}
   .main{flex-direction:column}
@@ -419,10 +438,12 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
     <div class="spacer"></div>
 
     <button class="btn ghost sm" id="collectionsBtn">▤ Collections</button>
+    <span class="tb-sep"></span>
     <div class="dd" id="cardDD"><button class="btn ghost sm" id="cardBtn">Card <span class="dd-caret">▾</span></button><div class="dd-menu right set-menu" id="cardMenu" hidden></div></div>
     <div class="dd" id="printDD"><button class="btn ghost sm" id="printSetBtn">Print <span class="dd-caret">▾</span></button><div class="dd-menu right set-menu" id="printMenu" hidden></div></div>
     <div class="dd" id="csvDD"><button class="btn ghost sm" id="csvBtn">CSV <span class="dd-caret">▾</span></button><div class="dd-menu right" id="csvMenu" hidden></div></div>
     <div class="dd" id="kbdDD"><button class="btn ghost sm" id="kbdBtn" title="Keyboard shortcuts">⌨</button><div class="dd-menu right" id="kbdMenu" hidden></div></div>
+    <span class="tb-sep"></span>
     <button class="btn primary" id="printBtn">⎙ Print / Save PDF</button>
     <input type="file" id="fileInput" accept="application/json,.json" style="display:none">
     <input type="file" id="csvFile" accept=".csv,text/csv" style="display:none">
@@ -3001,7 +3022,7 @@ const READYMADE = [
   {key:'text',name:'jq + awk/sed/grep',blurb:'jq queries, awk one-liners, sed substitution, grep & ripgrep, cut/sort/uniq, xargs…',make:TEXT},
 ];
 function blankCollection(name){return {id:uid(),title:name||'Untitled',paper:'letter',palette:'nord',font:'jb',fs:8.5,
-  duplex:'long',guides:true,backStyle:'minimal',gridZoom:1.25,decks:[],activeDeck:null,collapsed:{cats:[],secs:[]},categories:[]};}
+  duplex:'long',guides:true,backStyle:'minimal',cardMode:'reference',gridZoom:1.25,decks:[],activeDeck:null,collapsed:{cats:[],secs:[]},categories:[]};}
 
 let state, store;
 const STORAGE_KEY='cardcheat_v3';
@@ -3012,6 +3033,7 @@ function normalizeCollection(c){
   if(typeof c.fs!=='number')c.fs=8.5; c.duplex=c.duplex||'long';
   if(typeof c.guides!=='boolean')c.guides=true; c.backStyle=c.backStyle||'minimal';
   if(typeof c.gridZoom!=='number'||!(c.gridZoom>=0.9&&c.gridZoom<=1.8))c.gridZoom=1.25;
+  c.cardMode=(c.cardMode==='quiz')?'quiz':'reference';
   if(!Array.isArray(c.categories))c.categories=[];
   if(!Array.isArray(c.decks))c.decks=[];
   // Repair untrusted nested shape (imports, hand-edited/truncated JSON). Drop
@@ -3093,21 +3115,26 @@ function renderInline(text, host, q){
    Card builders
    ============================================================ */
 function buildEntryEl(e,q){
-  const row=document.createElement('div');row.className='entry';
+  const hasDesc=e.desc && String(e.desc).trim()!=='';
+  const row=document.createElement('div');row.className='entry'+(hasDesc?'':' full');
   const cmd=document.createElement('span');cmd.className='cmd';renderInline(e.cmd,cmd,q);
   row.appendChild(cmd);
-  if(e.desc && String(e.desc).trim()!==''){
+  if(hasDesc){
     const d=document.createElement('span');d.className='desc';renderInline(e.desc,d,q);row.appendChild(d);
   }
   return row;
 }
+// Darken a tab color until header text (white) has comfortable contrast, so any
+// palette — even mid-tone pastels — stays legible behind the title. Pure hue is
+// kept for the edge band / footer accents where it's decorative, not load-bearing.
+function tabBg(hex){let c=hex;for(let i=0;i<6&&contrast(c,'#ffffff')<4.6;i++)c=adjustL(c,-7);return c;}
 /* skeleton: tab + body + foot, colored; body filled by caller */
 function buildFront(opts){
   const card=document.createElement('div');card.className='card front';
   card.style.setProperty('--accent-sec',opts.secColor);
   card.style.setProperty('--accent-cat',opts.catColor);
   const tab=document.createElement('div');tab.className='tab';
-  tab.style.background=opts.secColor;tab.style.color=bestText(opts.secColor);
+  tab.style.background=tabBg(opts.secColor);tab.style.color='#fff';
   const eb=document.createElement('div');eb.className='eyebrow';eb.textContent=opts.catName;
   const st=document.createElement('div');st.className='sect';st.textContent=opts.secName;
   tab.appendChild(eb);tab.appendChild(st);
@@ -3116,30 +3143,31 @@ function buildFront(opts){
   const dot=document.createElement('span');dot.className='dot';
   const i=document.createElement('i');const lbl=document.createElement('span');lbl.textContent=opts.catName;
   dot.appendChild(i);dot.appendChild(lbl);
+  const right=document.createElement('span');right.style.display='inline-flex';right.style.gap='7px';right.style.alignItems='baseline';
   const pg=document.createElement('span');pg.className='pg';pg.textContent=opts.pg||'';
-  foot.appendChild(dot);foot.appendChild(pg);
+  right.appendChild(pg);
+  if(opts.gidx){const gi=document.createElement('span');gi.className='gidx';gi.textContent=opts.gidx+'/'+opts.gtotal;right.appendChild(gi);}
+  foot.appendChild(dot);foot.appendChild(right);
   card.appendChild(tab);card.appendChild(body);card.appendChild(foot);
   card._body=body;card._pg=pg;
   return card;
 }
-function mixWhite(hex,amt){const c=hexToRgb(hex);return rgbToHex(c.r+(255-c.r)*amt,c.g+(255-c.g)*amt,c.b+(255-c.b)*amt);}
-function buildBack(c){
-  const style=state.backStyle||'minimal',col=c.catColor;
-  const card=document.createElement('div');card.className='card back '+style;
-  card.style.setProperty('--bk',col);
-  if(style==='solid'){card.style.background=col;card.style.color=bestText(col);}
-  else if(style==='tinted'){card.style.background=mixWhite(col,0.86);card.style.color='#14171c';}
-  else{card.style.background='#fff';card.style.color='#14171c';}
-  const chip=document.createElement('div');chip.className='chip';
-  const n=document.createElement('div');n.className='cat-name';n.textContent=c.catName;
-  const r=document.createElement('div');r.className='rule';
-  const s=document.createElement('div');s.className='sub';s.textContent=c.secName||'';
-  card.appendChild(chip);card.appendChild(n);card.appendChild(r);card.appendChild(s);
+// Question face — same shell as the command front (header strip, edge band, footer),
+// body holds the quiz prompts as a left-aligned list with a hanging colored "?" marker.
+// Used as the back in reference mode and as the front (prompt) in quiz mode.
+function buildQuestionFace(c){
+  const card=buildFront({catName:c.catName,secName:c.secName,secColor:c.secColor,catColor:c.catColor,
+    pg:c.total>1?(c.page+'/'+c.total):'',gidx:c.gidx,gtotal:c.gtotal});
+  card.classList.add('qface');
   const qs=(c.entries||[]).filter(e=>e.q&&e.q.trim()!=='');
   if(qs.length){
-    const qx=document.createElement('div');qx.className='q-extra';
-    qs.forEach(e=>{const li=document.createElement('div');li.className='qx';renderInline(e.q,li,'');qx.appendChild(li);});
-    card.appendChild(qx);
+    qs.forEach(e=>{const row=document.createElement('div');row.className='qline';
+      const mk=document.createElement('span');mk.className='qmark';mk.textContent='?';
+      const tx=document.createElement('span');tx.className='qtext';renderInline(e.q,tx,'');
+      row.appendChild(mk);row.appendChild(tx);card._body.appendChild(row);});
+  }else{
+    const none=document.createElement('div');none.className='qnone';none.textContent='No questions on this card yet.';
+    card._body.appendChild(none);
   }
   return card;
 }
@@ -3188,6 +3216,8 @@ function buildAllCards(){
       });
     });
   });
+  // global deck-wide index so a shuffled paper deck can be re-sorted (N of M)
+  cards.forEach((c,i)=>{c.gidx=i+1;c.gtotal=cards.length;});
   return cards;
 }
 
@@ -3230,25 +3260,37 @@ function deck(){let cards=scopedCards().filter(passFilters);if(search)cards=card
    ============================================================ */
 function navBtn(html,fn,wide,label){const b=document.createElement('button');b.className='navbtn'+(wide?' wide':'');
   b.innerHTML=html;if(label){b.setAttribute('aria-label',label);b.title=label;}b.onclick=ev=>{ev.stopPropagation();fn();};return b;}
+// command (answer) face — the cheat-sheet body
+function buildCommandFace(c,q){
+  const f=buildFront({catName:c.catName,secName:c.secName,secColor:c.secColor,catColor:c.catColor,
+    pg:c.total>1?(c.page+'/'+c.total):'',gidx:c.gidx,gtotal:c.gtotal});
+  c.entries.forEach(e=>f._body.appendChild(buildEntryEl(e,q)));
+  return f;
+}
+// Mode decides which content sits on which physical face. Reference: commands up,
+// questions on the flip. Quiz: question prompt up, commands (the answer) on the flip.
+function cardFaces(c,q){
+  if(state.cardMode==='quiz'){
+    const prompt=buildQuestionFace(c);prompt.classList.add('prompt');
+    return {front:prompt, back:buildCommandFace(c,q), flipHint:'tap for the answer'};
+  }
+  return {front:buildCommandFace(c,q), back:buildQuestionFace(c), flipHint:'tap to flip'};
+}
 function makeFlip(c,q,startBack){
   const flip=document.createElement('div');flip.className='flip'+(startBack?' flipped':'');
   const inner=document.createElement('div');inner.className='flip-inner';
-  const fa=document.createElement('div');fa.className='face f';
-  const front=buildFront({catName:c.catName,secName:c.secName,secColor:c.secColor,catColor:c.catColor,
-    pg:c.total>1?(c.page+'/'+c.total):''});
-  c.entries.forEach(e=>front._body.appendChild(buildEntryEl(e,q)));
-  fa.appendChild(front);
-  const ba=document.createElement('div');ba.className='face b';ba.appendChild(buildBack(c));
-  const nub=document.createElement('div');nub.className='nub';nub.textContent='tap to flip';
+  const faces=cardFaces(c,q);
+  const fa=document.createElement('div');fa.className='face f';fa.appendChild(faces.front);
+  const ba=document.createElement('div');ba.className='face b';ba.appendChild(faces.back);
+  const nub=document.createElement('div');nub.className='nub';nub.textContent=faces.flipHint;
   inner.appendChild(fa);inner.appendChild(ba);flip.appendChild(inner);flip.appendChild(nub);
   flip.addEventListener('click',()=>flip.classList.toggle('flipped'));
   return flip;
 }
 function makeStatic(c,kind,q){
   const wrap=document.createElement('div');wrap.className='album-card';
-  if(kind==='back'){wrap.appendChild(buildBack(c));}
-  else{const f=buildFront({catName:c.catName,secName:c.secName,secColor:c.secColor,catColor:c.catColor,
-    pg:c.total>1?(c.page+'/'+c.total):''});c.entries.forEach(e=>f._body.appendChild(buildEntryEl(e,q)));wrap.appendChild(f);}
+  const faces=cardFaces(c,q);
+  wrap.appendChild(kind==='back'?faces.back:faces.front);
   return wrap;
 }
 /* scale the previewed card to FULLY fit the pane — never clips, no scrollbars */
@@ -3333,13 +3375,14 @@ function toggleRow(menu,label,getV,setV){
   row.append(lab,b);menu.appendChild(row);
 }
 function buildCardMenu(){const m=$('#cardMenu');if(!m)return;m.innerHTML='';
+  settingRow(m,'Card mode',()=>state.cardMode,v=>{state.cardMode=v;refresh();},
+    [['reference','Reference'],['quiz','Quiz']],
+    'Reference: commands on the front, questions on the flip. Quiz: the question on the front, the commands (answer) on the flip — for self-testing.');
   settingRow(m,'Color palette',()=>state.palette,v=>{state.palette=v;renderEditor();refresh();},
     [['auto','Auto'],['nord','Nord'],['catppuccin','Catppuccin'],['solarized','Solarized'],['pastel','Pastel'],['vibrant','Vibrant'],['mono','Graphite']]);
   settingRow(m,'Card font',()=>state.font,v=>{state.font=v;applyFont();save();},
     [['jb','JetBrains'],['plex','IBM Plex'],['fira','Fira Code'],['sys','System']]);
   rangeRow(m,'Card text size',7,11,0.25,()=>state.fs,v=>{state.fs=v;document.documentElement.style.setProperty('--card-fs',v+'px');refresh();},'px');
-  settingRow(m,'Back design',()=>state.backStyle,v=>{state.backStyle=v;refresh();},
-    [['minimal','Minimal'],['strip','Edge strip'],['tinted','Tinted'],['solid','Solid']]);
 }
 function buildPrintMenu(){const m=$('#printMenu');if(!m)return;m.innerHTML='';
   settingRow(m,'Paper size',()=>state.paper,v=>{state.paper=v;applyPageStyle();save();},[['letter','US Letter'],['a4','A4']]);
@@ -3614,16 +3657,7 @@ function makeSheet(slots,kind){
   const sheet=document.createElement('div');sheet.className='sheet'+(state.guides?' guides':'');
   slots.forEach(c=>{
     const slot=document.createElement('div');slot.className='slot';
-    if(c){
-      if(kind==='front'){
-        const f=buildFront({catName:c.catName,secName:c.secName,secColor:c.secColor,catColor:c.catColor,
-          pg:c.total>1?(c.page+'/'+c.total):''});
-        c.entries.forEach(e=>f._body.appendChild(buildEntryEl(e)));
-        slot.appendChild(f);
-      }else{
-        slot.appendChild(buildBack(c));
-      }
-    }
+    if(c){const faces=cardFaces(c,'');slot.appendChild(kind==='front'?faces.front:faces.back);}
     sheet.appendChild(slot);
   });
   return sheet;
@@ -3874,10 +3908,9 @@ function colorControl(getColor,setColor,resetable,label){
   const cur=getColor();inp.value=/^#([0-9a-f]{6})$/i.test(cur)?cur:'#888888';
   inp.addEventListener('input',()=>{setColor(inp.value);sw.style.background=inp.value;restyleAndPreview();updateWarn();});
   sw.appendChild(inp);wrap.appendChild(sw);
-  let warn=null;
-  function updateWarn(){const c=getColor();if(lowContrastWarning(c)){if(!warn){warn=document.createElement('span');
-    warn.className='warnote';warn.setAttribute('role','status');warn.textContent='⚠ mid-tone';warn.title='Hard to keep text legible on this color';wrap.appendChild(warn);}}
-    else if(warn){warn.remove();warn=null;}}
+  // low-contrast cue: ring the swatch + explain in its tooltip, instead of an inline orange chip
+  function updateWarn(){const low=lowContrastWarning(getColor());sw.classList.toggle('lowc',low);
+    sw.title=low?'Low-contrast color — fine for the edge band, but hard to read as text':what;}
   updateWarn();
   if(resetable){const rb=document.createElement('button');rb.type='button';rb.className='autobadge';rb.textContent='auto';
     rb.title='Reset to automatic color';rb.setAttribute('aria-label','Reset '+what+' to automatic');
