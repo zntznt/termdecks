@@ -150,6 +150,11 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .filters-menu{min-width:256px;padding:10px;left:auto;right:0}
 .fmh{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted2);margin:9px 4px 4px;font-weight:700}
 .fmh:first-child{margin-top:2px}
+.fmh-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fmh-tools{display:inline-flex;gap:4px}
+.fmh-act{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:6px;
+  padding:2px 8px;font-size:10.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;cursor:pointer}
+.fmh-act:hover{color:var(--ink);border-color:var(--accent)}
 .frow{display:flex;align-items:center;gap:9px;padding:5px 6px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--ink)}
 .frow:hover{background:var(--panel2)}
 .frow input{accent-color:var(--accent);width:15px;height:15px;flex:none}
@@ -3558,7 +3563,14 @@ function updateFilterDot(){const dot=$('#filterDot');if(dot)dot.hidden=!filtersA
 function afterFilterChange(){previewIndex=0;renderPreview();}
 function buildFilterMenu(){
   const menu=$('#filterMenu');if(!menu)return;menu.innerHTML='';
-  const h1=document.createElement('div');h1.className='fmh';h1.textContent='Categories';menu.appendChild(h1);
+  const h1=document.createElement('div');h1.className='fmh fmh-row';
+  const h1l=document.createElement('span');h1l.textContent='Categories';
+  const tools=document.createElement('span');tools.className='fmh-tools';
+  const allBtn=document.createElement('button');allBtn.className='fmh-act';allBtn.textContent='All';
+  allBtn.onclick=()=>{filters.excludeCats.clear();buildFilterMenu();afterFilterChange();};
+  const noneBtn=document.createElement('button');noneBtn.className='fmh-act';noneBtn.textContent='None';
+  noneBtn.onclick=()=>{state.categories.forEach(c=>filters.excludeCats.add(c.id));buildFilterMenu();afterFilterChange();};
+  tools.append(allBtn,noneBtn);h1.append(h1l,tools);menu.appendChild(h1);
   state.categories.forEach((cat,ci)=>{
     const row=document.createElement('label');row.className='frow';
     const cb=document.createElement('input');cb.type='checkbox';cb.checked=!filters.excludeCats.has(cat.id);
