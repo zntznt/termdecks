@@ -242,7 +242,8 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .coll-row.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 .coll-row .nm{flex:1;min-width:0;font-weight:600;text-align:left;background:transparent;border:none;color:var(--ink);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13.5px}
 .coll-row .meta{font-size:11px;color:var(--muted2);white-space:nowrap}
-.coll-row .badge{font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:var(--accent2);border:1px solid #3a3358;border-radius:5px;padding:1px 5px}
+.coll-row .badge{font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:var(--accent2);border:1px solid #3a3358;border-radius:5px;padding:1px 5px;
+  max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:none}
 .coll-actions{display:flex;gap:3px}
 .coll-foot{display:flex;gap:8px;margin-top:8px}
 .ready-row{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px dashed var(--line);border-radius:9px;margin-bottom:6px}
@@ -552,6 +553,7 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
     <div class="spacer"></div>
 
     <button class="btn ghost sm" id="collectionsBtn">Collections</button>
+    <button class="btn ghost sm" id="decksBtn">Decks</button>
     <button class="btn ghost sm" id="settingsBtn">Settings</button>
     <button class="btn primary" id="printBtn">Print / Save PDF</button>
     <input type="file" id="fileInput" accept="application/json,.json" style="display:none">
@@ -574,14 +576,11 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
         <span class="pill" id="cardCount">0 cards</span>
         <div class="spacer"></div>
         <span class="pill" id="deckInfo"></span>
-        <button class="seg-btn solo" id="deckSelect" title="Pick which cards are in this deck">Select cards</button>
+        <button class="seg-btn solo" id="deckSelect" data-tip="Pick which cards are in this deck">Select cards</button>
         <div class="dd" id="deckDD">
           <button class="seg-btn solo dd-trigger" id="deckBtn"><span id="deckBtnLabel">Full collection</span><span class="dd-caret">▾</span></button>
           <div class="dd-menu right" id="deckMenu" hidden></div>
         </div>
-        <button class="seg-btn solo iconish" id="deckNew" data-tip="New deck from a selection of cards">＋ New</button>
-        <button class="seg-btn solo iconish" id="deckRename" data-tip="Rename deck"></button>
-        <button class="seg-btn solo iconish" id="deckDelete" data-tip="Delete deck (keeps the cards)"></button>
         <div class="ctrl gridonly"><label>Faces</label><div class="dd" id="facesDD"></div></div>
         <div class="ctrl gridonly"><label>Size</label><input id="gridSize" type="range" min="0.9" max="1.8" step="0.05" value="1.25" style="width:84px"></div>
         <button class="seg-btn solo iconish" id="expandBtn" data-tip="Fullscreen (Esc to exit)"></button>
@@ -626,7 +625,9 @@ const ICONS={
   filter:'<path d="M3 5h18l-7 8v6l-4 2v-8z"/>', pencil:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
   sliders:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
   layers:'<path d="M12 2l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 17l9 5 9-5"/>',
-  folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'
+  folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  // a deck of cards — one card behind, one fanned in front
+  cards:'<rect x="3" y="6" width="11" height="15" rx="2"/><path d="M8 6V4a2 2 0 0 1 2.4-1.96l8 1.8A2 2 0 0 1 20 5.9l-2.2 9.9"/>'
 };
 function ico(name,size){const s=size||16;return '<svg class="ic" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[name]||'')+'</svg>';}
 
@@ -3878,9 +3879,7 @@ function applyIcons(){
   set('collectionsBtn',ico('folder',15)+'<span>Collections</span>');
   set('settingsBtn',ico('sliders',15)+'<span>Settings</span>');
   set('expandBtn',ico('maximize',15));
-  set('deckNew',ico('plus',15));
-  set('deckRename',ico('pencil',15));
-  set('deckDelete',ico('trash',15));
+  set('decksBtn',ico('cards',15)+'<span>Decks</span>');
   set('deckSelect',ico('check',15)+'<span>Select cards</span>');
   set('filterBtn',ico('filter',15)+'<span>Filters</span><span class="fdot" id="filterDot" hidden></span>');
   set('editToggle',ico('pencil',15)+'<span>Edit</span>');
@@ -3932,6 +3931,27 @@ function styledPrompt(title,defVal,onOk,okLabel){
   const key=e=>{if(e.key==='Escape'){e.stopImmediatePropagation();done();}else if(e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();submit();}};
   document.addEventListener('keydown',key,true);inp.focus();inp.select();
   function submit(){const v=(inp.value||'').trim();if(!v)return;done();onOk(v);}
+  function done(){ov.remove();document.removeEventListener('keydown',key,true);}
+}
+// pick one of the user's collections; calls onPick(id)
+function pickCollection(title,onPick){
+  const ov=document.createElement('div');ov.className='modal-ov';
+  ov.addEventListener('mousedown',e=>{if(e.target===ov)done();});
+  const box=document.createElement('div');box.className='modal confirm-modal';
+  const m=document.createElement('p');m.className='confirm-msg';m.textContent=title;box.appendChild(m);
+  const list=document.createElement('div');list.className='coll-list';box.appendChild(list);
+  store.collections.forEach(c=>{const b=document.createElement('button');b.className='coll-row';b.style.cursor='pointer';b.style.width='100%';
+    const n=document.createElement('span');n.className='nm';n.textContent=c.title||'Untitled';
+    const meta=document.createElement('span');meta.className='meta';
+    const ne=(c.categories||[]).reduce((a,cat)=>a+(cat.sections||[]).reduce((s,x)=>s+(x.entries||[]).length,0),0);
+    meta.textContent=ne+' entr'+(ne===1?'y':'ies')+(c.id===store.activeId?' · current':'');
+    b.append(n,meta);b.onclick=()=>{done();onPick(c.id);};list.appendChild(b);});
+  const acts=document.createElement('div');acts.className='modal-actions';
+  const cancel=document.createElement('button');cancel.className='btn ghost';cancel.textContent='Cancel';cancel.onclick=done;
+  acts.appendChild(cancel);box.appendChild(acts);
+  ov.appendChild(box);document.body.appendChild(ov);
+  document.addEventListener('keydown',key,true);
+  function key(e){if(e.key==='Escape'){e.stopImmediatePropagation();done();}}
   function done(){ov.remove();document.removeEventListener('keydown',key,true);}
 }
 function addReadymade(key){const t=READYMADE.find(r=>r.key===key);if(!t)return;
@@ -3996,6 +4016,99 @@ function openCollections(){
     });
   }
 }
+/* ============================================================
+   Decks — manage all decks across every collection
+   ============================================================ */
+// count cards (sections, after packing) a deck selects, within ITS collection
+function deckCardCount(coll,d){
+  let n=0;(coll.categories||[]).forEach(cat=>(cat.sections||[]).forEach(s=>{if((d.secIds||[]).includes(s.id))n++;}));
+  return n;
+}
+function newDeckIn(coll,after){
+  styledPrompt('Name this deck','Deck '+((coll.decks||[]).length+1),nm=>{
+    const d={id:uid(),name:nm,secIds:[]};(coll.decks=coll.decks||[]).push(d);
+    if(coll.id===store.activeId){state.activeDeck=d.id;selecting=true;}
+    save();
+    if(coll.id===store.activeId){refreshDeckOptions();renderPreview();}
+    if(after)after();
+  },'Create');
+}
+function renameDeck(coll,d,after){styledPrompt('Rename deck',d.name,nm=>{d.name=nm;save();
+  if(coll.id===store.activeId)refreshDeckOptions();if(after)after();},'Rename');}
+function deleteDeck(coll,d,after){styledConfirm('Delete deck “'+d.name+'”? The cards themselves are not deleted.',()=>{
+  coll.decks=(coll.decks||[]).filter(x=>x!==d);
+  if(coll.id===store.activeId&&state.activeDeck===d.id){state.activeDeck=null;selecting=false;refreshDeckOptions();renderPreview();}
+  save();if(after)after();},'Delete');}
+// copy a deck (and the sections/cards it selects) into another collection, merging by name
+function copyDeckTo(srcColl,d,dstId,after){
+  const dst=store.collections.find(c=>c.id===dstId);if(!dst||dst===srcColl)return;
+  const low=s=>(s||'').toLowerCase();const newSecIds=[];
+  (srcColl.categories||[]).forEach(scat=>{
+    (scat.sections||[]).forEach(ssec=>{
+      if(!(d.secIds||[]).includes(ssec.id))return;            // only sections this deck selects
+      let dcat=dst.categories.find(x=>low(x.name)===low(scat.name));
+      if(!dcat){dcat={id:uid(),name:scat.name||'New category',color:scat.color||null,sections:[]};dst.categories.push(dcat);}
+      let dsec=dcat.sections.find(x=>low(x.name)===low(ssec.name));
+      if(!dsec){dsec={id:uid(),name:ssec.name||'Section',color:ssec.color||null,entries:[]};dcat.sections.push(dsec);}
+      (ssec.entries||[]).forEach(e=>dsec.entries.push({id:uid(),cmd:e.cmd,desc:e.desc,q:e.q}));
+      newSecIds.push(dsec.id);
+    });
+  });
+  (dst.decks=dst.decks||[]).push({id:uid(),name:d.name,secIds:newSecIds});
+  normalizeCollection(dst);
+  if(dst.id===store.activeId)applyCollectionSwitch(); else save();
+  toast('Copied deck “'+d.name+'” into “'+(dst.title||'Untitled')+'”.','ok');
+  if(after)after();
+}
+function openDecks(){
+  closeAllMenus();
+  const ov=document.createElement('div');ov.className='modal-ov';
+  ov.addEventListener('mousedown',e=>{if(e.target===ov)close();});
+  const box=document.createElement('div');box.className='modal collections-modal';
+  ov.appendChild(box);document.body.appendChild(ov);
+  function close(){ov.remove();document.removeEventListener('keydown',esc);}
+  function esc(e){if(e.key==='Escape')close();}
+  document.addEventListener('keydown',esc);
+  draw();
+  function draw(){
+    box.innerHTML='';
+    const head=document.createElement('div');head.className='modal-head';
+    const h=document.createElement('h3');h.textContent='Decks';
+    const xb=document.createElement('button');xb.className='iconbtn2';xb.innerHTML=ico('x',16);xb.title='Close';xb.onclick=close;
+    head.append(h,xb);box.appendChild(head);
+    const total=store.collections.reduce((a,c)=>a+(c.decks||[]).length,0);
+    const l1=document.createElement('div');l1.className='fmh';l1.textContent=total?('All decks · '+total):'No decks yet';box.appendChild(l1);
+    const list=document.createElement('div');list.className='coll-list';box.appendChild(list);
+    store.collections.forEach(coll=>{
+      (coll.decks||[]).forEach(d=>{
+        const isActive=coll.id===store.activeId&&state.activeDeck===d.id;
+        const row=document.createElement('div');row.className='coll-row'+(isActive?' active':'');
+        const nm=document.createElement('button');nm.className='nm';nm.textContent=d.name||'Untitled deck';
+        nm.title='Open this deck in the viewer';nm.onclick=()=>{
+          if(coll.id!==store.activeId)setActiveCollection(coll.id);
+          state.activeDeck=d.id;selecting=false;save();refreshDeckOptions();renderPreview();close();};
+        const n=deckCardCount(coll,d);
+        const meta=document.createElement('span');meta.className='meta';meta.textContent=n+' card'+(n===1?'':'s');
+        const badge=document.createElement('span');badge.className='badge';badge.textContent=coll.title||'Untitled';
+        row.append(nm,meta,badge);
+        const acts=document.createElement('div');acts.className='coll-actions';
+        const ren=makeIcon('pencil','Rename');ren.onclick=()=>renameDeck(coll,d,draw);
+        const cpy=makeIcon('copy','Copy to another collection');cpy.onclick=()=>{
+          if(store.collections.length<2){toast('Make another collection first to copy a deck into it.','warn');return;}
+          pickCollection('Copy deck “'+d.name+'” into…',id=>{if(id!==coll.id)copyDeckTo(coll,d,id,draw);else toast('That’s the deck’s own collection.','warn');});};
+        const del=makeIcon('trash','Delete','danger');del.onclick=()=>deleteDeck(coll,d,draw);
+        acts.append(ren,cpy,del);row.appendChild(acts);
+        list.appendChild(row);
+      });
+    });
+    if(!total){const note=document.createElement('div');note.className='empty-note';note.style.textAlign='left';note.style.padding='6px 2px 12px';
+      note.textContent='A deck is a named subset of one collection’s cards. Create one, then use “Select cards” in the viewer to choose what’s in it.';list.appendChild(note);}
+    const foot=document.createElement('div');foot.className='coll-foot';
+    const nb=document.createElement('button');nb.className='btn ghost sm';nb.innerHTML=ico('plus',14)+'<span>New deck in “'+(activeCollection().title||'current')+'”</span>';
+    nb.onclick=()=>newDeckIn(activeCollection(),draw);
+    foot.appendChild(nb);box.appendChild(foot);
+  }
+}
 /* ---- deck dropdown ---- */
 function refreshDeckOptions(){
   const lbl=$('#deckBtnLabel');if(lbl)lbl.innerHTML=ico('folder',15)+'<span>'+(activeDeckObj()?activeDeckObj().name:'Full collection')+'</span>';
@@ -4052,8 +4165,7 @@ function buildFilterMenu(){
   ft.appendChild(rb);menu.appendChild(ft);
 }
 function updateDeckButtons(){const d=activeDeckObj();
-  ['deckRename','deckDelete','deckSelect'].forEach(id=>{const b=$('#'+id);if(b)b.style.display=d?'':'none';});
-  const sb=$('#deckSelect');if(sb){sb.classList.toggle('active',selecting&&!!d);sb.innerHTML=ico('check',14)+'<span>'+((selecting&&d)?'Done':'Select cards')+'</span>';}
+  const sb=$('#deckSelect');if(sb){sb.style.display=d?'':'none';sb.classList.toggle('active',selecting&&!!d);sb.innerHTML=ico('check',14)+'<span>'+((selecting&&d)?'Done':'Select cards')+'</span>';}
   const info=$('#deckInfo');if(info){if(d){const n=scopedCards().length;info.textContent=n+' card'+(n===1?'':'s')+(selecting?' · tap a card to add/remove its section':' in this deck');info.style.display='';}else{info.style.display='none';}}}
 function toggleDeckSec(d,secId){const i=d.secIds.indexOf(secId);if(i<0)d.secIds.push(secId);else d.secIds.splice(i,1);save();renderSelectGrid();updateDeckButtons();updateCount();}
 function renderSelectGrid(){
@@ -4726,11 +4838,7 @@ function bindToolbar(){
   refreshDeckOptions();
   $('#deckBtn').addEventListener('click',()=>{const m=$('#deckMenu');if(m.hidden){refreshDeckOptions();openMenu(m);}else closeAllMenus();});
   $('#filterBtn').addEventListener('click',()=>{const m=$('#filterMenu');if(m.hidden){buildFilterMenu();openMenu(m);}else closeAllMenus();});
-  $('#deckNew').addEventListener('click',()=>styledPrompt('Name this deck','Deck '+(state.decks.length+1),nm=>{
-    const d={id:uid(),name:nm,secIds:[]};state.decks.push(d);state.activeDeck=d.id;selecting=true;save();refreshDeckOptions();renderPreview();},'Create'));
-  $('#deckRename').addEventListener('click',()=>{const d=activeDeckObj();if(!d)return;styledPrompt('Rename deck',d.name,nm=>{d.name=nm;save();refreshDeckOptions();updateDeckButtons();},'Rename');});
-  $('#deckDelete').addEventListener('click',()=>{const d=activeDeckObj();if(!d)return;styledConfirm('Delete deck “'+d.name+'”? Your cards are not deleted.',()=>{
-    state.decks=state.decks.filter(x=>x!==d);state.activeDeck=null;selecting=false;save();refreshDeckOptions();renderPreview();},'Delete');});
+  $('#decksBtn').addEventListener('click',openDecks);
   $('#deckSelect').addEventListener('click',()=>{if(!activeDeckObj())return;selecting=!selecting;renderPreview();});
   $('#gridSize').addEventListener('input',()=>{state.gridZoom=parseFloat($('#gridSize').value);document.documentElement.style.setProperty('--grid-zoom',state.gridZoom);save();});
   $('#expandBtn').addEventListener('click',()=>{pane.classList.toggle('full');requestAnimationFrame(applyFit);});
