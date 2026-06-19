@@ -13,6 +13,8 @@
   --bg:#0e1014; --panel:#161a22; --panel2:#1d222c; --line:#2a313d;
   --ink:#e8ecf3; --muted:#9aa6b8; --muted2:#6b7689;
   --accent:#7aa2f7; --accent2:#bb9af7; --ok:#9ece6a; --warn:#e0af68; --danger:#f7768e;
+  /* editor surfaces — stepped so category(raised) > section(recessed) > input(well) reads at a glance */
+  --ed-cat:#1b212b; --ed-sec:#13171f; --ed-well:#0e1218;
   --radius:10px;
   --card-font:'JetBrainsMono Nerd Font','JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
   --card-fs:8.5px;
@@ -313,31 +315,37 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
 .card mark{background:#ffe082;color:#1a1500}
 
 /* ---------- Editor tree ---------- */
-.editor-tools{display:flex;gap:8px;justify-content:flex-end;margin:0 2px 12px}
+.editor-tools{display:flex;align-items:center;gap:8px;margin:0 2px 12px}
 .editor-tools button{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:7px;padding:4px 10px;font-size:11.5px;font-weight:600}
 .editor-tools button:hover{color:var(--ink);border-color:#3a4456;background:#1b2029}
+.editor-tip{font-size:11.5px;color:var(--muted2)}
+.editor-tip code{font-family:var(--card-font);background:var(--ed-well);border:1px solid var(--line);border-radius:4px;padding:0 4px;color:var(--muted)}
 .collapse{flex:none;background:transparent;border:none;color:var(--muted2);font-size:12px;width:20px;height:20px;border-radius:5px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
 .collapse:hover{color:var(--ink);background:#0e1218}
 .cmeta{font-size:11px;color:var(--muted2);font-weight:600;margin-left:8px;white-space:nowrap}
 .sec-head .cmeta{font-size:10.5px}
-.cat{background:var(--panel2);border:1px solid var(--line);border-left-width:4px;border-radius:var(--radius);
-  margin-bottom:14px;overflow:hidden}
-.cat-head{display:flex;align-items:center;gap:8px;padding:10px 10px}
-.swatch{width:24px;height:24px;border-radius:6px;border:1px solid #ffffff22;flex:none;cursor:pointer;position:relative;overflow:hidden}
+/* category — raised panel; depth from bg step + soft shadow, one colored left edge */
+.cat{background:var(--ed-cat);border:none;border-left:3px solid var(--line);border-radius:var(--radius);
+  margin-bottom:10px;overflow:hidden;box-shadow:0 1px 2px #00000040}
+.cat-head{display:flex;align-items:center;gap:8px;padding:6px 10px}
+.swatch{width:18px;height:18px;border-radius:5px;border:1px solid #ffffff18;flex:none;cursor:pointer;position:relative;overflow:hidden}
 .swatch input[type=color]{position:absolute;inset:-4px;width:140%;height:140%;border:none;padding:0;cursor:pointer;opacity:0}
-.name-input{flex:1;min-width:0;background:transparent;border:1px solid transparent;border-radius:6px;padding:6px 8px;font-weight:700;font-size:15px}
+.name-input{flex:1;min-width:0;background:transparent;border:1px solid transparent;border-radius:6px;padding:5px 8px;font-weight:700;font-size:16px;letter-spacing:-.01em;color:var(--ink)}
 .name-input:hover{border-color:var(--line)}
-.name-input:focus{outline:none;border-color:var(--accent);background:#0e1218}
-.sec .name-input{font-size:13px;font-weight:600}
+.name-input:focus{outline:none;border-color:var(--accent);background:var(--ed-well)}
+/* section title reads as an eyebrow/sub-header, mirroring the printed card */
+.sec .name-input{font-size:12.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.sec .name-input:focus{color:var(--ink)}
 .iconbtn{background:transparent;border:1px solid transparent;color:var(--muted2);width:26px;height:26px;border-radius:6px;
   display:grid;place-items:center;font-size:14px;line-height:1}
 .iconbtn:hover{color:var(--ink);border-color:var(--line);background:#0e1218}
 .iconbtn.danger:hover{color:var(--danger);border-color:#43222a}
-.cat-body{padding:0 10px 10px}
-.sec{background:#141821;border:1px solid var(--line);border-left-width:3px;border-radius:8px;margin:8px 0}
-.sec-head{display:flex;align-items:center;gap:6px;padding:7px 8px}
-.sec-body{padding:2px 8px 9px}
-.entry-row{display:flex;align-items:center;gap:6px;padding:3px 0}
+.cat-body{padding:0 10px 6px}
+/* section — recessed well inside the category; bg step carries depth, subtle colored edge */
+.sec{background:var(--ed-sec);border:none;border-left:2px solid var(--line);border-radius:8px;margin:6px 0}
+.sec-head{display:flex;align-items:center;gap:6px;padding:4px 8px}
+.sec-body{padding:2px 8px 5px}
+.entry-row{display:flex;align-items:center;gap:6px;padding:1px 0}
 .grip{flex:none;color:var(--muted2);font-size:12px;line-height:1;padding:3px 2px;border-radius:5px;cursor:grab;user-select:none}
 .grip:hover{color:var(--ink);background:#0e1218}
 .grip:active{cursor:grabbing}
@@ -351,17 +359,23 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
 .cat.drop-before{box-shadow:0 -3px 0 0 var(--accent)}
 .cat.drop-after{box-shadow:0 3px 0 0 var(--accent)}
 .sec.drop-into,.cat.drop-into{outline:2px dashed var(--accent);outline-offset:-3px}
-.entry-row input{background:#0e1218;border:1px solid var(--line);border-radius:6px;padding:5px 7px}
-.entry-row input.cmd{flex:0 0 39%;font-family:var(--card-font);font-weight:600}
-.entry-row input.desc{flex:1;min-width:0;color:var(--muted)}
-.entry-row input:focus{outline:none;border-color:var(--accent)}
+.entry-row input{border-radius:6px;padding:3px 7px}
+/* command = the boxed anchor (monospace well); description = borderless prose until focus */
+.entry-row input.cmd{flex:0 0 35%;background:var(--ed-well);border:1px solid var(--line);font-family:var(--card-font);font-weight:600}
+.entry-row input.desc{flex:1;min-width:0;background:transparent;border:1px solid transparent;color:var(--muted)}
+.entry-row input.desc:hover{border-color:var(--line)}
+.entry-row input.cmd:focus,.entry-row input.desc:focus{outline:none;border-color:var(--accent);background:var(--ed-well)}
 .entry-row.hit input.cmd{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 .entry-row.hit .grip{color:var(--accent)}
-.q-row{padding:1px 0 6px 20px}
-.q-row .qinput{width:100%;background:#0e1218;border:1px solid var(--line);border-left:3px solid var(--accent2);border-radius:6px;padding:5px 8px;color:var(--muted);font-size:12px}
-.q-row .qinput::placeholder{color:var(--muted2)}
-.q-row .qinput:focus{outline:none;border-color:var(--accent);color:var(--ink)}
-.iconbtn.qbtn.has{color:var(--accent2);border-color:#3a3358}
+/* question sub-line — quiet caption that recedes; accent appears only on focus */
+.q-row{padding:0 0 2px 22px}
+.q-row.q-collapsed{display:none}
+.q-row .qinput{width:100%;background:transparent;border:none;border-radius:6px;padding:2px 8px 2px 10px;color:var(--muted2);font-size:11.5px;font-style:italic}
+.q-row .qinput::placeholder{color:#586475;font-style:italic}
+.q-row .qinput:hover{color:var(--muted)}
+.q-row .qinput:focus{outline:none;color:var(--ink);background:var(--ed-well);box-shadow:inset 0 0 0 1px var(--line),inset 2px 0 0 var(--accent2)}
+/* "?" is an ambient state marker when a question exists — a quiet filled dot, not a button */
+.iconbtn.qbtn.has{color:var(--accent2)}
 /* declutter: row action icons hide until the row is hovered or focused (180 always-on icons → quiet).
    The question toggle stays visible when it holds a question (.has), since that's state, not an action. */
 .entry-row .grip,.entry-row .iconbtn{opacity:0;transition:opacity .12s}
@@ -374,9 +388,7 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
 .cat-head:hover .iconbtn,.cat-head:hover .grip,.cat-head:focus-within .iconbtn,.cat-head:focus-within .grip,
 .sec-head:hover .iconbtn,.sec-head:hover .grip,.sec-head:focus-within .iconbtn,.sec-head:focus-within .grip{opacity:1}
 @media (hover:none){.entry-row .grip,.entry-row .iconbtn,.cat-head .iconbtn,.sec-head .iconbtn,.cat-head .grip,.sec-head .grip{opacity:1}}
-.addline{display:flex;gap:8px;margin-top:6px}
-.minihead{display:flex;align-items:center;justify-content:space-between;margin:2px 0 4px}
-.minihead span{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted2)}
+.addline{display:flex;gap:8px;margin-top:4px}
 .swatch.lowc{box-shadow:0 0 0 2px var(--warn)}
 .colorgroup{display:flex;align-items:center;gap:5px}
 .autobadge{font-size:9px;color:var(--muted2);border:1px solid var(--line);border-radius:5px;padding:1px 4px;cursor:pointer}
@@ -4377,9 +4389,11 @@ function entryVisible(cat,sec,e){if(!search)return true;if(norm(cat.name).includ
 function renderEditor(){
   const root=$('#editor');root.innerHTML='';
   if(state.categories.length){const tools=document.createElement('div');tools.className='editor-tools';
+    const tip=document.createElement('span');tip.className='editor-tip';tip.innerHTML='Wrap keycaps in <code>`backticks`</code>';
+    const sp=document.createElement('span');sp.style.flex='1';
     const ca=document.createElement('button');ca.textContent='⊟ Collapse all';ca.onclick=collapseAll;
     const ea=document.createElement('button');ea.textContent='⊞ Expand all';ea.onclick=expandAll;
-    tools.append(ca,ea);root.appendChild(tools);}
+    tools.append(tip,sp,ca,ea);root.appendChild(tools);}
   state.categories.forEach((cat,ci)=>{
     if(!catVisible(cat))return;
     const catColor=effCat(cat,ci);
@@ -4435,24 +4449,18 @@ function renderEditor(){
         body.appendChild(sEl);return;}
       // entries
       const sb=document.createElement('div');sb.className='sec-body';
-      const mh=document.createElement('div');mh.className='minihead';
-      mh.innerHTML='<span>command  ·  use `backticks` for keycaps</span><span>description</span>';
-      sb.appendChild(mh);
       sec.entries.forEach((e,ei)=>{
         if(!entryVisible(cat,sec,e))return;
         const r=document.createElement('div');r.className='entry-row'+(search&&entryMatches(e,search)?' hit':'');
         r.dataset.cat=cat.id;r.dataset.sec=sec.id;r.dataset.entry=e.id;
         const g=document.createElement('span');g.className='grip';g.innerHTML=ico('grip',15);g.title='Drag to reorder / move to another section';g.setAttribute('draggable','true');g.dataset.dh='entry';
-        const ic=document.createElement('input');ic.className='cmd';ic.value=e.cmd;ic.placeholder='dd';
+        const ic=document.createElement('input');ic.className='cmd';ic.value=e.cmd;ic.placeholder='command';
         ic.addEventListener('input',()=>{e.cmd=ic.value;refresh();});
         ic.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();const d=r.querySelector('input.desc');if(d)d.focus();}});
-        const id=document.createElement('input');id.className='desc';id.value=e.desc;id.placeholder='delete line';
+        const id=document.createElement('input');id.className='desc';id.value=e.desc;id.placeholder='description';
         id.addEventListener('input',()=>{e.desc=id.value;refresh();});
-        id.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();addEntry(sec,ei+1);}});
         const hasQ=!!(e.q&&e.q.trim());
-        const qbtn=makeIcon('help','Add a question for the back');qbtn.className='iconbtn qbtn'+(hasQ?' has':'');
-        qbtn.onclick=()=>{if(qOpen.has(e.id))qOpen.delete(e.id);else qOpen.add(e.id);renderEditor();
-          const f=document.querySelector('[data-q="'+e.id+'"]');if(f)f.focus();};
+        const qbtn=makeIcon('help','Add a flip-side question (Tab from description)');qbtn.className='iconbtn qbtn'+(hasQ?' has':'');
         const edup=makeIcon('copy','Duplicate');edup.onclick=()=>{const id=dupEntry(cat.id,sec.id,e.id);commit();if(id)flashEditor('.entry-row[data-entry="'+id+'"]');};
         const edel=makeIcon('trash','Delete','danger');edel.onclick=()=>{
           const del=()=>{sec.entries.splice(ei,1);commit();};
@@ -4460,13 +4468,22 @@ function renderEditor(){
           else del();};
         r.append(g,ic,id,qbtn,edup,edel);
         sb.appendChild(r);
-        if(hasQ||qOpen.has(e.id)){
-          const qr=document.createElement('div');qr.className='q-row';
-          const qi=document.createElement('input');qi.className='qinput';qi.value=e.q||'';qi.setAttribute('data-q',e.id);
-          qi.placeholder='Question shown under the back label (optional)';
-          qi.addEventListener('input',()=>{e.q=qi.value;refresh();});
-          qr.appendChild(qi);sb.appendChild(qr);
-        }
+        // quiet question sub-line — shown when filled or opened; auto-hides when left empty
+        const qr=document.createElement('div');qr.className='q-row';
+        const qi=document.createElement('input');qi.className='qinput';qi.value=e.q||'';qi.setAttribute('data-q',e.id);
+        qi.placeholder='Flip-side question (optional)';
+        qi.addEventListener('input',()=>{e.q=qi.value;refresh();});
+        qi.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();addEntry(sec,ei+1);}});
+        qi.addEventListener('blur',()=>{if(!qi.value.trim()){qOpen.delete(e.id);qr.classList.add('q-collapsed');qbtn.classList.remove('has');}});
+        qr.appendChild(qi);sb.appendChild(qr);
+        if(!(hasQ||qOpen.has(e.id)))qr.classList.add('q-collapsed');
+        const openQ=()=>{qr.classList.remove('q-collapsed');qbtn.classList.add('has');qi.focus();};
+        qbtn.onclick=()=>{if(qr.classList.contains('q-collapsed'))openQ();else{qr.classList.add('q-collapsed');if(!qi.value.trim())qbtn.classList.remove('has');}};
+        // Tab from description opens + jumps into the question (keyboard-first authoring)
+        id.addEventListener('keydown',ev=>{
+          if(ev.key==='Enter'){ev.preventDefault();addEntry(sec,ei+1);}
+          else if(ev.key==='Tab'&&!ev.shiftKey){ev.preventDefault();openQ();}
+        });
       });
       const al=document.createElement('div');al.className='addline';
       const ae=document.createElement('button');ae.className='btn ghost sm';ae.textContent='+ entry';
@@ -4476,15 +4493,17 @@ function renderEditor(){
       body.appendChild(sEl);
     });
     const as=document.createElement('button');as.className='btn ghost sm';as.style.marginTop='6px';as.textContent='+ section';
-    as.onclick=()=>{cat.sections.push({id:uid(),name:'New section',color:null,entries:[{id:uid(),cmd:'',desc:''}]});commit();};
+    as.onclick=()=>{const ns={id:uid(),name:'',color:null,entries:[{id:uid(),cmd:'',desc:''}]};cat.sections.push(ns);commit();
+      const el=$('#editor').querySelector('.sec[data-sec="'+ns.id+'"] .name-input');if(el){el.focus();}};
     body.appendChild(as);
     cEl.appendChild(body);
     root.appendChild(cEl);
   });
   if(search && !root.querySelector('.cat')){const n=document.createElement('div');n.className='empty-note';n.style.textAlign='left';n.style.padding='6px 2px 14px';n.innerHTML='No editor items match “'+search.replace(/</g,'&lt;')+'”.<br>Clear the search to edit everything.';root.appendChild(n);}
   const addCat=document.createElement('button');addCat.className='btn';addCat.style.width='100%';addCat.textContent='+ Add category';
-  addCat.onclick=()=>{state.categories.push({id:uid(),name:'New category',color:null,
-    sections:[{id:uid(),name:'Section',color:null,entries:[{id:uid(),cmd:'',desc:''}]}]});commit();};
+  addCat.onclick=()=>{const nc={id:uid(),name:'',color:null,
+    sections:[{id:uid(),name:'',color:null,entries:[{id:uid(),cmd:'',desc:''}]}]};state.categories.push(nc);commit();
+    const el=$('#editor').querySelector('.cat[data-cat="'+nc.id+'"] .name-input');if(el){el.focus();}};
   root.appendChild(addCat);
 }
 /* scroll a freshly created/duplicated editor node into view and flash it */
