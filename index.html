@@ -2967,7 +2967,7 @@ const READYMADE = [
   {key:'text',name:'jq + awk/sed/grep',blurb:'jq queries, awk one-liners, sed substitution, grep & ripgrep, cut/sort/uniq, xargs…',make:TEXT},
 ];
 function blankCollection(name){return {id:uid(),title:name||'Untitled',paper:'letter',palette:'nord',font:'jb',fs:8.5,
-  duplex:'long',guides:true,backStyle:'minimal',decks:[],activeDeck:null,collapsed:{cats:[],secs:[]},categories:[]};}
+  duplex:'long',guides:true,backStyle:'minimal',gridZoom:1.25,decks:[],activeDeck:null,collapsed:{cats:[],secs:[]},categories:[]};}
 
 let state, store;
 const STORAGE_KEY='cardcheat_v3';
@@ -2977,6 +2977,7 @@ function normalizeCollection(c){
   c.paper=c.paper||'letter';c.palette=c.palette||'nord';c.font=c.font||'jb';
   if(typeof c.fs!=='number')c.fs=8.5; c.duplex=c.duplex||'long';
   if(typeof c.guides!=='boolean')c.guides=true; c.backStyle=c.backStyle||'minimal';
+  if(typeof c.gridZoom!=='number'||!(c.gridZoom>=0.9&&c.gridZoom<=1.8))c.gridZoom=1.25;
   if(!Array.isArray(c.categories))c.categories=[];
   if(!Array.isArray(c.decks))c.decks=[];
   // Repair untrusted nested shape (imports, hand-edited/truncated JSON). Drop
@@ -3850,7 +3851,7 @@ function renderEditor(){
     nm.addEventListener('input',()=>{cat.name=nm.value;refresh();});
     head.appendChild(nm);
     const cdup=makeIcon('copy','Duplicate category');cdup.onclick=()=>{dupCategory(cat.id);commit();};
-    const del=makeIcon('trash','Delete category','danger');del.onclick=()=>{if(confirm('Delete category “'+(cat.name||'')+'”?')){state.categories.splice(ci,1);commit();}};
+    const del=makeIcon('trash','Delete category','danger');del.onclick=()=>styledConfirm('Delete category “'+(cat.name||'')+'”?',()=>{state.categories.splice(ci,1);commit();},'Delete');
     head.appendChild(cdup);head.appendChild(del);
     cEl.appendChild(head);
     if(colCat){const meta=document.createElement('span');meta.className='cmeta';
@@ -3971,6 +3972,8 @@ function applyPageStyle(){
 }
 function applyAll(){
   document.documentElement.style.setProperty('--card-fs',state.fs+'px');
+  document.documentElement.style.setProperty('--grid-zoom',state.gridZoom);
+  const gz=$('#gridSize');if(gz)gz.value=state.gridZoom;
   applyFont();applyPageStyle();
 }
 
@@ -3999,13 +4002,13 @@ function bindToolbar(){
   refreshDeckOptions();
   $('#deckBtn').addEventListener('click',()=>{const m=$('#deckMenu');if(m.hidden){refreshDeckOptions();openMenu(m);}else closeAllMenus();});
   $('#filterBtn').addEventListener('click',()=>{const m=$('#filterMenu');if(m.hidden){buildFilterMenu();openMenu(m);}else closeAllMenus();});
-  $('#deckNew').addEventListener('click',()=>{const nm=(prompt('Name this deck:','Deck '+(state.decks.length+1))||'').trim();if(!nm)return;
-    const d={id:uid(),name:nm,secIds:[]};state.decks.push(d);state.activeDeck=d.id;selecting=true;save();refreshDeckOptions();renderPreview();});
-  $('#deckRename').addEventListener('click',()=>{const d=activeDeckObj();if(!d)return;const nm=(prompt('Rename deck:',d.name)||'').trim();if(!nm)return;d.name=nm;save();refreshDeckOptions();updateDeckButtons();});
-  $('#deckDelete').addEventListener('click',()=>{const d=activeDeckObj();if(!d)return;if(!confirm('Delete deck “'+d.name+'”? Your cards are not deleted.'))return;
-    state.decks=state.decks.filter(x=>x!==d);state.activeDeck=null;selecting=false;save();refreshDeckOptions();renderPreview();});
+  $('#deckNew').addEventListener('click',()=>styledPrompt('Name this deck','Deck '+(state.decks.length+1),nm=>{
+    const d={id:uid(),name:nm,secIds:[]};state.decks.push(d);state.activeDeck=d.id;selecting=true;save();refreshDeckOptions();renderPreview();},'Create'));
+  $('#deckRename').addEventListener('click',()=>{const d=activeDeckObj();if(!d)return;styledPrompt('Rename deck',d.name,nm=>{d.name=nm;save();refreshDeckOptions();updateDeckButtons();},'Rename');});
+  $('#deckDelete').addEventListener('click',()=>{const d=activeDeckObj();if(!d)return;styledConfirm('Delete deck “'+d.name+'”? Your cards are not deleted.',()=>{
+    state.decks=state.decks.filter(x=>x!==d);state.activeDeck=null;selecting=false;save();refreshDeckOptions();renderPreview();},'Delete');});
   $('#deckSelect').addEventListener('click',()=>{if(!activeDeckObj())return;selecting=!selecting;renderPreview();});
-  $('#gridSize').addEventListener('input',()=>document.documentElement.style.setProperty('--grid-zoom',$('#gridSize').value));
+  $('#gridSize').addEventListener('input',()=>{state.gridZoom=parseFloat($('#gridSize').value);document.documentElement.style.setProperty('--grid-zoom',state.gridZoom);save();});
   $('#expandBtn').addEventListener('click',()=>{pane.classList.toggle('full');requestAnimationFrame(applyFit);});
 
   // search
@@ -4053,7 +4056,10 @@ function bindToolbar(){
     if(e.key==='/'&&!typing){e.preventDefault();$('#search').focus();}
     else if(e.key==='ArrowRight'&&!typing){e.preventDefault();navPreview(1);}
     else if(e.key==='ArrowLeft'&&!typing){e.preventDefault();navPreview(-1);}
-    else if((e.key==='f'||e.key==='F')&&!typing){if(viewMode==='single'&&curFlip)curFlip.classList.toggle('flipped');}
+    else if((e.key==='f'||e.key==='F')&&!typing){
+      if(viewMode==='single'&&curFlip)curFlip.classList.toggle('flipped');
+      else if(viewMode==='grid'){const el=gridEls[previewIndex]||gridEls[0];if(el){el.classList.toggle('flipped');highlightGridCard(gridEls.indexOf(el));}}
+    }
   });
 }
 function syncToolbar(){
