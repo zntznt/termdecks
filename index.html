@@ -204,23 +204,27 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .btn[disabled],.btn.primary[disabled]{opacity:.45;cursor:not-allowed}
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .collections-modal{max-width:560px}
-/* settings modal — same chip rows as the old popover, just roomier */
-.settings-modal{max-width:560px}
+.settings-modal{max-width:600px}
 .settings-modal .fmh{margin:14px 4px 8px}
-.settings-modal .fmh:first-of-type{margin-top:2px}
-/* 2-column grid for Card design & Print sections */
-.set-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;align-items:start}
-.set-grid .set-row2{padding:0;border:none;gap:7px}
-.set-grid .set-toggle{grid-column:1 / -1;padding:8px 0 0;border:none}
-.set-grid .set-hint{grid-column:1 / -1;margin:0;padding:0}
-/* Data section: a horizontal bar of actions */
-.data-bar{display:flex;gap:8px;flex-wrap:wrap}
-.data-btn{flex:1 1 0;min-width:120px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:10px 12px;font-weight:600;font-size:13px}
+/* two side-by-side columns: Card settings | Print settings, divider between */
+.settings-cols{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.settings-col{display:flex;flex-direction:column;gap:2px;padding:0 18px}
+.settings-col:first-child{padding-left:2px}
+.settings-col:last-child{padding-right:2px;border-left:1px solid var(--line)}
+.settings-col .set-row2{padding:8px 0;border:none}
+.settings-col .set-row2+.set-row2{border-top:1px solid #ffffff0d}
+.settings-col .set-toggle{padding:10px 0;border-top:1px solid #ffffff0d}
+.settings-col .set-hint{padding:0;margin:2px 0 0}
+/* Data — a full-width action bar spanning the modal */
+.data-bar{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.data-btn{display:inline-flex;align-items:center;gap:6px;
+  background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:6px 11px;font-weight:600;font-size:12.5px}
 .data-btn:hover{border-color:#3a4456;background:#222936}
-.data-btn.danger{color:var(--danger)}
+.data-btn.danger{color:var(--danger);margin-left:auto}
 .data-btn.danger:hover{border-color:#43222a;background:#1c1418}
-@media (max-width:520px){.set-grid{grid-template-columns:1fr}}
+@media (max-width:560px){.settings-cols{grid-template-columns:1fr}
+  .settings-col:last-child{border-left:none;border-top:1px solid var(--line);padding:8px 2px 0}
+  .settings-col:first-child{padding:0 2px}}
 /* help / about modal — 2 columns: identity+blurb left, shortcuts right */
 .help-modal{max-width:560px}
 .help-cols{display:flex;gap:22px}
@@ -247,7 +251,23 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .set-menu{min-width:258px;max-width:300px;padding:8px}
 .set-row2{display:flex;flex-direction:column;gap:6px;padding:8px 6px}
 .set-row2+.set-row2,.set-toggle{border-top:1px solid #ffffff0d}
-.set-lab{font-size:10.5px;color:var(--muted2);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.set-lab{font-size:10.5px;color:var(--muted2);font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:6px}
+/* hover-info "?" with a popover instead of a wall of hint text */
+.set-info{position:relative;width:14px;height:14px;border-radius:99px;border:1px solid var(--line);color:var(--muted2);
+  font-size:10px;font-weight:700;display:inline-grid;place-items:center;cursor:help;text-transform:none;letter-spacing:0;flex:none}
+.set-info:hover,.set-info:focus-visible{color:var(--ink);border-color:var(--accent);outline:none}
+/* fixed-positioned (JS-placed) so it escapes the modal's overflow:auto clipping */
+.set-tip{position:fixed;z-index:95;width:max-content;max-width:240px;
+  background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:7px 10px;
+  font-size:11.5px;font-weight:500;text-transform:none;letter-spacing:0;line-height:1.45;text-align:left;
+  box-shadow:0 10px 30px #000a;opacity:0;visibility:hidden;transition:opacity .12s;pointer-events:none}
+.set-info:hover .set-tip,.set-info:focus-visible .set-tip{opacity:1;visibility:visible}
+.fmh-info{display:flex;align-items:center;gap:7px}
+/* shared delegated tooltip for any [data-tip] element (toolbar/preview-bar icons) */
+#tip{position:fixed;z-index:95;max-width:240px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+  border-radius:8px;padding:6px 9px;font-size:11.5px;font-weight:500;line-height:1.4;text-align:center;
+  box-shadow:0 10px 30px #000a;opacity:0;visibility:hidden;transition:opacity .12s;pointer-events:none}
+#tip.show{opacity:1;visibility:visible}
 .chips{display:flex;flex-wrap:wrap;gap:5px}
 .chip{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:7px;padding:5px 9px;font-size:12px;font-weight:600;cursor:pointer}
 .chip:hover{color:var(--ink);border-color:#3a4456}
@@ -431,6 +451,25 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
 .card.qface .qmark{color:var(--accent-sec);font-weight:700}
 .card.qface .qtext{color:#2b3038;min-width:0;word-break:break-word}
 .card.qface .qnone{color:#9aa3b2;font-style:italic}
+/* Navigator back: identity-first, fixed zones (design never displaced by text) */
+.card.back.nav{background:#fff;color:#14171c;display:flex;flex-direction:column;overflow:hidden}
+.card.back.nav .nav-band{flex:none;height:44%;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;gap:3px;
+  color:#fff;position:relative;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.card.back.nav .nav-dot{position:absolute;top:9px;right:11px;width:11px;height:11px;border-radius:99px;background:var(--accent-sec);
+  box-shadow:0 0 0 2px #ffffff66;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.card.back.nav .nav-cat{font-size:1.9em;font-weight:800;line-height:1.05;letter-spacing:-.01em;word-break:break-word;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.card.back.nav .nav-sec{font-size:.86em;font-weight:600;letter-spacing:.14em;text-transform:uppercase;opacity:.85;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card.back.nav .nav-idx{margin-top:4px;font-size:.72em;font-variant-numeric:tabular-nums;letter-spacing:.04em;opacity:.8}
+.card.back.nav .nav-q{flex:1;min-height:0;overflow:hidden;padding:7px 12px 8px;display:flex;flex-direction:column}
+.card.back.nav .nav-qh{flex:none;font-size:.62em;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#9aa3b2;margin-bottom:4px}
+.card.back.nav .nav-qlist{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:3px}
+.card.back.nav .qline{display:grid;grid-template-columns:auto 1fr;gap:6px;align-items:baseline;line-height:1.2}
+.card.back.nav .qmark{color:var(--accent-sec);font-weight:700}
+.card.back.nav .qtext{color:#3a4150;min-width:0;word-break:break-word;font-size:.94em}
+.card.back.nav .qnone{color:#9aa3b2;font-style:italic;font-size:.94em}
+.card.back.nav .nav-more{flex:none;font-size:.82em;font-style:italic;color:#9aa3b2;margin-top:2px}
 
 /* ---------- Card faces (preview + album) ---------- */
 .flip{width:var(--cw);height:var(--ch);perspective:1400px;cursor:pointer;flex:none}
@@ -463,10 +502,11 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
   .search-wrap{order:10;flex:1 1 100%;max-width:none}
   .search-input{min-width:0;width:100%}
   .main{flex-direction:column}
-  .editor{min-width:0;flex:none;border-right:none;border-bottom:1px solid var(--line);
+  /* viewer on top, editor below */
+  .pane{order:1;flex:none!important;width:auto!important;min-height:60vh}
+  .editor{order:2;min-width:0;flex:none;border-right:none;border-top:1px solid var(--line);
     max-height:55vh;padding-bottom:24px}
   .divider{display:none}
-  .pane{flex:none!important;width:auto!important;min-height:60vh}
   .pv-head{flex-wrap:wrap}
 }
 @media (max-width:560px){
@@ -520,11 +560,11 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="editor" id="editor"></div>
-    <div class="divider" id="divider" title="Drag to resize"></div>
+    <div class="divider" id="divider" data-tip="Drag to resize"></div>
     <div class="pane is-grid" id="pane">
       <div class="pv-head">
         <div class="seg">
-          <button class="seg-btn" id="editToggle" title="Show or hide the editor" aria-pressed="true">Edit</button>
+          <button class="seg-btn" id="editToggle" data-tip="Show or hide the editor" aria-pressed="true">Edit</button>
         </div>
         <div class="seg">
           <button class="seg-btn" data-mode="single">Single</button>
@@ -539,17 +579,17 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
           <button class="seg-btn solo dd-trigger" id="deckBtn"><span id="deckBtnLabel">Full collection</span><span class="dd-caret">▾</span></button>
           <div class="dd-menu right" id="deckMenu" hidden></div>
         </div>
-        <button class="seg-btn solo iconish" id="deckNew" title="New deck from a selection of cards">＋ New</button>
-        <button class="seg-btn solo iconish" id="deckRename" title="Rename deck"></button>
-        <button class="seg-btn solo iconish" id="deckDelete" title="Delete deck (keeps the cards)"></button>
+        <button class="seg-btn solo iconish" id="deckNew" data-tip="New deck from a selection of cards">＋ New</button>
+        <button class="seg-btn solo iconish" id="deckRename" data-tip="Rename deck"></button>
+        <button class="seg-btn solo iconish" id="deckDelete" data-tip="Delete deck (keeps the cards)"></button>
         <div class="ctrl gridonly"><label>Faces</label><div class="dd" id="facesDD"></div></div>
         <div class="ctrl gridonly"><label>Size</label><input id="gridSize" type="range" min="0.9" max="1.8" step="0.05" value="1.25" style="width:84px"></div>
-        <button class="seg-btn solo iconish" id="expandBtn" title="Fullscreen (Esc to exit)"></button>
+        <button class="seg-btn solo iconish" id="expandBtn" data-tip="Fullscreen (Esc to exit)"></button>
       </div>
       <div class="pv-body" id="pvBody"></div>
     </div>
   </div>
-  <button class="help-fab" id="helpBtn" title="About &amp; keyboard shortcuts" aria-label="About and keyboard shortcuts">?</button>
+  <button class="help-fab" id="helpBtn" data-tip="About &amp; keyboard shortcuts" aria-label="About and keyboard shortcuts">?</button>
 </div>
 
 <div id="measure"></div>
@@ -3316,7 +3356,7 @@ function normalizeCollection(c){
   if(typeof c.title!=='string')c.title='Untitled';
   c.paper=c.paper||'letter';c.palette=c.palette||'nord';c.font=c.font||'jb';
   if(typeof c.fs!=='number')c.fs=8.5; c.duplex=c.duplex||'long';
-  if(typeof c.guides!=='boolean')c.guides=true; c.backStyle=c.backStyle||'minimal';
+  if(typeof c.guides!=='boolean')c.guides=true; c.backStyle=(c.backStyle==='navigator')?'navigator':'minimal';
   if(typeof c.gridZoom!=='number'||!(c.gridZoom>=0.9&&c.gridZoom<=1.8))c.gridZoom=1.25;
   if(!c.study||typeof c.study!=='object')c.study={boxes:{}};
   if(!c.study.boxes||typeof c.study.boxes!=='object')c.study.boxes={};
@@ -3439,24 +3479,73 @@ function buildFront(opts){
   card._body=body;card._pg=pg;
   return card;
 }
-// Question face — same shell as the command front (header strip, edge band, footer),
-// body holds the questions as a left-aligned list with a hanging colored "?" marker.
-// This is the printed card's back face (commands are always the front).
-function buildQuestionFace(c){
-  const card=buildFront({catName:c.catName,secName:c.secName,secColor:c.secColor,catColor:c.catColor,
-    pg:c.total>1?(c.page+'/'+c.total):'',gidx:c.gidx,gtotal:c.gtotal});
-  card.classList.add('qface');
-  const qs=(c.entries||[]).filter(e=>e.q&&e.q.trim()!=='');
+// collect an entry's questions (shared by every back style)
+function cardQuestions(c){return (c.entries||[]).filter(e=>e.q&&e.q.trim()!=='');}
+// append the questions as a hanging-"?" list into a host element
+function fillQuestionList(host,c){
+  const qs=cardQuestions(c);
   if(qs.length){
     qs.forEach(e=>{const row=document.createElement('div');row.className='qline';
       const mk=document.createElement('span');mk.className='qmark';mk.textContent='?';
       const tx=document.createElement('span');tx.className='qtext';renderInline(e.q,tx,'');
-      row.appendChild(mk);row.appendChild(tx);card._body.appendChild(row);});
+      row.appendChild(mk);row.appendChild(tx);host.appendChild(row);});
   }else{
     const none=document.createElement('div');none.className='qnone';none.textContent='No questions on this card yet.';
-    card._body.appendChild(none);
+    host.appendChild(none);
   }
+}
+// Standard back: shares the front shell; body is the question list.
+function buildQuestionFace(c){
+  const card=buildFront({catName:c.catName,secName:c.secName,secColor:c.secColor,catColor:c.catColor,
+    pg:c.total>1?(c.page+'/'+c.total):'',gidx:c.gidx,gtotal:c.gtotal});
+  card.classList.add('qface');
+  fillQuestionList(card._body,c);
   return card;
+}
+// Navigator back: identity-first, for sorting/fanning a deck. Fixed zones so the
+// design is never displaced by text — a big category band up top (name + index),
+// then a reserved, clipped lower zone where the questions still live (secondary).
+function buildNavigatorFace(c){
+  const card=document.createElement('div');card.className='card back nav';
+  card.style.setProperty('--accent-sec',c.secColor);
+  card.style.setProperty('--accent-cat',c.catColor);
+  const band=document.createElement('div');band.className='nav-band';band.style.background=tabBg(c.catColor);
+  const dot=document.createElement('span');dot.className='nav-dot';
+  const cat=document.createElement('div');cat.className='nav-cat';cat.textContent=c.catName||'—';
+  const sec=document.createElement('div');sec.className='nav-sec';sec.textContent=c.secName||'';
+  const idx=document.createElement('div');idx.className='nav-idx';idx.textContent=(c.gidx?c.gidx+' / '+c.gtotal:'')+(c.total>1?'  ·  pg '+c.page+'/'+c.total:'');
+  band.append(dot,cat,sec,idx);
+  const qzone=document.createElement('div');qzone.className='nav-q';
+  const qh=document.createElement('div');qh.className='nav-qh';qh.textContent='Questions';qzone.appendChild(qh);
+  const qlist=document.createElement('div');qlist.className='nav-qlist';fillQuestionList(qlist,c);qzone.appendChild(qlist);
+  card.append(band,qzone);
+  // After layout, clip overflowing question lines and append a "+N more" marker so the
+  // truncation is deliberate, not a mid-word cut. Fixed zone never grows — only its fill.
+  requestAnimationFrame(()=>navTruncate(qlist));
+  return card;
+}
+// hide question lines that overflow the fixed band; append "+N more" if any were hidden.
+// rect-based (offsetTop is unreliable inside a flex container).
+function navTruncate(qlist){
+  const old=qlist.querySelector('.nav-more');if(old)old.remove();
+  const rows=[...qlist.querySelectorAll('.qline')];if(!rows.length)return;
+  rows.forEach(r=>{r.style.display='';});
+  const bottom=qlist.getBoundingClientRect().bottom;
+  let hidden=0;
+  for(const r of rows){if(r.getBoundingClientRect().bottom>bottom+0.5){r.style.display='none';hidden++;}}
+  if(!hidden)return;
+  const more=document.createElement('div');more.className='nav-more';more.textContent='+'+hidden+' more';
+  qlist.appendChild(more);
+  // make room for the marker if it overflows: hide trailing visible rows until it fits
+  let guard=0;
+  while(more.getBoundingClientRect().bottom>bottom+0.5&&guard++<rows.length){
+    const vis=rows.filter(r=>r.style.display!=='none');if(!vis.length)break;
+    vis[vis.length-1].style.display='none';hidden++;more.textContent='+'+hidden+' more';
+  }
+}
+// back-face dispatch (state.backStyle); default 'minimal' = the standard question back
+function buildBackFace(c){
+  return state.backStyle==='navigator' ? buildNavigatorFace(c) : buildQuestionFace(c);
 }
 
 /* ============================================================
@@ -3557,7 +3646,7 @@ function buildCommandFace(c,q){
 // The printable card is fixed: commands on the front, questions on the flip.
 // (Quiz is a viewer mode — it never changes how cards render or print.)
 function cardFaces(c,q){
-  return {front:buildCommandFace(c,q), back:buildQuestionFace(c), flipHint:'tap to flip'};
+  return {front:buildCommandFace(c,q), back:buildBackFace(c), flipHint:'tap to flip'};
 }
 function makeFlip(c,q,startBack){
   const flip=document.createElement('div');flip.className='flip'+(startBack?' flipped':'');
@@ -3631,15 +3720,54 @@ function kbdHTML(){return '<div class="kbd-list">'
     +'<span class="kbd-hint">Quiz uses Leitner spaced repetition — weak cards recur more often. Drag handles to reorder entries.</span>'
     +'</div>';}
 /* chip-based setting rows for the Card / Print popovers (no nested dropdowns) */
+// a label with an optional hover-info "?" that reveals the hint text in a small popover
+// a "?" info button whose tip is position:fixed (escapes the modal's overflow clip),
+// placed just-in-time above the button and clamped to the viewport.
+function makeInfo(hint){
+  const info=document.createElement('span');info.className='set-info';info.textContent='?';info.tabIndex=0;
+  const tip=document.createElement('span');tip.className='set-tip';tip.textContent=hint;info.appendChild(tip);
+  const place=()=>{const r=info.getBoundingClientRect();
+    tip.style.left='0';tip.style.top='0';tip.style.visibility='hidden';tip.style.opacity='0';
+    const tr=tip.getBoundingClientRect();
+    let left=r.left+r.width/2-tr.width/2;left=clamp(left,8,window.innerWidth-tr.width-8);
+    let top=r.top-tr.height-7;if(top<8)top=r.bottom+7;        // flip below if no room above
+    tip.style.left=left+'px';tip.style.top=top+'px';tip.style.visibility='';tip.style.opacity='';};
+  info.addEventListener('mouseenter',place);info.addEventListener('focus',place);
+  return info;
+}
+/* delegated tooltips: any element with data-tip gets a styled hover tooltip
+   (after a short delay) instead of the native title. One shared floating node. */
+(function(){
+  let el,timer,cur;
+  function tipEl(){if(!el){el=document.createElement('div');el.id='tip';document.body.appendChild(el);}return el;}
+  function show(t){const e=tipEl();e.textContent=t.dataset.tip;e.classList.remove('show');
+    e.style.left='0';e.style.top='0';const r=t.getBoundingClientRect(),tr=e.getBoundingClientRect();
+    let left=clamp(r.left+r.width/2-tr.width/2,8,window.innerWidth-tr.width-8);
+    let top=r.bottom+7;if(top+tr.height>window.innerHeight-8)top=r.top-tr.height-7;  // flip above if no room below
+    e.style.left=left+'px';e.style.top=top+'px';e.classList.add('show');}
+  function hide(){clearTimeout(timer);cur=null;if(el)el.classList.remove('show');}
+  document.addEventListener('mouseover',e=>{const t=e.target.closest('[data-tip]');if(!t||t===cur)return;
+    cur=t;clearTimeout(timer);timer=setTimeout(()=>{if(cur===t)show(t);},400);});
+  document.addEventListener('mouseout',e=>{if(e.target.closest('[data-tip]'))hide();});
+  document.addEventListener('focusin',e=>{const t=e.target.closest('[data-tip]');if(t){cur=t;show(t);}});
+  document.addEventListener('focusout',hide);
+  // hide on scroll/click so a stale tip never lingers
+  window.addEventListener('scroll',hide,true);document.addEventListener('mousedown',hide);
+})();
+function setLabel(text,hint){
+  const lab=document.createElement('div');lab.className='set-lab';
+  const t=document.createElement('span');t.textContent=text;lab.appendChild(t);
+  if(hint)lab.appendChild(makeInfo(hint));
+  return lab;
+}
 function settingRow(menu,label,getV,setV,opts,hint){
   const row=document.createElement('div');row.className='set-row2';
-  const lab=document.createElement('div');lab.className='set-lab';lab.textContent=label;row.appendChild(lab);
+  row.appendChild(setLabel(label,hint));
   const chips=document.createElement('div');chips.className='chips';
   opts.forEach(([v,t])=>{const b=document.createElement('button');b.className='chip'+(getV()===v?' on':'');b.textContent=t;
     b.onclick=()=>{setV(v);chips.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');};
     chips.appendChild(b);});
   row.appendChild(chips);menu.appendChild(row);
-  if(hint){const h=document.createElement('div');h.className='set-hint';h.textContent=hint;menu.appendChild(h);}
 }
 function rangeRow(menu,label,min,max,step,getV,setV,unit){
   const row=document.createElement('div');row.className='set-row2';
@@ -3663,6 +3791,9 @@ function buildCardMenu(m){if(!m)return;
   settingRow(m,'Card font',()=>state.font,v=>{state.font=v;applyFont();save();},
     [['jb','JetBrains'],['plex','IBM Plex'],['fira','Fira Code'],['sys','System']]);
   rangeRow(m,'Card text size',7,11,0.25,()=>state.fs,v=>{state.fs=v;document.documentElement.style.setProperty('--card-fs',v+'px');refresh();},'px');
+  settingRow(m,'Card back',()=>state.backStyle,v=>{state.backStyle=v;refresh();},
+    [['minimal','Questions'],['navigator','Navigator']],
+    'Questions: the quiz prompts. Navigator: a bold category back for sorting decks — questions still shown below.');
 }
 function buildPrintMenu(m){if(!m)return;
   settingRow(m,'Paper size',()=>state.paper,v=>{state.paper=v;applyPageStyle();save();},[['letter','US Letter'],['a4','A4']]);
@@ -3684,13 +3815,16 @@ function openSettings(){
   const h=document.createElement('h3');h.textContent='Settings';
   const xb=document.createElement('button');xb.className='iconbtn2';xb.innerHTML=ico('x',16);xb.title='Close';xb.onclick=close;
   head.append(h,xb);box.appendChild(head);
-  const sec=t=>{const d=document.createElement('div');d.className='fmh';d.textContent=t;box.appendChild(d);return d;};
-  // Card design — 2-column grid
-  sec('Card design');const cg=document.createElement('div');cg.className='set-grid';box.appendChild(cg);buildCardMenu(cg);
-  // Print — 2-column grid
-  sec('Print');const pg=document.createElement('div');pg.className='set-grid';box.appendChild(pg);buildPrintMenu(pg);
-  // Data — a horizontal action bar
-  sec('Data');
+  // two vertical columns: Card settings | Print settings, side by side
+  const cols=document.createElement('div');cols.className='settings-cols';box.appendChild(cols);
+  const colHead=(parent,t)=>{const d=document.createElement('div');d.className='fmh';d.style.margin='0 0 8px';d.textContent=t;parent.appendChild(d);};
+  const cardCol=document.createElement('div');cardCol.className='settings-col';colHead(cardCol,'Card design');buildCardMenu(cardCol);
+  const printCol=document.createElement('div');printCol.className='settings-col';colHead(printCol,'Print');buildPrintMenu(printCol);
+  cols.append(cardCol,printCol);
+  // Data — a full-width action bar spanning the modal
+  const dh=document.createElement('div');dh.className='fmh fmh-info';dh.appendChild(document.createTextNode('Data'));
+  dh.appendChild(makeInfo('“Back up all” saves every collection and your study progress to one file. “Delete all” wipes everything on this device.'));
+  box.appendChild(dh);
   const bar=document.createElement('div');bar.className='data-bar';
   const act=(icon,label,fn,cls)=>{const b=document.createElement('button');b.className='data-btn'+(cls?' '+cls:'');b.innerHTML=ico(icon,16)+'<span>'+label+'</span>';b.onclick=fn;return b;};
   bar.appendChild(act('download','CSV template',()=>download(slugify(state.title,'cards')+'_template.csv',csvTemplate(),'text/csv')));
@@ -3698,9 +3832,6 @@ function openSettings(){
   bar.appendChild(act('download','Back up all',()=>backupAll()));
   bar.appendChild(act('trash','Delete all',()=>{close();deleteAllData();},'danger'));
   box.appendChild(bar);
-  const hint=document.createElement('div');hint.className='set-hint';hint.style.padding='2px 2px 0';
-  hint.textContent='“Back up all” saves every collection and your study progress to one file. “Delete all” wipes everything on this device.';
-  box.appendChild(hint);
 }
 // export the entire store (all collections + study progress) to one file
 function backupAll(){download('termdecks-backup-'+(activeCollection().title?slugify(activeCollection().title,'all'):'all')+'.json',JSON.stringify(store,null,2),'application/json');}
