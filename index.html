@@ -154,8 +154,6 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outlin
 .dd-item.active{color:var(--accent)}
 .dd-item .dd-check{width:13px;flex:none;color:var(--accent);font-weight:700}
 .dd-item .dd-meta{flex:none;font-size:11px;font-weight:500;color:var(--muted2)}
-.dd-cur{display:inline-flex;align-items:center;gap:6px;background:transparent;border:none;color:var(--ink);font-weight:500;cursor:pointer;padding:0;font-size:14px}
-.dd-cur:hover{color:#fff}
 .ctrl .dd-menu{min-width:168px}
 /* filters popover */
 .filters-menu{min-width:256px;padding:10px;left:auto;right:0}
@@ -582,7 +580,7 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
           <button class="seg-btn solo dd-trigger" id="deckBtn"><span id="deckBtnLabel">Full collection</span><span class="dd-caret">▾</span></button>
           <div class="dd-menu right" id="deckMenu" hidden></div>
         </div>
-        <div class="ctrl gridonly"><label>Faces</label><div class="dd" id="facesDD"></div></div>
+        <div class="seg gridonly" id="facesSeg"><button class="seg-btn active" data-face="front">Fronts</button><button class="seg-btn" data-face="back">Backs</button></div>
         <div class="ctrl gridonly"><label>Size</label><input id="gridSize" type="range" min="0.9" max="1.8" step="0.05" value="1.25" style="width:84px"></div>
         <button class="seg-btn solo iconish" id="expandBtn" data-tip="Fullscreen (Esc to exit)"></button>
       </div>
@@ -649,8 +647,7 @@ function hslHex(h,s,l){const c=hslToRgb(h,s,l);return rgbToHex(c.r,c.g,c.b);}
 function relLum(hex){const c=hexToRgb(hex);const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4);};
   return .2126*f(c.r)+.7152*f(c.g)+.0722*f(c.b);}
 function contrast(a,b){const L1=relLum(a),L2=relLum(b);return (Math.max(L1,L2)+.05)/(Math.min(L1,L2)+.05);}
-function bestText(bg){return contrast(bg,'#15181d') >= contrast(bg,'#f7f8fa') ? '#15181d' : '#f7f8fa';}
-function lowContrastWarning(bg){const t=bestText(bg);return contrast(bg,t) < 4.5;}
+function lowContrastWarning(bg){return Math.max(contrast(bg,'#15181d'),contrast(bg,'#f7f8fa')) < 4.5;}
 function adjustL(hex,dl){const c=hexToRgb(hex);const h=rgbToHsl(c.r,c.g,c.b);return hslHex(h.h,clamp(h.s,18,92),clamp(h.l+dl,16,90));}
 
 /* ---------- Palettes ---------- */
@@ -3611,7 +3608,6 @@ let cardCache=null;
 let selecting=false;
 let facesMode='front';
 let collapsedCats=new Set(),collapsedSecs=new Set();
-const ddRebuild={};
 const filters={excludeCats:new Set(),withQuestionOnly:false,deckMembership:'all'};
 const qOpen=new Set();
 function invalidate(){cardCache=null;}
@@ -3691,24 +3687,6 @@ function updateCount(){
 function closeAllMenus(){document.querySelectorAll('.dd-menu').forEach(m=>m.hidden=true);document.removeEventListener('mousedown',onDocDown);}
 function onDocDown(e){if(!e.target.closest('.dd'))closeAllMenus();}
 function openMenu(m){closeAllMenus();m.hidden=false;setTimeout(()=>document.addEventListener('mousedown',onDocDown),0);}
-/* generic custom dropdown: fills a <div class="dd" id="KEYDD"> placeholder */
-function buildDropdown(cfg){
-  const wrap=document.getElementById(cfg.key+'DD');if(!wrap)return;
-  wrap.classList.add('dd');wrap.innerHTML='';
-  const btn=document.createElement('button');btn.className='dd-cur';btn.id=cfg.key+'Btn';
-  const lab=document.createElement('span');const car=document.createElement('span');car.className='dd-caret';car.innerHTML=ico('chevronDown',12);
-  btn.append(lab,car);
-  const menu=document.createElement('div');menu.className='dd-menu';menu.id=cfg.key+'Menu';menu.hidden=true;
-  wrap.append(btn,menu);
-  function rebuild(){const cur=cfg.get();const o=cfg.opts.find(x=>x[0]===cur);lab.textContent=o?o[1]:cur;
-    menu.innerHTML='';
-    cfg.opts.forEach(([v,t])=>{const it=document.createElement('button');it.className='dd-item'+(cur===v?' active':'');
-      const ck=document.createElement('span');ck.className='dd-check';ck.textContent=cur===v?'✓':'';
-      const tx=document.createElement('span');tx.textContent=t;it.append(ck,tx);
-      it.onclick=()=>{cfg.set(v);closeAllMenus();rebuild();};menu.appendChild(it);});}
-  btn.onclick=()=>{if(menu.hidden){rebuild();openMenu(menu);}else closeAllMenus();};
-  ddRebuild[cfg.key]=rebuild;rebuild();
-}
 function kbdHTML(){return '<div class="kbd-list">'
     +'<div><kbd>/</kbd> Focus search</div>'
     +'<div><kbd>←</kbd> <kbd>→</kbd> Previous / next card</div>'
@@ -3959,20 +3937,31 @@ function addReadymade(key){const t=READYMADE.find(r=>r.key===key);if(!t)return;
   const c=t.make();c.id=uid();c.readymade=key;store.collections.push(c);store.activeId=c.id;applyCollectionSwitch();save();}
 // merge an expansion's contents into an existing collection, matching categories &
 // sections by name (case-insensitive) and appending entries — same idea as CSV import.
+// find-or-create a category by name in a collection, then a section by name inside it.
+// returns the section. case-insensitive match, like CSV import & expansion merges.
+function upsertSection(coll,catName,secName,catColor,secColor){
+  const low=s=>(s||'').toLowerCase();
+  let cat=coll.categories.find(x=>low(x.name)===low(catName));
+  if(!cat){cat={id:uid(),name:catName||'New category',color:catColor||null,sections:[]};coll.categories.push(cat);}
+  let sec=cat.sections.find(x=>low(x.name)===low(secName));
+  if(!sec){sec={id:uid(),name:secName||'Section',color:secColor||null,entries:[]};cat.sections.push(sec);}
+  return sec;
+}
+// merge a {categories:[{name,color,sections:[{name,color,entries}]}]} shape into a
+// collection; returns the section ids touched and the entry count added.
+function mergeCategories(dst,cats){
+  const secIds=[];let added=0;
+  (cats||[]).forEach(scat=>{(scat.sections||[]).forEach(ssec=>{
+    const dsec=upsertSection(dst,scat.name,ssec.name,scat.color,ssec.color);
+    (ssec.entries||[]).forEach(e=>{dsec.entries.push({id:uid(),cmd:e.cmd,desc:e.desc,q:e.q});added++;});
+    secIds.push(dsec.id);
+  });});
+  return {secIds,added};
+}
 function mergeExpansionInto(targetId,key){
   const t=READYMADE.find(r=>r.key===key);if(!t)return;
   const dst=store.collections.find(c=>c.id===targetId);if(!dst)return;
-  const src=t.make();const low=s=>(s||'').toLowerCase();
-  let added=0;
-  (src.categories||[]).forEach(scat=>{
-    let dcat=dst.categories.find(x=>low(x.name)===low(scat.name));
-    if(!dcat){dcat={id:uid(),name:scat.name||'New category',color:scat.color||null,sections:[]};dst.categories.push(dcat);}
-    (scat.sections||[]).forEach(ssec=>{
-      let dsec=dcat.sections.find(x=>low(x.name)===low(ssec.name));
-      if(!dsec){dsec={id:uid(),name:ssec.name||'Section',color:ssec.color||null,entries:[]};dcat.sections.push(dsec);}
-      (ssec.entries||[]).forEach(e=>{dsec.entries.push({id:uid(),cmd:e.cmd,desc:e.desc,q:e.q});added++;});
-    });
-  });
+  const {added}=mergeCategories(dst,t.make().categories);
   normalizeCollection(dst);
   if(store.activeId===targetId)applyCollectionSwitch(); else save();
   toast('Merged '+t.name+' — added '+added+' entr'+(added===1?'y':'ies')+' to “'+(dst.title||'Untitled')+'”.','ok');
@@ -4092,18 +4081,8 @@ function deckSlice(coll,d){
 }
 // merge a deck slice into a target collection (by name) and create the deck there.
 function mergeDeckSlice(slice,dst){
-  const low=s=>(s||'').toLowerCase();const newSecIds=[];
-  (slice.categories||[]).forEach(scat=>{
-    let dcat=dst.categories.find(x=>low(x.name)===low(scat.name));
-    if(!dcat){dcat={id:uid(),name:scat.name||'New category',color:scat.color||null,sections:[]};dst.categories.push(dcat);}
-    (scat.sections||[]).forEach(ssec=>{
-      let dsec=dcat.sections.find(x=>low(x.name)===low(ssec.name));
-      if(!dsec){dsec={id:uid(),name:ssec.name||'Section',color:ssec.color||null,entries:[]};dcat.sections.push(dsec);}
-      (ssec.entries||[]).forEach(e=>dsec.entries.push({id:uid(),cmd:e.cmd,desc:e.desc,q:e.q}));
-      newSecIds.push(dsec.id);
-    });
-  });
-  (dst.decks=dst.decks||[]).push({id:uid(),name:slice.deck||'Imported deck',secIds:newSecIds});
+  const {secIds}=mergeCategories(dst,slice.categories);
+  (dst.decks=dst.decks||[]).push({id:uid(),name:slice.deck||'Imported deck',secIds});
   normalizeCollection(dst);
 }
 function copyDeckTo(srcColl,d,dstId,after){
@@ -4566,12 +4545,7 @@ function planSummary(items){
   return{entries:items.length,newCats:newCat.size,newSecs:newSec.size,groups};
 }
 function applyPlan(items){
-  const low=s=>(s||'').toLowerCase();
-  items.forEach(it=>{
-    let c=state.categories.find(x=>low(x.name)===low(it.cat));
-    if(!c){c={id:uid(),name:it.cat||'New category',color:null,sections:[]};state.categories.push(c);}
-    let s=c.sections.find(x=>low(x.name)===low(it.sec));
-    if(!s){s={id:uid(),name:it.sec||'Section',color:null,entries:[]};c.sections.push(s);}
+  items.forEach(it=>{const s=upsertSection(state,it.cat,it.sec);
     s.entries.push({id:uid(),cmd:it.cmd,desc:it.desc,q:it.q});});
 }
 function csvTemplate(){
@@ -4892,7 +4866,8 @@ function applyEditorVisibility(){
 /* bind toolbar */
 function bindToolbar(){
   const t=$('#title');t.value=state.title;t.addEventListener('input',()=>{state.title=t.value;save();});
-  buildDropdown({key:'faces',get:()=>facesMode,set:v=>{facesMode=v;renderPreview();},opts:[['front','Fronts'],['back','Backs']]});
+  $('#facesSeg').querySelectorAll('.seg-btn').forEach(b=>b.addEventListener('click',()=>{
+    facesMode=b.dataset.face;$('#facesSeg').querySelectorAll('.seg-btn').forEach(x=>x.classList.toggle('active',x===b));renderPreview();}));
   // Settings & Help modals (Card/Print/Data in Settings; about + shortcuts in Help)
   $('#settingsBtn').addEventListener('click',openSettings);
   $('#helpBtn').addEventListener('click',openHelp);
@@ -4985,7 +4960,7 @@ function bindToolbar(){
 }
 function syncToolbar(){
   $('#title').value=state.title||'';
-  Object.keys(ddRebuild).forEach(k=>ddRebuild[k]());
+  const fs=$('#facesSeg');if(fs)fs.querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('active',b.dataset.face===facesMode));
   refreshDeckOptions();
 }
 
