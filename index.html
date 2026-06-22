@@ -3530,8 +3530,10 @@ function navTruncate(qlist){
   const rows=[...qlist.querySelectorAll('.qline')];if(!rows.length)return;
   rows.forEach(r=>{r.style.display='';});
   const bottom=qlist.getBoundingClientRect().bottom;
-  let hidden=0;
-  for(const r of rows){if(r.getBoundingClientRect().bottom>bottom+0.5){r.style.display='none';hidden++;}}
+  // read all rects first, then write — avoids reflow-per-row layout thrash
+  const overflow=rows.filter(r=>r.getBoundingClientRect().bottom>bottom+0.5);
+  let hidden=overflow.length;
+  overflow.forEach(r=>{r.style.display='none';});
   if(!hidden)return;
   const more=document.createElement('div');more.className='nav-more';more.textContent='+'+hidden+' more';
   qlist.appendChild(more);
@@ -4820,7 +4822,9 @@ function addEntry(sec,at){const e={id:uid(),cmd:'',desc:''};if(at==null)sec.entr
    ============================================================ */
 let refreshT;
 function refresh(){invalidate();save();clearTimeout(refreshT);refreshT=setTimeout(renderPreview,90);}
-function refilter(){renderEditor();renderPreview();}
+let refilterT;
+// ponytail: debounced so fast typing in search doesn't rebuild the whole editor tree per keystroke
+function refilter(){clearTimeout(refilterT);refilterT=setTimeout(()=>{renderEditor();renderPreview();},120);}
 function restyleAndPreview(){refresh();}
 function commit(){renderEditor();refresh();}
 
