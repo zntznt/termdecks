@@ -831,6 +831,7 @@ const SAMPLE = () => ({
         {id:uid(),cmd:'top',desc:'live process view',q:'Watch processes live (built-in)?'},
         {id:uid(),cmd:'htop',desc:'interactive top',q:'Interactive process viewer?'},
         {id:uid(),cmd:'pstree -p',desc:'process tree + PIDs',q:'Show processes as a tree with PIDs?'},
+        {id:uid(),cmd:'time <cmd>',desc:'how long it took',q:'Measure how long a command takes to run?'},
       ]},
       {id:uid(),name:'Control',color:null,entries:[
         {id:uid(),cmd:'kill <pid>',desc:'send TERM',q:'Politely ask a process to stop?'},
@@ -857,6 +858,7 @@ const SAMPLE = () => ({
         {id:uid(),cmd:'uptime',desc:'load + uptime',q:'Show how long the system has been up and load?'},
         {id:uid(),cmd:'lsb_release -a',desc:'distro version',q:'Show the distribution and version?'},
         {id:uid(),cmd:'date',desc:'date / time',q:'Print the current date and time?'},
+        {id:uid(),cmd:'cal',desc:'calendar',q:'Print this month’s calendar?'},
       ]},
       {id:uid(),name:'Hardware',color:null,entries:[
         {id:uid(),cmd:'lscpu',desc:'CPU details',q:'Show CPU details?'},
@@ -866,10 +868,16 @@ const SAMPLE = () => ({
         {id:uid(),cmd:'lspci',desc:'PCI devices',q:'List PCI devices?'},
         {id:uid(),cmd:'lsusb',desc:'USB devices',q:'List USB devices?'},
       ]},
+      {id:uid(),name:'Power',color:null,entries:[
+        {id:uid(),cmd:'sudo reboot',desc:'restart now',q:'Restart the machine now?'},
+        {id:uid(),cmd:'sudo shutdown -h now',desc:'power off now',q:'Shut the machine down immediately?'},
+        {id:uid(),cmd:'sudo shutdown -h +<n>',desc:'power off in n min',q:'Schedule a shutdown in n minutes?'},
+        {id:uid(),cmd:'sudo shutdown -c',desc:'cancel shutdown',q:'Cancel a scheduled shutdown?'},
+        {id:uid(),cmd:'sudo poweroff',desc:'power off',q:'Power the machine off?'},
+      ]},
       {id:uid(),name:'Live resources',color:null,entries:[
-        {id:uid(),cmd:'df -h',desc:'disk free per mount',q:'Show free disk space per mount?'},
-        {id:uid(),cmd:'du -sh *',desc:'folder sizes here',q:'Show the size of each item in this folder?'},
         {id:uid(),cmd:'vmstat 1',desc:'cpu/mem/io each sec',q:'Sample CPU/memory/IO once a second?'},
+        {id:uid(),cmd:'iostat 1',desc:'disk io each sec',q:'Sample disk I/O once a second?'},
         {id:uid(),cmd:'watch -n<s> <cmd>',desc:'re-run every n s',q:'Re-run a command every few seconds?'},
         {id:uid(),cmd:'dmesg | tail',desc:'recent kernel msgs',q:'See the most recent kernel messages?'},
       ]},
@@ -1068,6 +1076,8 @@ const SAMPLE = () => ({
         {id:uid(),cmd:'"$<name>"',desc:'use a variable',q:'Safely reference a variable’s value?'},
         {id:uid(),cmd:'$1 $2 $@',desc:'script arguments',q:'Refer to a script’s positional arguments?'},
         {id:uid(),cmd:'$?',desc:'last exit code',q:'Check the exit status of the last command?'},
+        {id:uid(),cmd:'echo "<text>"',desc:'print a line',q:'Print text (with a trailing newline)?'},
+        {id:uid(),cmd:'printf "%s\\n" "<text>"',desc:'precise output',q:'Print text with exact formatting and no surprises?'},
         {id:uid(),cmd:'read -p "<prompt>" <var>',desc:'read input',q:'Prompt the user and read a value?'},
       ]},
       {id:uid(),name:'Conditionals',color:null,entries:[
@@ -1081,7 +1091,7 @@ const SAMPLE = () => ({
         {id:uid(),cmd:'for <x> in <list>; do … done',desc:'for loop',q:'Loop over a list of items?'},
         {id:uid(),cmd:'while <cond>; do … done',desc:'while loop',q:'Loop while a condition holds?'},
         {id:uid(),cmd:'<name>() { … }',desc:'define a function',q:'Define a shell function?'},
-        {id:uid(),cmd:'$(<cmd>)',desc:'capture output',q:'Capture a command’s output into a value?'},
+        {id:uid(),cmd:'return <n>',desc:'exit a function',q:'Return an exit status from a function?'},
         {id:uid(),cmd:'break / continue',desc:'loop control',q:'Exit a loop early / skip to next iteration?'},
       ]},
     ]},
@@ -1122,7 +1132,7 @@ const SAMPLE = () => ({
         {id:uid(),cmd:'<cmd> --help',desc:'quick usage',q:'Get quick usage for a command?'},
         {id:uid(),cmd:'tldr <cmd>',desc:'concise examples',q:'See concise, example-first help?'},
         {id:uid(),cmd:'apropos <kw>',desc:'search man pages',q:'Search man pages by keyword?'},
-        {id:uid(),cmd:'type <cmd>',desc:'what a name is',q:'Find out what a command name actually is?'},
+        {id:uid(),cmd:'whatis <cmd>',desc:'one-line summary',q:'Get a one-line description of a command?'},
       ]},
       {id:uid(),name:'Session',color:null,entries:[
         {id:uid(),cmd:'clear',desc:'clear the screen',q:'Wipe the terminal screen?'},
@@ -3191,8 +3201,8 @@ const TOYS = () => ({
     ]},
     {id:uid(),name:"Hidden built-ins",color:null,sections:[
       {id:uid(),name:"Dates & calendar",color:null,entries:[
-        {id:uid(),cmd:"cal",desc:"this month",q:"Print a calendar for this month?"},
         {id:uid(),cmd:"cal 2026",desc:"a whole year",q:"Print the full year's calendar?"},
+        {id:uid(),cmd:"ncal -w",desc:"with week numbers",q:"Show a calendar with ISO week numbers?"},
         {id:uid(),cmd:"date -d \"next friday\"",desc:"natural-language date",q:"Ask what date next Friday falls on?"},
         {id:uid(),cmd:"date +%s",desc:"unix timestamp",q:"Print the current Unix epoch seconds?"},
       ]},
@@ -3228,7 +3238,6 @@ const TOYS = () => ({
       {id:uid(),name:"Watch & repeat",color:null,entries:[
         {id:uid(),cmd:"watch -n2 <cmd>",desc:"rerun every 2s",q:"Re-run a command every two seconds and show changes?"},
         {id:uid(),cmd:"watch -d <cmd>",desc:"highlight changes",q:"Highlight what changed between runs?"},
-        {id:uid(),cmd:"time <cmd>",desc:"how long it took",q:"Measure how long a command takes?"},
         {id:uid(),cmd:"yes '' | head -5",desc:"five blank lines",q:"Emit exactly five blank lines?"},
       ]},
     ]},
