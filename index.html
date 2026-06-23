@@ -841,6 +841,7 @@ const SAMPLE = () => ({
         {id:uid(),cmd:'renice <n> -p <pid>',desc:'change priority',q:'Change a running process’s priority?'},
       ]},
       {id:uid(),name:'Jobs',color:null,entries:[
+        {id:uid(),cmd:'`Ctrl`+`c`',desc:'cancel running command',q:'Interrupt and stop the command running now?'},
         {id:uid(),cmd:'<cmd> &',desc:'run in background',q:'Start a command in the background?'},
         {id:uid(),cmd:'`Ctrl`+`z`',desc:'suspend foreground job',q:'Suspend the current foreground job?'},
         {id:uid(),cmd:'jobs',desc:'list jobs',q:'List background/suspended jobs?'},
@@ -1123,8 +1124,19 @@ const SAMPLE = () => ({
         {id:uid(),cmd:'apropos <kw>',desc:'search man pages',q:'Search man pages by keyword?'},
         {id:uid(),cmd:'type <cmd>',desc:'what a name is',q:'Find out what a command name actually is?'},
       ]},
+      {id:uid(),name:'Session',color:null,entries:[
+        {id:uid(),cmd:'clear',desc:'clear the screen',q:'Wipe the terminal screen?'},
+        {id:uid(),cmd:'exit',desc:'leave the shell',q:'Close the shell or end an SSH session?'},
+        {id:uid(),cmd:'reset',desc:'fix a garbled terminal',q:'Restore a terminal showing broken characters?'},
+      ]},
     ]},
     {id:uid(),name:'Vim',color:null,sections:[
+      {id:uid(),name:'Open & quit',color:null,entries:[
+        {id:uid(),cmd:'vim <file>',desc:'open in Vim',q:'Open a file in Vim?'},
+        {id:uid(),cmd:'nano <file>',desc:'simpler editor',q:'Open a file in a beginner-friendly editor?'},
+        {id:uid(),cmd:':wq',desc:'save and quit',q:'Save changes and exit Vim?'},
+        {id:uid(),cmd:':q!',desc:'quit, discard',q:'Get out of Vim without saving?'},
+      ]},
       {id:uid(),name:'Navigation',color:null,entries:[
         {id:uid(),cmd:'`h` `j` `k` `l`',desc:'left · down · up · right',q:'Move one character (4 keys)?'},
         {id:uid(),cmd:'`w` / `b`',desc:'next / prev word',q:'Jump to next / previous word?'},
@@ -2175,9 +2187,8 @@ const VIM = () => ({
       {id:uid(),name:"Save & quit",color:null,entries:[
         {id:uid(),cmd:":w",desc:"write file",q:"Save the current file?"},
         {id:uid(),cmd:":w <file>",desc:"write as",q:"Save to a different filename?"},
-        {id:uid(),cmd:":wq / :x",desc:"save and quit",q:"Save and close the window?"},
+        {id:uid(),cmd:":x",desc:"write if changed, quit",q:"Save only if changed, then close?"},
         {id:uid(),cmd:":q",desc:"quit",q:"Close the window?"},
-        {id:uid(),cmd:":q!",desc:"quit discard",q:"Quit without saving changes?"},
         {id:uid(),cmd:":wa / :qa",desc:"all buffers",q:"Write all, or quit all, buffers?"},
       ]},
       {id:uid(),name:"Read & run",color:null,entries:[
