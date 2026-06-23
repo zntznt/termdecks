@@ -1240,6 +1240,9 @@ const DEVOPS = () => ({
         {id:uid(),cmd:'docker images',desc:'list local images',q:'List images stored locally?'},
         {id:uid(),cmd:'docker rmi <image>',desc:'remove an image',q:'Delete a local image?'},
         {id:uid(),cmd:'docker push <tag>',desc:'push to registry',q:'Upload an image to a registry?'},
+        {id:uid(),cmd:'docker buildx build --platform <list> -t <tag> --push .',desc:'multi-arch build',q:'Build and push a multi-architecture image?'},
+        {id:uid(),cmd:'docker save <image> -o <f>.tar',desc:'export to a tarball',q:'Save an image to a file for offline transfer?'},
+        {id:uid(),cmd:'docker load -i <f>.tar',desc:'import from a tarball',q:'Load an image from a saved tarball?'},
       ]},
       {id:uid(),name:'Containers',color:null,entries:[
         {id:uid(),cmd:'docker run -d -p <h>:<c> <image>',desc:'detached + publish port',q:'Run a container in the background and publish a port?'},
@@ -1247,6 +1250,8 @@ const DEVOPS = () => ({
         {id:uid(),cmd:'docker ps -a',desc:'all containers',q:'List all containers, including stopped?'},
         {id:uid(),cmd:'docker stop <ctr>',desc:'stop a container',q:'Stop a running container?'},
         {id:uid(),cmd:'docker rm <ctr>',desc:'remove a container',q:'Delete a stopped container?'},
+        {id:uid(),cmd:'docker cp <ctr>:<path> <local>',desc:'copy files out',q:'Pull a file out of a container?'},
+        {id:uid(),cmd:'docker exec -e <K>=<V> -it <ctr> sh',desc:'shell with env',q:'Exec into a container with an env var set?'},
       ]},
       {id:uid(),name:'Compose',color:null,entries:[
         {id:uid(),cmd:'docker compose up -d',desc:'start services',q:'Start compose services in the background?'},
@@ -1311,6 +1316,8 @@ const DEVOPS = () => ({
         {id:uid(),cmd:'kubectl apply -f <dir>/',desc:'apply a folder',q:'Apply every manifest in a folder?'},
         {id:uid(),cmd:'kubectl delete -f <file>',desc:'delete from manifest',q:'Delete the resources defined in a file?'},
         {id:uid(),cmd:'kubectl diff -f <file>',desc:'preview changes',q:'Preview what an apply would change?'},
+        {id:uid(),cmd:'kubectl apply --server-side -f <file>',desc:'server-side apply',q:'Apply with server-side field ownership (GitOps)?'},
+        {id:uid(),cmd:'kustomize build <dir> | kubectl apply -f -',desc:'render + apply overlays',q:'Build a kustomize overlay and apply it?'},
         {id:uid(),cmd:'kubectl get all',desc:'common resources',q:'List the common resources in a namespace?'},
       ]},
       {id:uid(),name:'Logs & exec',color:null,entries:[
@@ -1326,11 +1333,15 @@ const DEVOPS = () => ({
         {id:uid(),cmd:'kubectl get <kind> <name> -o yaml',desc:'full YAML',q:'Dump a resource’s full YAML?'},
         {id:uid(),cmd:'kubectl top pod',desc:'pod CPU/memory',q:'Show pod CPU and memory usage?'},
         {id:uid(),cmd:'kubectl explain <kind>',desc:'field docs',q:'Look up a resource’s fields/schema?'},
+        {id:uid(),cmd:'kubectl debug -it <pod> --image=<img>',desc:'ephemeral debug container',q:'Attach a debug container to a running pod?'},
+        {id:uid(),cmd:'kubectl wait --for=condition=ready pod/<pod>',desc:'block until ready',q:'Wait for a pod to become ready in a script?'},
+        {id:uid(),cmd:'kubectl api-resources',desc:'list resource types',q:'Discover what resource kinds the cluster has?'},
       ]},
       {id:uid(),name:'Rollout & scale',color:null,entries:[
         {id:uid(),cmd:'kubectl rollout status deploy/<name>',desc:'watch a rollout',q:'Watch a deployment roll out?'},
         {id:uid(),cmd:'kubectl rollout restart deploy/<name>',desc:'restart pods',q:'Restart a deployment’s pods?'},
         {id:uid(),cmd:'kubectl rollout undo deploy/<name>',desc:'roll back',q:'Roll a deployment back to the previous version?'},
+        {id:uid(),cmd:'kubectl rollout history deploy/<name>',desc:'revision history',q:'List a deployment’s rollout revisions?'},
         {id:uid(),cmd:'kubectl scale deploy/<name> --replicas=<n>',desc:'set replica count',q:'Scale a deployment to n replicas?'},
         {id:uid(),cmd:'kubectl autoscale deploy/<name> --min=<n> --max=<m>',desc:'autoscale',q:'Add a horizontal autoscaler?'},
       ]},
@@ -1349,6 +1360,8 @@ const DEVOPS = () => ({
         {id:uid(),cmd:'helm uninstall <release>',desc:'remove a release',q:'Uninstall a Helm release?'},
         {id:uid(),cmd:'helm list',desc:'list releases',q:'List installed releases?'},
         {id:uid(),cmd:'helm status <release>',desc:'release status',q:'Check a release’s status?'},
+        {id:uid(),cmd:'helm diff upgrade <release> <chart>',desc:'preview a change',q:'See what an upgrade would change before applying?'},
+        {id:uid(),cmd:'helm rollback <release> <rev>',desc:'revert a release',q:'Roll a release back to an earlier revision?'},
       ]},
       {id:uid(),name:'Repos & charts',color:null,entries:[
         {id:uid(),cmd:'helm repo add <name> <url>',desc:'add a repo',q:'Add a chart repository?'},
@@ -1372,7 +1385,7 @@ const DEVOPS = () => ({
         {id:uid(),cmd:'gh repo clone <repo>',desc:'clone a repo',q:'Clone a repo by name with gh?'},
         {id:uid(),cmd:'gh pr create',desc:'open a PR',q:'Open a pull request from the CLI?'},
         {id:uid(),cmd:'gh pr checkout <n>',desc:'check out a PR',q:'Check out a pull request locally?'},
-        {id:uid(),cmd:'gh run watch',desc:'watch a workflow',q:'Follow a running Actions workflow?'},
+        {id:uid(),cmd:'gh pr review --approve',desc:'review a PR',q:'Approve or comment on a PR from the CLI?'},
       ]},
       {id:uid(),name:'GitHub Actions (gh)',color:null,entries:[
         {id:uid(),cmd:'gh workflow list',desc:'list workflows',q:'List a repo’s Actions workflows?'},
@@ -1558,6 +1571,12 @@ const DEVOPS = () => ({
         {id:uid(),cmd:'watch -n5 <cmd>',desc:'poll periodically',q:'Re-run a check every few seconds?'},
         {id:uid(),cmd:'kubectl get --raw /healthz',desc:'API server health',q:'Check the Kubernetes API health?'},
       ]},
+      {id:uid(),name:'Dashboards & traces',color:null,entries:[
+        {id:uid(),cmd:'k9s',desc:'cluster TUI',q:'Browse and manage a cluster in a terminal UI?'},
+        {id:uid(),cmd:'logcli query \'{app="<x>"}\'',desc:'query Loki logs',q:'Query aggregated logs from Loki on the CLI?'},
+        {id:uid(),cmd:'otel-cli span --service <s> --name <n>',desc:'emit a trace span',q:'Send an OpenTelemetry span from a script?'},
+        {id:uid(),cmd:'grafana-cli plugins ls',desc:'Grafana plugins',q:'List installed Grafana plugins?'},
+      ]},
     ]},
     {id:uid(),name:'Cloud extras',color:null,sections:[
       {id:uid(),name:'AWS IAM & logs',color:null,entries:[
@@ -1604,6 +1623,12 @@ const DEVOPS = () => ({
         {id:uid(),cmd:'kubectl get sa',desc:'list service accounts',q:'List service accounts?'},
         {id:uid(),cmd:'kubectl describe clusterrole <name>',desc:'role details',q:'Inspect a cluster role’s rules?'},
       ]},
+      {id:uid(),name:'Storage',color:null,entries:[
+        {id:uid(),cmd:'kubectl get pvc',desc:'volume claims',q:'List persistent volume claims?'},
+        {id:uid(),cmd:'kubectl get pv',desc:'persistent volumes',q:'List persistent volumes in the cluster?'},
+        {id:uid(),cmd:'kubectl get storageclass',desc:'storage classes',q:'List available storage classes?'},
+        {id:uid(),cmd:'kubectl describe pvc <name>',desc:'claim status + events',q:'Diagnose a stuck volume claim?'},
+      ]},
     ]},
     {id:uid(),name:'Build & secrets',color:null,sections:[
       {id:uid(),name:'Make',color:null,entries:[
@@ -1626,6 +1651,29 @@ const DEVOPS = () => ({
         {id:uid(),cmd:'sops -e <file>',desc:'encrypt a file',q:'Encrypt a file with SOPS?'},
         {id:uid(),cmd:'sops -d <file>',desc:'decrypt a file',q:'Decrypt a SOPS file?'},
         {id:uid(),cmd:'openssl rand -hex <n>',desc:'random token',q:'Generate a random hex token?'},
+      ]},
+    ]},
+    {id:uid(),name:'Registries & supply chain',color:null,sections:[
+      {id:uid(),name:'Registries',color:null,entries:[
+        {id:uid(),cmd:'docker login <registry>',desc:'authenticate',q:'Log in to a container registry?'},
+        {id:uid(),cmd:'docker tag <image> <reg>/<repo>:<tag>',desc:'retag for a registry',q:'Tag an image for a specific registry?'},
+        {id:uid(),cmd:'skopeo copy docker://<src> docker://<dst>',desc:'registry-to-registry',q:'Copy an image between registries without pulling?'},
+        {id:uid(),cmd:'crane digest <image>',desc:'image digest',q:'Get an image’s content digest from the registry?'},
+      ]},
+      {id:uid(),name:'Scan & sign',color:null,entries:[
+        {id:uid(),cmd:'trivy image <image>',desc:'scan for CVEs',q:'Scan an image for known vulnerabilities?'},
+        {id:uid(),cmd:'trivy fs <dir>',desc:'scan a filesystem',q:'Scan a project directory for vulnerabilities?'},
+        {id:uid(),cmd:'cosign sign <image>',desc:'sign an image',q:'Cryptographically sign a container image?'},
+        {id:uid(),cmd:'cosign verify <image>',desc:'verify a signature',q:'Verify an image’s signature?'},
+      ]},
+    ]},
+    {id:uid(),name:'Container runtimes',color:null,sections:[
+      {id:uid(),name:'Beyond Docker',color:null,entries:[
+        {id:uid(),cmd:'podman run -it <image> sh',desc:'rootless containers',q:'Run a rootless container with Podman?'},
+        {id:uid(),cmd:'podman generate kube <ctr>',desc:'pod → k8s YAML',q:'Generate Kubernetes YAML from a running container?'},
+        {id:uid(),cmd:'nerdctl ps',desc:'containerd CLI',q:'List containers managed by containerd?'},
+        {id:uid(),cmd:'crictl pods',desc:'CRI node debug',q:'List pods directly on a node via the CRI?'},
+        {id:uid(),cmd:'ctr -n k8s.io images ls',desc:'low-level images',q:'List containerd images in the k8s namespace?'},
       ]},
     ]},
   ],
