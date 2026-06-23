@@ -1124,7 +1124,7 @@ const SAMPLE = () => ({
         {id:uid(),cmd:'type <cmd>',desc:'what a name is',q:'Find out what a command name actually is?'},
       ]},
     ]},
-    {id:uid(),name:'Vi',color:null,sections:[
+    {id:uid(),name:'Vim',color:null,sections:[
       {id:uid(),name:'Navigation',color:null,entries:[
         {id:uid(),cmd:'`h` `j` `k` `l`',desc:'left · down · up · right',q:'Move one character (4 keys)?'},
         {id:uid(),cmd:'`w` / `b`',desc:'next / prev word',q:'Jump to next / previous word?'},
@@ -1333,61 +1333,13 @@ const DEVOPS = () => ({
       ]},
     ]},
     {id:uid(),name:'Git',color:null,sections:[
-      {id:uid(),name:'Config',color:null,entries:[
-        {id:uid(),cmd:'git config --global user.name "<name>"',desc:'set name',q:'Set your global commit name?'},
-        {id:uid(),cmd:'git config --global user.email "<email>"',desc:'set email',q:'Set your global commit email?'},
-        {id:uid(),cmd:'git config --global init.defaultBranch main',desc:'default branch',q:'Make new repos start on main?'},
-        {id:uid(),cmd:'git config --list',desc:'show config',q:'Show all effective git config?'},
-        {id:uid(),cmd:'git config --global alias.<a> <cmd>',desc:'make an alias',q:'Create a git alias?'},
-      ]},
-      {id:uid(),name:'Basics',color:null,entries:[
-        {id:uid(),cmd:'git init',desc:'new repo',q:'Start a new repository here?'},
-        {id:uid(),cmd:'git clone <url>',desc:'clone a repo',q:'Clone a remote repository?'},
-        {id:uid(),cmd:'git add -p',desc:'stage by hunk',q:'Stage changes interactively?'},
-        {id:uid(),cmd:'git commit -m "<msg>"',desc:'commit staged',q:'Commit staged changes with a message?'},
-        {id:uid(),cmd:'git status',desc:'working tree',q:'Show the working-tree status?'},
-      ]},
-      {id:uid(),name:'Branching',color:null,entries:[
+      // ponytail: quick-ref only — the full Git reference lives in the Git expansion
+      {id:uid(),name:'Git (quick ref)',color:null,entries:[
         {id:uid(),cmd:'git switch -c <branch>',desc:'new branch',q:'Create and switch to a branch?'},
-        {id:uid(),cmd:'git switch <branch>',desc:'change branch',q:'Switch to an existing branch?'},
-        {id:uid(),cmd:'git branch',desc:'list branches',q:'List local branches?'},
-        {id:uid(),cmd:'git merge <branch>',desc:'merge in',q:'Merge a branch into the current one?'},
-        {id:uid(),cmd:'git branch -d <branch>',desc:'delete branch',q:'Delete a merged branch?'},
-      ]},
-      {id:uid(),name:'Remote',color:null,entries:[
-        {id:uid(),cmd:'git remote -v',desc:'show remotes',q:'List configured remotes?'},
-        {id:uid(),cmd:'git remote add origin <url>',desc:'add a remote',q:'Add a remote named origin?'},
-        {id:uid(),cmd:'git fetch',desc:'download refs',q:'Fetch remote changes without merging?'},
-        {id:uid(),cmd:'git pull',desc:'fetch + merge',q:'Update your branch from its remote?'},
+        {id:uid(),cmd:'git commit -am "<msg>"',desc:'stage + commit',q:'Stage tracked files and commit?'},
         {id:uid(),cmd:'git push -u origin <branch>',desc:'push + track',q:'Push a branch and set upstream?'},
-      ]},
-      {id:uid(),name:'Undo',color:null,entries:[
-        {id:uid(),cmd:'git restore <file>',desc:'discard changes',q:'Discard local changes to a file?'},
-        {id:uid(),cmd:'git restore --staged <file>',desc:'unstage',q:'Unstage a file, keeping changes?'},
-        {id:uid(),cmd:'git reset --soft HEAD~1',desc:'uncommit, keep',q:'Undo the last commit but keep changes?'},
-        {id:uid(),cmd:'git revert <commit>',desc:'inverse commit',q:'Make a commit that undoes another?'},
-        {id:uid(),cmd:'git clean -fd',desc:'remove untracked',q:'Delete untracked files and folders?'},
-      ]},
-      {id:uid(),name:'Stash & log',color:null,entries:[
-        {id:uid(),cmd:'git stash',desc:'shelve changes',q:'Temporarily shelve your changes?'},
-        {id:uid(),cmd:'git stash pop',desc:'restore stash',q:'Bring shelved changes back?'},
-        {id:uid(),cmd:'git log --oneline --graph',desc:'compact graph',q:'Show a compact commit graph?'},
-        {id:uid(),cmd:'git log -p <file>',desc:'history of a file',q:'See a file’s change history?'},
-        {id:uid(),cmd:'git show <commit>',desc:'inspect a commit',q:'Show what a commit changed?'},
-      ]},
-      {id:uid(),name:'Rebase & cherry-pick',color:null,entries:[
-        {id:uid(),cmd:'git rebase <branch>',desc:'replay onto branch',q:'Replay your commits on top of another branch?'},
-        {id:uid(),cmd:'git rebase -i HEAD~<n>',desc:'interactive rebase',q:'Edit/squash the last n commits?'},
-        {id:uid(),cmd:'git cherry-pick <commit>',desc:'copy a commit',q:'Apply one commit onto this branch?'},
-        {id:uid(),cmd:'git rebase --continue',desc:'resume rebase',q:'Continue a rebase after fixing conflicts?'},
-        {id:uid(),cmd:'git rebase --abort',desc:'cancel rebase',q:'Abort a rebase and restore the branch?'},
-      ]},
-      {id:uid(),name:'Tags',color:null,entries:[
-        {id:uid(),cmd:'git tag',desc:'list tags',q:'List tags?'},
-        {id:uid(),cmd:'git tag -a <v> -m "<msg>"',desc:'annotated tag',q:'Create an annotated tag?'},
-        {id:uid(),cmd:'git push origin <v>',desc:'push one tag',q:'Push a single tag?'},
-        {id:uid(),cmd:'git push --tags',desc:'push all tags',q:'Push all local tags?'},
-        {id:uid(),cmd:'git describe --tags',desc:'name by tag',q:'Describe the commit relative to the nearest tag?'},
+        {id:uid(),cmd:'git rebase -i HEAD~<n>',desc:'tidy commits',q:'Edit/squash the last n commits?'},
+        {id:uid(),cmd:'git log --oneline --graph',desc:'compact graph · full set: Git expansion',q:'Show a compact commit graph?'},
       ]},
     ]},
     {id:uid(),name:'GitHub & CI',color:null,sections:[
@@ -1583,11 +1535,11 @@ const DEVOPS = () => ({
         {id:uid(),cmd:'curl :9090/-/healthy',desc:'health endpoint',q:'Check Prometheus health?'},
       ]},
       {id:uid(),name:'Logs',color:null,entries:[
-        {id:uid(),cmd:'kubectl logs -f <pod>',desc:'follow pod logs',q:'Follow a pod’s logs?'},
-        {id:uid(),cmd:'docker logs -f <ctr>',desc:'follow container logs',q:'Follow a container’s logs?'},
-        {id:uid(),cmd:'journalctl -u <unit> -f',desc:'follow service logs',q:'Follow a service’s logs?'},
-        {id:uid(),cmd:'tail -f <file>',desc:'follow a log file',q:'Follow a log file?'},
-        {id:uid(),cmd:'grep -i error <file>',desc:'find errors',q:'Search a log for errors?'},
+        {id:uid(),cmd:'kubectl logs -f <pod> --since=1h',desc:'recent pod logs',q:'Follow a pod’s logs from the last hour?'},
+        {id:uid(),cmd:'kubectl logs -l <k>=<v> --prefix',desc:'logs across pods',q:'Tail logs from every pod matching a label?'},
+        {id:uid(),cmd:'docker compose logs -f --tail=50',desc:'stack logs',q:'Follow the last 50 lines across a compose stack?'},
+        {id:uid(),cmd:'tail -f <file> | grep -i error',desc:'live error filter',q:'Watch a log and show only errors?'},
+        {id:uid(),cmd:'stern <pod-query>',desc:'multi-pod tail',q:'Tail logs from multiple pods by name?'},
       ]},
       {id:uid(),name:'Health checks',color:null,entries:[
         {id:uid(),cmd:'curl -fsS <url>/health',desc:'hit a health route',q:'Probe a service’s health endpoint?'},
@@ -1863,7 +1815,7 @@ const AI = () => ({
         {id:uid(),cmd:'git diff --staged | pbcopy',desc:'copy staged diff',q:'Copy the staged diff to paste into a chat?'},
         {id:uid(),cmd:'git log --oneline -20 | llm "summarize"',desc:'summarize history',q:'Summarize recent commits?'},
         {id:uid(),cmd:'rg -l <pattern> | xargs cat | llm "<q>"',desc:'feed matching files',q:'Feed files matching a pattern to an LLM?'},
-        {id:uid(),cmd:'llm -f <file> "<q>"',desc:'attach a file',q:'Attach a specific file as context?'},
+        {id:uid(),cmd:'tree -L 2 | llm "explain this layout"',desc:'project shape as context',q:'Give an LLM the project structure?'},
       ]},
     ]},
     {id:uid(),name:'Code prompts',color:null,sections:[
@@ -3206,7 +3158,7 @@ const TOYS = () => ({
         {id:uid(),cmd:"ponysay <text>",desc:"cowsay with ponies",q:"Make a colorful pony say something?"},
         {id:uid(),cmd:"figlet <text> | cowsay -n",desc:"big-text cow",q:"Feed a giant banner into the cow verbatim?"},
         {id:uid(),cmd:"xcowsay <text>",desc:"a GUI cow popup",q:"Pop the cow up as a desktop bubble?"},
-        {id:uid(),cmd:"asciiquarium",desc:"a whole tank",q:"Skip one animal and run a whole aquarium?"},
+        {id:uid(),cmd:"cowsay -f stegosaurus <text>",desc:"a dinosaur speaks",q:"Make a different built-in critter talk?"},
       ]},
       {id:uid(),name:"The sl train",color:null,entries:[
         {id:uid(),cmd:"sl",desc:"train for ls typos",q:"What chugs across when you fat-finger `ls`?"},
