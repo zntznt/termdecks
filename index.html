@@ -1704,6 +1704,12 @@ const AI = () => ({
         {id:uid(),cmd:'/mcp',desc:'manage MCP servers',q:'Connect or inspect MCP servers?'},
         {id:uid(),cmd:'claude mcp add <name> <cmd>',desc:'register a server',q:'Add an MCP server from the CLI?'},
       ]},
+      {id:uid(),name:'MCP & headless',color:null,entries:[
+        {id:uid(),cmd:'claude mcp list',desc:'list servers',q:'List configured MCP servers?'},
+        {id:uid(),cmd:'claude mcp remove <name>',desc:'remove a server',q:'Unregister an MCP server?'},
+        {id:uid(),cmd:'claude -p "<q>" --output-format json',desc:'scriptable output',q:'Get machine-readable output for a script?'},
+        {id:uid(),cmd:'cat <file> | claude -p "<q>"',desc:'pipe input in',q:'Feed piped data into a headless run?'},
+      ]},
       {id:uid(),name:'Keys',color:null,entries:[
         {id:uid(),cmd:'`Shift`+`Tab`',desc:'cycle mode',q:'Cycle plan / auto-accept modes?'},
         {id:uid(),cmd:'`Esc`',desc:'interrupt',q:'Stop Claude mid-action?'},
@@ -1820,6 +1826,12 @@ const AI = () => ({
         {id:uid(),cmd:'curl localhost:11434/api/chat',desc:'chat endpoint',q:'Call the local chat API?'},
         {id:uid(),cmd:'OLLAMA_HOST=<host>',desc:'point at a host',q:'Target a remote ollama server?'},
         {id:uid(),cmd:'ollama cp <src> <dst>',desc:'copy a model',q:'Duplicate a model under a new name?'},
+      ]},
+      {id:uid(),name:'Other runtimes',color:null,entries:[
+        {id:uid(),cmd:'llama-cli -m <model>.gguf -p "<prompt>"',desc:'llama.cpp inference',q:'Run a GGUF model directly with llama.cpp?'},
+        {id:uid(),cmd:'llama-server -m <model>.gguf',desc:'OpenAI-compatible server',q:'Serve a local GGUF model over an HTTP API?'},
+        {id:uid(),cmd:'vllm serve <model>',desc:'high-throughput serving',q:'Serve a model for many concurrent requests?'},
+        {id:uid(),cmd:'lms load <model>',desc:'LM Studio CLI',q:'Load a model via the LM Studio CLI?'},
       ]},
     ]},
     {id:uid(),name:'llm CLI',color:null,sections:[
@@ -2135,6 +2147,8 @@ const VIM = () => ({
         {id:uid(),cmd:"\\c",desc:"case-insensitive",q:"Force a search to ignore case?"},
         {id:uid(),cmd:"\\< \\>",desc:"word boundaries",q:"Anchor a pattern to word boundaries?"},
         {id:uid(),cmd:"gd",desc:"local definition",q:"Jump to the local definition of the identifier?"},
+        {id:uid(),cmd:"cgn",desc:"change next match",q:"Change the next search match, then dot-repeat it?"},
+        {id:uid(),cmd:"g; / g,",desc:"changelist nav",q:"Jump back and forth through your edit positions?"},
       ]},
     ]},
     {id:uid(),name:"Substitute",color:null,sections:[
@@ -2347,6 +2361,25 @@ const VIM = () => ({
         {id:uid(),cmd:"vnoremap <key> <cmd>",desc:"map visual key",q:"Bind a key only in visual mode?"},
       ]},
     ]},
+    {id:uid(),name:"Diff, sessions & terminal",color:null,sections:[
+      {id:uid(),name:"Diff mode",color:null,entries:[
+        {id:uid(),cmd:"vim -d <a> <b>",desc:"open in diff mode",q:"Open two files side by side as a diff?"},
+        {id:uid(),cmd:":diffthis",desc:"diff this window",q:"Add the current window to the diff?"},
+        {id:uid(),cmd:"]c / [c",desc:"next/prev change",q:"Jump between diff hunks?"},
+        {id:uid(),cmd:"do / dp",desc:"obtain / put change",q:"Pull or push a change across the diff?"},
+      ]},
+      {id:uid(),name:"Sessions & views",color:null,entries:[
+        {id:uid(),cmd:":mksession <f>.vim",desc:"save a session",q:"Save the current window/buffer layout?"},
+        {id:uid(),cmd:"vim -S <f>.vim",desc:"restore a session",q:"Reopen a saved session?"},
+        {id:uid(),cmd:":mkview / :loadview",desc:"per-file view",q:"Persist folds/cursor for one file?"},
+      ]},
+      {id:uid(),name:"Terminal & autocmds",color:null,entries:[
+        {id:uid(),cmd:":terminal",desc:"embedded shell",q:"Open a terminal buffer inside Vim/Neovim?"},
+        {id:uid(),cmd:"Ctrl-\\ Ctrl-n",desc:"leave terminal mode",q:"Return to normal mode from the terminal?"},
+        {id:uid(),cmd:":autocmd <event> <pat> <cmd>",desc:"run on an event",q:"Run a command automatically on a file event?"},
+        {id:uid(),cmd:":augroup <name> … :augroup END",desc:"group autocmds",q:"Group related autocmds so they can be cleared?"},
+      ]},
+    ]},
   ]
 });
 const TMUX = () => ({
@@ -2542,6 +2575,23 @@ const TMUX = () => ({
         {id:uid(),cmd:"tmux info",desc:"server info",q:"Show tmux server information?"},
       ]},
     ]},
+    {id:uid(),name:"Popups & nesting",color:null,sections:[
+      {id:uid(),name:"Popups & menus",color:null,entries:[
+        {id:uid(),cmd:"tmux display-popup -E <cmd>",desc:"floating window",q:"Run a command in a floating popup window?"},
+        {id:uid(),cmd:"tmux display-popup -w 80% -h 80% -E <cmd>",desc:"sized popup",q:"Open a popup at a chosen size?"},
+        {id:uid(),cmd:"tmux display-menu -T '<title>' '<item>' <key> '<cmd>'",desc:"interactive menu",q:"Show a pick-list menu of commands?"},
+      ]},
+      {id:uid(),name:"Nested sessions",color:null,entries:[
+        {id:uid(),cmd:"prefix prefix",desc:"send prefix inward",q:"Send the prefix to a tmux running inside tmux?"},
+        {id:uid(),cmd:"bind -n M-F12 send-prefix",desc:"toggle key for inner",q:"Bind a key to forward the prefix to a nested session?"},
+        {id:uid(),cmd:"tmux -L <socket> new -s <name>",desc:"separate server",q:"Run an isolated tmux server on its own socket?"},
+      ]},
+      {id:uid(),name:"Clients",color:null,entries:[
+        {id:uid(),cmd:"tmux list-clients",desc:"who's attached",q:"List clients attached to the server?"},
+        {id:uid(),cmd:"tmux detach-client -t <client>",desc:"detach one client",q:"Detach a specific client?"},
+        {id:uid(),cmd:"tmux set-environment -g <K> <V>",desc:"session env var",q:"Set an environment variable for the tmux session?"},
+      ]},
+    ]},
   ]
 });
 const GIT = () => ({
@@ -2583,6 +2633,7 @@ const GIT = () => ({
         {id:uid(),cmd:"git blame -L <a>,<b> <file>",desc:"blame a range",q:"Blame only certain lines of a file?"},
         {id:uid(),cmd:"git log -L <a>,<b>:<file>",desc:"evolve a range",q:"Show the history of specific lines?"},
         {id:uid(),cmd:"git blame -w -C <file>",desc:"ignore moves/space",q:"Blame, ignoring whitespace and moved code?"},
+        {id:uid(),cmd:"git blame --ignore-rev <sha> <file>",desc:"skip a reformat commit",q:"Blame while ignoring a bulk-reformat commit?"},
       ]},
     ]},
     {id:uid(),name:"Staging & committing",color:null,sections:[
@@ -2601,6 +2652,7 @@ const GIT = () => ({
         {id:uid(),cmd:"git commit -am \"<msg>\"",desc:"stage tracked + commit",q:"Commit all tracked changes at once?"},
         {id:uid(),cmd:"git commit --no-verify",desc:"skip hooks",q:"Commit while skipping pre-commit hooks?"},
         {id:uid(),cmd:"git commit -v",desc:"commit with diff",q:"Show the diff in the commit editor?"},
+        {id:uid(),cmd:"git commit -S -m \"<msg>\"",desc:"sign the commit",q:"Create a GPG/SSH-signed commit?"},
       ]},
       {id:uid(),name:"Amend & fixup",color:null,entries:[
         {id:uid(),cmd:"git commit --amend --no-edit",desc:"amend, keep msg",q:"Add staged changes to the last commit, same message?"},
@@ -2794,6 +2846,7 @@ const GIT = () => ({
         {id:uid(),cmd:"git diff --color-moved",desc:"highlight moves",q:"Color lines that moved rather than changed?"},
         {id:uid(),cmd:"git diff <branch> -- <file>",desc:"file vs branch",q:"Diff one file against another branch?"},
         {id:uid(),cmd:"git range-diff <a> <b>",desc:"compare two ranges",q:"Compare two versions of a patch series?"},
+        {id:uid(),cmd:"git diff --check",desc:"whitespace + markers",q:"Catch trailing whitespace and conflict markers before commit?"},
       ]},
       {id:uid(),name:"Patches",color:null,entries:[
         {id:uid(),cmd:"git format-patch <base>",desc:"make patch files",q:"Create .patch files for commits since a base?"},
@@ -2911,6 +2964,10 @@ const TEXT = () => ({
         {id:uid(),cmd:"rg -i <pat>",desc:"case-insensitive",q:"Search ignoring case with ripgrep?"},
         {id:uid(),cmd:"rg -l <pat>",desc:"files with match",q:"List only matching file names?"},
         {id:uid(),cmd:"rg -A 3 -B 1 <pat>",desc:"context lines",q:"Show lines before and after each match?"},
+        {id:uid(),cmd:"rg -g '*.py' <pat>",desc:"glob filter",q:"Limit ripgrep to files matching a glob?"},
+        {id:uid(),cmd:"rg -P '(?<=<a>)<b>' <pat>",desc:"PCRE lookaround",q:"Use lookbehind/ahead with ripgrep’s PCRE engine?"},
+        {id:uid(),cmd:"rg -U '(?s)<a>.*<b>'",desc:"multiline match",q:"Match a pattern spanning multiple lines?"},
+        {id:uid(),cmd:"rg --json <pat> | jq .",desc:"structured output",q:"Get machine-readable match output from ripgrep?"},
       ]},
     ]},
     {id:uid(),name:"sed",color:null,sections:[
@@ -2950,6 +3007,13 @@ const TEXT = () => ({
         {id:uid(),cmd:"sed -E 's/(.*)/\\L\\1/' <file>",desc:"lowercase all",q:"Lowercase the whole line (GNU)?"},
         {id:uid(),cmd:"sed '1!G;h;$!d' <file>",desc:"reverse lines",q:"Reverse the order of lines (tac via sed)?"},
         {id:uid(),cmd:"sed = <file>",desc:"emit line numbers",q:"Print each line's number before it?"},
+      ]},
+      {id:uid(),name:"Hold space & branching",color:null,entries:[
+        {id:uid(),cmd:"sed -n '1h;1!H;${g;p}' <file>",desc:"collect into hold",q:"Accumulate all lines in the hold space?"},
+        {id:uid(),cmd:"sed 'G' <file>",desc:"double-space output",q:"Add a blank line after every line?"},
+        {id:uid(),cmd:"sed 'N;s/\\n/ /' <file>",desc:"join line pairs",q:"Merge each pair of lines into one?"},
+        {id:uid(),cmd:"sed ':x;/<pat>/{N;bx}' <file>",desc:"loop with a label",q:"Keep appending lines until a pattern (branch)?"},
+        {id:uid(),cmd:"sed 's/a/b/;t;s/c/d/' <file>",desc:"conditional branch",q:"Skip a later edit if an earlier one matched?"},
       ]},
     ]},
     {id:uid(),name:"awk",color:null,sections:[
@@ -2998,6 +3062,12 @@ const TEXT = () => ({
         {id:uid(),cmd:"awk '{\"date\"|getline d; close(\"date\"); print d,$0}' <file>",desc:"run a command",q:"Read a shell command's output into awk?"},
         {id:uid(),cmd:"awk '{print > (\"out_\" $1 \".txt\")}' <file>",desc:"split by key",q:"Write rows to per-key files?"},
         {id:uid(),cmd:"awk 'BEGIN{system(\"<cmd>\")}'",desc:"shell out",q:"Run a shell command from awk?"},
+      ]},
+      {id:uid(),name:"Multi-file & match",color:null,entries:[
+        {id:uid(),cmd:"awk 'FNR==NR{a[$1]=$2;next} {print $0,a[$1]}' <a> <b>",desc:"join two files by key",q:"Look up values from a first file while reading a second?"},
+        {id:uid(),cmd:"awk 'FNR==1{print \"== \" FILENAME}' <files>",desc:"per-file header",q:"Act on the first line of each input file?"},
+        {id:uid(),cmd:"awk 'match($0,/[0-9]+/){print substr($0,RSTART,RLENGTH)}' <file>",desc:"extract a match",q:"Pull out the part of a line that matches a regex?"},
+        {id:uid(),cmd:"awk 'BEGIN{FPAT=\"[^,]+|\\\"[^\\\"]*\\\"\"} {print $2}' <file>",desc:"parse quoted CSV",q:"Split CSV that has quoted, comma-containing fields?"},
       ]},
     ]},
     {id:uid(),name:"jq",color:null,sections:[
@@ -3053,6 +3123,29 @@ const TEXT = () => ({
         {id:uid(),cmd:"jq -r '.[] | [.<a>,.<b>] | @csv' <file>",desc:"emit CSV",q:"Output rows as CSV?"},
         {id:uid(),cmd:"jq -c '.[]' <file>",desc:"compact lines",q:"Emit one compact JSON object per line?"},
         {id:uid(),cmd:"jq -s 'add' <files>",desc:"slurp + merge",q:"Read multiple JSON inputs into one array?"},
+      ]},
+      {id:uid(),name:"Reduce & traverse",color:null,entries:[
+        {id:uid(),cmd:"jq 'reduce .[] as $x (0; . + $x)' <file>",desc:"fold to one value",q:"Sum or fold an array into a single value?"},
+        {id:uid(),cmd:"jq '[.. | numbers]' <file>",desc:"recursive descent",q:"Pull every number anywhere in the tree?"},
+        {id:uid(),cmd:"jq 'paths(scalars)' <file>",desc:"all leaf paths",q:"List the path to every leaf value?"},
+        {id:uid(),cmd:"jq 'getpath([\"a\",\"b\"])' <file>",desc:"path lookup",q:"Read a value by an explicit path array?"},
+        {id:uid(),cmd:"jq 'walk(if type==\"string\" then ascii_downcase else . end)' <file>",desc:"transform everywhere",q:"Apply a change to every node recursively?"},
+      ]},
+      {id:uid(),name:"Formats & input",color:null,entries:[
+        {id:uid(),cmd:"jq -r '.<k> | @base64' <file>",desc:"encode a value",q:"Base64-encode a field?"},
+        {id:uid(),cmd:"jq -r '@uri \"q=\\(.<k>)\"' <file>",desc:"URL-encode",q:"Build a URL-encoded query string?"},
+        {id:uid(),cmd:"jq -r '.[] | @sh' <file>",desc:"shell-quote",q:"Emit values safely quoted for the shell?"},
+        {id:uid(),cmd:"jq --slurpfile a <a>.json '.[] | select(.id==$a[0].id)' <b>.json",desc:"join a second file",q:"Reference another JSON file inside a filter?"},
+        {id:uid(),cmd:"jq -n 'inputs | .<k>' <file>",desc:"stream inputs",q:"Process a stream of JSON values one at a time?"},
+      ]},
+    ]},
+    {id:uid(),name:"yq (YAML)",color:null,sections:[
+      {id:uid(),name:"Query & edit",color:null,entries:[
+        {id:uid(),cmd:"yq '.<key>' <file>.yaml",desc:"read a field",q:"Read a value from a YAML file?"},
+        {id:uid(),cmd:"yq '.[] | .name' <file>.yaml",desc:"iterate items",q:"Pull a field from each list item in YAML?"},
+        {id:uid(),cmd:"yq -i '.<k> = \"<v>\"' <file>.yaml",desc:"edit in place",q:"Update a YAML value, writing back to the file?"},
+        {id:uid(),cmd:"yq -o=json '.' <file>.yaml",desc:"YAML → JSON",q:"Convert YAML to JSON?"},
+        {id:uid(),cmd:"yq ea '. as $i ireduce ({}; . * $i)' <files>",desc:"merge documents",q:"Merge multiple YAML files into one?"},
       ]},
     ]},
     {id:uid(),name:"Combine & misc",color:null,sections:[
