@@ -1161,27 +1161,31 @@ const SAMPLE = () => ({
         {id:uid(),cmd:'`gv`',desc:'reselect last',q:'Reselect the last visual selection?'},
       ]},
     ]},
+    // ponytail: starter teaser — first-day Git that the deep Git expansion assumes
+    // you already know (clone/pull/push/ignore). Kept distinct from the deep deck so
+    // loading both doesn't duplicate commands.
     {id:uid(),name:'Git',color:null,sections:[
-      {id:uid(),name:'Basics',color:null,entries:[
-        {id:uid(),cmd:'git status',desc:'working tree',q:'Show the working-tree status?'},
-        {id:uid(),cmd:'git add -p',desc:'stage by hunk',q:'Stage changes interactively, hunk by hunk?'},
-        {id:uid(),cmd:'git commit -m "<msg>"',desc:'commit staged',q:'Commit staged changes with a message?'},
-        {id:uid(),cmd:'git log --oneline',desc:'compact log',q:'Show a compact one-line-per-commit log?'},
-        {id:uid(),cmd:'git diff',desc:'unstaged changes',q:'Show unstaged changes?'},
-        {id:uid(),cmd:'git diff --staged',desc:'staged changes',q:'Show what’s staged for commit?'},
+      {id:uid(),name:'Set up & save',color:null,entries:[
+        {id:uid(),cmd:'git init',desc:'new repo here',q:'Start tracking the current folder with git?'},
+        {id:uid(),cmd:'git clone <url>',desc:'copy a remote repo',q:'Download a repository to work on it?'},
+        {id:uid(),cmd:'git status',desc:'working tree',q:'Show what’s changed and staged?'},
+        {id:uid(),cmd:'git add .',desc:'stage everything',q:'Stage all changes in the folder?'},
+        {id:uid(),cmd:'git commit -m "<msg>"',desc:'save a snapshot',q:'Record staged changes with a message?'},
+        {id:uid(),cmd:'echo "<pat>" >> .gitignore',desc:'stop tracking a path',q:'Tell git to ignore a file or folder?'},
       ]},
-      {id:uid(),name:'Branching',color:null,entries:[
+      {id:uid(),name:'Share with a remote',color:null,entries:[
+        {id:uid(),cmd:'git push',desc:'upload commits',q:'Send your commits to the remote?'},
+        {id:uid(),cmd:'git push -u origin <branch>',desc:'push + track',q:'Push a new branch and track it?'},
+        {id:uid(),cmd:'git pull',desc:'fetch + merge',q:'Update your branch from the remote?'},
+        {id:uid(),cmd:'git fetch',desc:'download, don’t merge',q:'Get remote changes without merging yet?'},
+        {id:uid(),cmd:'git remote -v',desc:'show remotes',q:'See where push/pull go?'},
+      ]},
+      {id:uid(),name:'Branch & fix',color:null,entries:[
         {id:uid(),cmd:'git switch -c <branch>',desc:'new branch',q:'Create and switch to a new branch?'},
         {id:uid(),cmd:'git switch <branch>',desc:'change branch',q:'Switch to an existing branch?'},
         {id:uid(),cmd:'git merge <branch>',desc:'merge into HEAD',q:'Merge a branch into the current one?'},
-        {id:uid(),cmd:'git rebase <branch>',desc:'rebase onto branch',q:'Replay your commits on top of another branch?'},
-        {id:uid(),cmd:'git branch -d <branch>',desc:'delete branch',q:'Delete a merged branch?'},
-      ]},
-      {id:uid(),name:'Undo',color:null,entries:[
-        {id:uid(),cmd:'git restore <file>',desc:'discard file',q:'Discard local changes to a file?'},
-        {id:uid(),cmd:'git reset --soft HEAD~1',desc:'uncommit, keep',q:'Undo the last commit but keep the changes?'},
-        {id:uid(),cmd:'git revert <commit>',desc:'inverse commit',q:'Make a new commit that undoes another?'},
-        {id:uid(),cmd:'git stash / pop',desc:'shelve / restore',q:'Shelve changes, then bring them back?'},
+        {id:uid(),cmd:'git restore <file>',desc:'discard changes',q:'Throw away local edits to a file?'},
+        {id:uid(),cmd:'git commit --amend',desc:'fix last commit',q:'Change the most recent commit?'},
       ]},
     ]},
     {id:uid(),name:'tmux',color:null,sections:[
@@ -1937,7 +1941,9 @@ const VIM = () => ({
   paper:'letter', palette:'catppuccin', font:'jb', fs:8.5, duplex:'long', guides:true,
   backStyle:'minimal', decks:[], activeDeck:null, collapsed:{cats:[],secs:[]},
   categories:[
-    {id:uid(),name:"Modes",color:null,sections:[
+    // ponytail: named "Vim" so folding this expansion merges these cards into a
+    // starter-based collection's Vim category instead of creating a parallel one.
+    {id:uid(),name:"Vim",color:null,sections:[
       {id:uid(),name:"Switch modes",color:null,entries:[
         {id:uid(),cmd:"i",desc:"insert before cursor",q:"Enter insert mode before the cursor?"},
         {id:uid(),cmd:"a",desc:"append after cursor",q:"Enter insert mode after the cursor?"},
@@ -2308,7 +2314,9 @@ const TMUX = () => ({
   paper:'letter', palette:'solarized', font:'jb', fs:8.5, duplex:'long', guides:true,
   backStyle:'minimal', decks:[], activeDeck:null, collapsed:{cats:[],secs:[]},
   categories:[
-    {id:uid(),name:"Sessions",color:null,sections:[
+    // ponytail: named "tmux" so folding this expansion merges these cards into a
+    // starter-based collection's tmux category instead of creating a parallel one.
+    {id:uid(),name:"tmux",color:null,sections:[
       {id:uid(),name:"Start & attach (shell)",color:null,entries:[
         {id:uid(),cmd:"tmux",desc:"start server + session",q:"Start tmux with a new unnamed session?"},
         {id:uid(),cmd:"tmux new -s <name>",desc:"named session",q:"Start a new named session?"},
@@ -2506,7 +2514,9 @@ const GIT = () => ({
   paper:'letter', palette:'pastel', font:'jb', fs:8.5, duplex:'long', guides:true,
   backStyle:'minimal', decks:[], activeDeck:null, collapsed:{cats:[],secs:[]},
   categories:[
-    {id:uid(),name:"Inspect",color:null,sections:[
+    // ponytail: named "Git" (not "Inspect") so folding this expansion into a
+    // starter-based collection merges these cards into the starter's Git category.
+    {id:uid(),name:"Git",color:null,sections:[
       {id:uid(),name:"Status & diff",color:null,entries:[
         {id:uid(),cmd:"git status -sb",desc:"short status + branch",q:"Show a compact status with branch info?"},
         {id:uid(),cmd:"git diff",desc:"unstaged changes",q:"Show changes not yet staged?"},
