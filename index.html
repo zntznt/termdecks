@@ -1339,9 +1339,7 @@ const DEVOPS = () => ({
     {id:uid(),name:'Git',color:null,sections:[
       // ponytail: quick-ref only — the full Git reference lives in the Git expansion
       {id:uid(),name:'Git (quick ref)',color:null,entries:[
-        {id:uid(),cmd:'git switch -c <branch>',desc:'new branch',q:'Create and switch to a branch?'},
         {id:uid(),cmd:'git commit -am "<msg>"',desc:'stage + commit',q:'Stage tracked files and commit?'},
-        {id:uid(),cmd:'git push -u origin <branch>',desc:'push + track',q:'Push a branch and set upstream?'},
         {id:uid(),cmd:'git rebase -i HEAD~<n>',desc:'tidy commits',q:'Edit/squash the last n commits?'},
         {id:uid(),cmd:'git log --oneline --graph',desc:'compact graph · full set: Git expansion',q:'Show a compact commit graph?'},
       ]},
@@ -1473,7 +1471,6 @@ const DEVOPS = () => ({
         {id:uid(),cmd:'curl -H "<k>: <v>" <url>',desc:'custom header',q:'Add a custom request header?'},
         {id:uid(),cmd:'curl -u <user>:<pass> <url>',desc:'basic auth',q:'Send HTTP basic auth?'},
         {id:uid(),cmd:'curl -H "Authorization: Bearer <tok>" <url>',desc:'bearer token',q:'Send a bearer token?'},
-        {id:uid(),cmd:'curl -L <url>',desc:'follow redirects',q:'Follow HTTP redirects?'},
         {id:uid(),cmd:'curl -w "%{http_code}" <url>',desc:'print status',q:'Print just the HTTP status code?'},
       ]},
       {id:uid(),name:'jq & yq',color:null,entries:[
@@ -1501,32 +1498,20 @@ const DEVOPS = () => ({
       ]},
       {id:uid(),name:'SSH & secrets',color:null,entries:[
         {id:uid(),cmd:'ssh -i <key> <user>@<host>',desc:'connect w/ key',q:'Connect to a host using a key file?'},
-        {id:uid(),cmd:'ssh-copy-id <user>@<host>',desc:'install pubkey',q:'Install your public key on a server?'},
         {id:uid(),cmd:'ssh -L <l>:localhost:<r> <host>',desc:'port tunnel',q:'Tunnel a remote port to localhost?'},
-        {id:uid(),cmd:'ssh-keygen -t ed25519',desc:'new key pair',q:'Generate a new SSH key pair?'},
         {id:uid(),cmd:'openssl rand -base64 <n>',desc:'random secret',q:'Generate a random base64 secret?'},
       ]},
     ]},
     {id:uid(),name:'Ops & logs',color:null,sections:[
       {id:uid(),name:'systemd services',color:null,entries:[
-        {id:uid(),cmd:'systemctl status <unit>',desc:'service state',q:'Check a service’s status?'},
-        {id:uid(),cmd:'sudo systemctl restart <unit>',desc:'restart',q:'Restart a service?'},
-        {id:uid(),cmd:'sudo systemctl enable --now <unit>',desc:'start + at boot',q:'Start a service and enable at boot?'},
         {id:uid(),cmd:'systemctl list-units --type=service',desc:'list services',q:'List active services?'},
         {id:uid(),cmd:'systemctl cat <unit>',desc:'show unit file',q:'View a unit’s definition?'},
       ]},
       {id:uid(),name:'journald',color:null,entries:[
         {id:uid(),cmd:'journalctl -u <unit> -f',desc:'follow a unit',q:'Follow one service’s logs live?'},
-        {id:uid(),cmd:'journalctl -b',desc:'since boot',q:'Show logs since the last boot?'},
-        {id:uid(),cmd:'journalctl -p err',desc:'errors only',q:'Show only errors in the journal?'},
-        {id:uid(),cmd:'journalctl --since "<time>"',desc:'time filter',q:'Show logs since a given time?'},
         {id:uid(),cmd:'journalctl --disk-usage',desc:'journal size',q:'See how much disk the journal uses?'},
       ]},
       {id:uid(),name:'Net debug',color:null,entries:[
-        {id:uid(),cmd:'ss -tulpn',desc:'listening ports',q:'List listening ports and their processes?'},
-        {id:uid(),cmd:'lsof -i :<port>',desc:'who uses a port',q:'Find what’s using a port?'},
-        {id:uid(),cmd:'nc -zv <host> <port>',desc:'test a port',q:'Check if a remote port is reachable?'},
-        {id:uid(),cmd:'dig +short <host>',desc:'resolve a host',q:'Resolve a hostname to an IP?'},
         {id:uid(),cmd:'sudo tcpdump -i <if> port <port>',desc:'capture packets',q:'Capture packets on an interface/port?'},
       ]},
     ]},
@@ -1549,7 +1534,6 @@ const DEVOPS = () => ({
         {id:uid(),cmd:'curl -fsS <url>/health',desc:'hit a health route',q:'Probe a service’s health endpoint?'},
         {id:uid(),cmd:'curl -o /dev/null -w "%{http_code}" <url>',desc:'status only',q:'Get just the HTTP status of a URL?'},
         {id:uid(),cmd:'watch -n5 <cmd>',desc:'poll periodically',q:'Re-run a check every few seconds?'},
-        {id:uid(),cmd:'nc -zv <host> <port>',desc:'port reachable?',q:'Test whether a port is reachable?'},
         {id:uid(),cmd:'kubectl get --raw /healthz',desc:'API server health',q:'Check the Kubernetes API health?'},
       ]},
     ]},
@@ -1941,9 +1925,7 @@ const VIM = () => ({
   paper:'letter', palette:'catppuccin', font:'jb', fs:8.5, duplex:'long', guides:true,
   backStyle:'minimal', decks:[], activeDeck:null, collapsed:{cats:[],secs:[]},
   categories:[
-    // ponytail: named "Vim" so folding this expansion merges these cards into a
-    // starter-based collection's Vim category instead of creating a parallel one.
-    {id:uid(),name:"Vim",color:null,sections:[
+    {id:uid(),name:"Modes",color:null,sections:[
       {id:uid(),name:"Switch modes",color:null,entries:[
         {id:uid(),cmd:"i",desc:"insert before cursor",q:"Enter insert mode before the cursor?"},
         {id:uid(),cmd:"a",desc:"append after cursor",q:"Enter insert mode after the cursor?"},
@@ -1971,7 +1953,6 @@ const VIM = () => ({
     ]},
     {id:uid(),name:"Motions",color:null,sections:[
       {id:uid(),name:"Characters & lines",color:null,entries:[
-        {id:uid(),cmd:"h j k l",desc:"left down up right",q:"Move one cell in each direction?"},
         {id:uid(),cmd:"0",desc:"line start",q:"Jump to column zero of the line?"},
         {id:uid(),cmd:"^",desc:"first non-blank",q:"Jump to the first non-blank character?"},
         {id:uid(),cmd:"$",desc:"line end",q:"Jump to the end of the line?"},
@@ -1995,7 +1976,6 @@ const VIM = () => ({
       {id:uid(),name:"Sentences & blocks",color:null,entries:[
         {id:uid(),cmd:"( )",desc:"sentence back/fwd",q:"Move by sentences?"},
         {id:uid(),cmd:"{ }",desc:"paragraph back/fwd",q:"Move by blank-line-delimited paragraphs?"},
-        {id:uid(),cmd:"%",desc:"matching pair",q:"Jump to the matching bracket or paren?"},
         {id:uid(),cmd:"H M L",desc:"top/mid/bottom",q:"Jump to the top, middle, or bottom of the screen?"},
       ]},
       {id:uid(),name:"File & line jumps",color:null,entries:[
@@ -2003,7 +1983,6 @@ const VIM = () => ({
         {id:uid(),cmd:"G",desc:"last line",q:"Go to the last line of the file?"},
         {id:uid(),cmd:"<n>G",desc:"go to line <n>",q:"Jump to a specific line number?"},
         {id:uid(),cmd:"''",desc:"previous position",q:"Jump back to before the last jump?"},
-        {id:uid(),cmd:"`.",desc:"last edit spot",q:"Jump to where you last edited?"},
       ]},
       {id:uid(),name:"Counts",color:null,entries:[
         {id:uid(),cmd:"3w",desc:"motion times count",q:"Move three words forward at once?"},
@@ -2024,8 +2003,6 @@ const VIM = () => ({
     ]},
     {id:uid(),name:"Editing",color:null,sections:[
       {id:uid(),name:"Delete",color:null,entries:[
-        {id:uid(),cmd:"x",desc:"delete char",q:"Delete the character under the cursor?"},
-        {id:uid(),cmd:"dd",desc:"delete line",q:"Delete the whole line?"},
         {id:uid(),cmd:"D",desc:"delete to line end",q:"Delete from the cursor to end of line?"},
         {id:uid(),cmd:"d<motion>",desc:"delete over motion",q:"Delete the text a motion covers?"},
         {id:uid(),cmd:"J",desc:"join lines",q:"Join the next line onto this one?"},
@@ -2080,9 +2057,6 @@ const VIM = () => ({
     ]},
     {id:uid(),name:"Search",color:null,sections:[
       {id:uid(),name:"Find text",color:null,entries:[
-        {id:uid(),cmd:"/<pat>",desc:"search forward",q:"Search forward for a pattern?"},
-        {id:uid(),cmd:"?<pat>",desc:"search backward",q:"Search backward for a pattern?"},
-        {id:uid(),cmd:"n / N",desc:"next / prev match",q:"Jump to the next or previous match?"},
         {id:uid(),cmd:"* / #",desc:"word under cursor",q:"Search the word under the cursor forward/back?"},
         {id:uid(),cmd:":noh",desc:"clear highlight",q:"Turn off the current search highlight?"},
       ]},
@@ -2138,10 +2112,8 @@ const VIM = () => ({
     {id:uid(),name:"Visual mode",color:null,sections:[
       {id:uid(),name:"Operate on selection",color:null,entries:[
         {id:uid(),cmd:"o",desc:"other end",q:"Move to the other end of the selection?"},
-        {id:uid(),cmd:"> / <",desc:"indent selection",q:"Indent or dedent the selected lines?"},
         {id:uid(),cmd:"~",desc:"toggle case",q:"Toggle the case of the selection?"},
         {id:uid(),cmd:":'<,'>!<cmd>",desc:"filter through shell",q:"Pipe the selection through a shell command?"},
-        {id:uid(),cmd:"gv",desc:"reselect",q:"Reselect the last visual selection?"},
       ]},
       {id:uid(),name:"Block edits",color:null,entries:[
         {id:uid(),cmd:"Ctrl-v I",desc:"block insert",q:"Insert the same text on many lines?"},
@@ -2154,7 +2126,6 @@ const VIM = () => ({
       {id:uid(),name:"History",color:null,entries:[
         {id:uid(),cmd:"u",desc:"undo",q:"Undo the last change?"},
         {id:uid(),cmd:"Ctrl-r",desc:"redo",q:"Redo an undone change?"},
-        {id:uid(),cmd:".",desc:"repeat last change",q:"Repeat the last edit?"},
         {id:uid(),cmd:"U",desc:"undo line",q:"Undo all latest changes on one line?"},
         {id:uid(),cmd:":earlier 10m",desc:"undo by time",q:"Jump the buffer back ten minutes in the undo tree?"},
       ]},
@@ -2314,15 +2285,10 @@ const TMUX = () => ({
   paper:'letter', palette:'solarized', font:'jb', fs:8.5, duplex:'long', guides:true,
   backStyle:'minimal', decks:[], activeDeck:null, collapsed:{cats:[],secs:[]},
   categories:[
-    // ponytail: named "tmux" so folding this expansion merges these cards into a
-    // starter-based collection's tmux category instead of creating a parallel one.
-    {id:uid(),name:"tmux",color:null,sections:[
+    {id:uid(),name:"Sessions",color:null,sections:[
       {id:uid(),name:"Start & attach (shell)",color:null,entries:[
         {id:uid(),cmd:"tmux",desc:"start server + session",q:"Start tmux with a new unnamed session?"},
-        {id:uid(),cmd:"tmux new -s <name>",desc:"named session",q:"Start a new named session?"},
-        {id:uid(),cmd:"tmux a -t <name>",desc:"attach to session",q:"Attach to an existing named session?"},
         {id:uid(),cmd:"tmux a",desc:"attach last",q:"Attach to the most recent session?"},
-        {id:uid(),cmd:"tmux ls",desc:"list sessions",q:"List all tmux sessions?"},
         {id:uid(),cmd:"tmux new -A -s <name>",desc:"attach or create",q:"Attach if it exists, else create it?"},
       ]},
       {id:uid(),name:"Detach & switch (inside)",color:null,entries:[
@@ -2514,9 +2480,7 @@ const GIT = () => ({
   paper:'letter', palette:'pastel', font:'jb', fs:8.5, duplex:'long', guides:true,
   backStyle:'minimal', decks:[], activeDeck:null, collapsed:{cats:[],secs:[]},
   categories:[
-    // ponytail: named "Git" (not "Inspect") so folding this expansion into a
-    // starter-based collection merges these cards into the starter's Git category.
-    {id:uid(),name:"Git",color:null,sections:[
+    {id:uid(),name:"Inspect",color:null,sections:[
       {id:uid(),name:"Status & diff",color:null,entries:[
         {id:uid(),cmd:"git status -sb",desc:"short status + branch",q:"Show a compact status with branch info?"},
         {id:uid(),cmd:"git diff",desc:"unstaged changes",q:"Show changes not yet staged?"},
@@ -2561,18 +2525,15 @@ const GIT = () => ({
       ]},
       {id:uid(),name:"Unstage & discard",color:null,entries:[
         {id:uid(),cmd:"git restore --staged <file>",desc:"unstage",q:"Remove a file from the staging area?"},
-        {id:uid(),cmd:"git restore <file>",desc:"discard changes",q:"Throw away unstaged changes to a file?"},
         {id:uid(),cmd:"git checkout -- <file>",desc:"discard (old form)",q:"Discard working changes the classic way?"},
         {id:uid(),cmd:"git reset HEAD <file>",desc:"unstage (old form)",q:"Unstage a file the classic way?"},
       ]},
       {id:uid(),name:"Commit",color:null,entries:[
-        {id:uid(),cmd:"git commit -m \"<msg>\"",desc:"commit staged",q:"Commit staged changes with a message?"},
         {id:uid(),cmd:"git commit -am \"<msg>\"",desc:"stage tracked + commit",q:"Commit all tracked changes at once?"},
         {id:uid(),cmd:"git commit --no-verify",desc:"skip hooks",q:"Commit while skipping pre-commit hooks?"},
         {id:uid(),cmd:"git commit -v",desc:"commit with diff",q:"Show the diff in the commit editor?"},
       ]},
       {id:uid(),name:"Amend & fixup",color:null,entries:[
-        {id:uid(),cmd:"git commit --amend",desc:"edit last commit",q:"Change the most recent commit?"},
         {id:uid(),cmd:"git commit --amend --no-edit",desc:"amend, keep msg",q:"Add staged changes to the last commit, same message?"},
         {id:uid(),cmd:"git commit --fixup <commit>",desc:"mark a fixup",q:"Create a fixup commit for later autosquash?"},
         {id:uid(),cmd:"git commit --squash <commit>",desc:"mark a squash",q:"Create a squash commit for later autosquash?"},
@@ -2580,8 +2541,6 @@ const GIT = () => ({
     ]},
     {id:uid(),name:"Branches",color:null,sections:[
       {id:uid(),name:"Create & switch",color:null,entries:[
-        {id:uid(),cmd:"git switch <branch>",desc:"change branch",q:"Switch to an existing branch?"},
-        {id:uid(),cmd:"git switch -c <branch>",desc:"new branch",q:"Create and switch to a new branch?"},
         {id:uid(),cmd:"git switch -c <branch> <start>",desc:"branch from point",q:"Branch starting at a given commit?"},
         {id:uid(),cmd:"git switch -",desc:"previous branch",q:"Jump back to the previous branch?"},
         {id:uid(),cmd:"git checkout <branch>",desc:"change branch (old)",q:"Switch branches the classic way?"},
@@ -2602,7 +2561,6 @@ const GIT = () => ({
     ]},
     {id:uid(),name:"Merging",color:null,sections:[
       {id:uid(),name:"Merge",color:null,entries:[
-        {id:uid(),cmd:"git merge <branch>",desc:"merge in",q:"Merge another branch into the current one?"},
         {id:uid(),cmd:"git merge --no-ff <branch>",desc:"keep merge commit",q:"Force a merge commit even if fast-forward?"},
         {id:uid(),cmd:"git merge --squash <branch>",desc:"squash merge",q:"Combine a branch into one staged change?"},
         {id:uid(),cmd:"git merge --abort",desc:"cancel merge",q:"Abort an in-progress merge?"},
@@ -2660,7 +2618,6 @@ const GIT = () => ({
         {id:uid(),cmd:"git reset --hard origin/<branch>",desc:"match upstream",q:"Force the branch to match the remote exactly?"},
       ]},
       {id:uid(),name:"Restore",color:null,entries:[
-        {id:uid(),cmd:"git restore <file>",desc:"restore working file",q:"Discard working-tree changes to a file?"},
         {id:uid(),cmd:"git restore --staged <file>",desc:"unstage file",q:"Remove a file from the index?"},
         {id:uid(),cmd:"git restore --source=<commit> <file>",desc:"file from a commit",q:"Restore a file from a specific commit?"},
         {id:uid(),cmd:"git restore -p <file>",desc:"restore by hunk",q:"Interactively restore parts of a file?"},
@@ -2707,7 +2664,6 @@ const GIT = () => ({
     ]},
     {id:uid(),name:"Remotes",color:null,sections:[
       {id:uid(),name:"Manage remotes",color:null,entries:[
-        {id:uid(),cmd:"git remote -v",desc:"list remotes",q:"Show configured remotes and URLs?"},
         {id:uid(),cmd:"git remote add <name> <url>",desc:"add a remote",q:"Add a new remote?"},
         {id:uid(),cmd:"git remote set-url <name> <url>",desc:"change URL",q:"Change a remote's URL?"},
         {id:uid(),cmd:"git remote rename <old> <new>",desc:"rename remote",q:"Rename a remote?"},
@@ -2716,11 +2672,9 @@ const GIT = () => ({
       {id:uid(),name:"Fetch & pull",color:null,entries:[
         {id:uid(),cmd:"git fetch <remote>",desc:"download refs",q:"Fetch updates without merging?"},
         {id:uid(),cmd:"git fetch --all --prune",desc:"fetch + tidy",q:"Fetch every remote and prune dead branches?"},
-        {id:uid(),cmd:"git pull",desc:"fetch + integrate",q:"Update the current branch from upstream?"},
         {id:uid(),cmd:"git pull --ff-only",desc:"safe pull",q:"Pull only if it fast-forwards?"},
       ]},
       {id:uid(),name:"Push",color:null,entries:[
-        {id:uid(),cmd:"git push",desc:"upload commits",q:"Push commits to the upstream?"},
         {id:uid(),cmd:"git push --force-with-lease",desc:"safer force push",q:"Force-push only if the remote hasn't moved?"},
         {id:uid(),cmd:"git push <remote> --delete <branch>",desc:"delete remote branch",q:"Delete a branch on the remote?"},
         {id:uid(),cmd:"git push --tags",desc:"push tags",q:"Push your tags to the remote?"},
@@ -2857,17 +2811,12 @@ const TEXT = () => ({
     {id:uid(),name:"grep & ripgrep",color:null,sections:[
       {id:uid(),name:"Basic match",color:null,entries:[
         {id:uid(),cmd:"grep <pat> <file>",desc:"find lines",q:"Print lines matching a pattern?"},
-        {id:uid(),cmd:"grep -i <pat> <file>",desc:"case-insensitive",q:"Match while ignoring case?"},
-        {id:uid(),cmd:"grep -v <pat> <file>",desc:"invert match",q:"Print lines that do NOT match?"},
         {id:uid(),cmd:"grep -w <pat> <file>",desc:"whole word",q:"Match only whole words?"},
         {id:uid(),cmd:"grep -F \"<str>\" <file>",desc:"fixed string",q:"Match a literal string, not a regex?"},
       ]},
       {id:uid(),name:"Context & count",color:null,entries:[
-        {id:uid(),cmd:"grep -n <pat> <file>",desc:"show line numbers",q:"Print matches with their line numbers?"},
-        {id:uid(),cmd:"grep -c <pat> <file>",desc:"count matches",q:"Count matching lines?"},
         {id:uid(),cmd:"grep -C 3 <pat> <file>",desc:"surrounding lines",q:"Show three lines of context around matches?"},
         {id:uid(),cmd:"grep -A 2 <pat> <file>",desc:"lines after",q:"Show lines after each match?"},
-        {id:uid(),cmd:"grep -o <pat> <file>",desc:"only the match",q:"Print just the matched text, not the line?"},
       ]},
       {id:uid(),name:"Files & recursion",color:null,entries:[
         {id:uid(),cmd:"grep -r <pat> <dir>",desc:"recursive search",q:"Search a whole directory tree?"},
@@ -2890,9 +2839,7 @@ const TEXT = () => ({
         {id:uid(),cmd:"grep -P '(?i)<re>' <file>",desc:"inline flag",q:"Turn on case-insensitivity inside the pattern?"},
       ]},
       {id:uid(),name:"ripgrep",color:null,entries:[
-        {id:uid(),cmd:"rg <pat>",desc:"fast recursive grep",q:"Search the tree quickly, honoring .gitignore?"},
         {id:uid(),cmd:"rg -i <pat>",desc:"case-insensitive",q:"Search ignoring case with ripgrep?"},
-        {id:uid(),cmd:"rg -t py <pat>",desc:"by file type",q:"Limit ripgrep to one file type?"},
         {id:uid(),cmd:"rg -l <pat>",desc:"files with match",q:"List only matching file names?"},
         {id:uid(),cmd:"rg -A 3 -B 1 <pat>",desc:"context lines",q:"Show lines before and after each match?"},
       ]},
@@ -2900,7 +2847,6 @@ const TEXT = () => ({
     {id:uid(),name:"sed",color:null,sections:[
       {id:uid(),name:"Substitute",color:null,entries:[
         {id:uid(),cmd:"sed 's/<old>/<new>/' <file>",desc:"replace first",q:"Replace the first match on each line?"},
-        {id:uid(),cmd:"sed 's/<old>/<new>/g' <file>",desc:"replace all",q:"Replace every match on each line?"},
         {id:uid(),cmd:"sed 's/<old>/<new>/gi' <file>",desc:"ignore case",q:"Replace all matches, case-insensitively?"},
         {id:uid(),cmd:"sed 's/<old>/<new>/2' <file>",desc:"nth occurrence",q:"Replace only the second match on a line?"},
         {id:uid(),cmd:"sed 's#<old>#<new>#g' <file>",desc:"alt delimiter",q:"Swap the delimiter to avoid escaping slashes?"},
@@ -2920,7 +2866,6 @@ const TEXT = () => ({
         {id:uid(),cmd:"sed 's/^/  /' <file>",desc:"indent lines",q:"Add two spaces to the start of each line?"},
       ]},
       {id:uid(),name:"In-place & multi",color:null,entries:[
-        {id:uid(),cmd:"sed -i 's/<old>/<new>/g' <file>",desc:"edit in place",q:"Edit the file directly?"},
         {id:uid(),cmd:"sed -i.bak 's/<old>/<new>/g' <file>",desc:"in place + backup",q:"Edit in place but keep a .bak copy?"},
         {id:uid(),cmd:"sed -e 's/a/b/' -e 's/c/d/' <file>",desc:"several scripts",q:"Apply multiple sed commands at once?"},
         {id:uid(),cmd:"sed -n '$=' <file>",desc:"count lines",q:"Print how many lines a file has?"},
@@ -3046,18 +2991,15 @@ const TEXT = () => ({
         {id:uid(),cmd:"cut -d, -f2 <file>",desc:"cut a column",q:"Extract a delimited column?"},
         {id:uid(),cmd:"cut -c1-10 <file>",desc:"cut by character",q:"Take a fixed character range?"},
         {id:uid(),cmd:"tr 'a-z' 'A-Z'",desc:"translate chars",q:"Uppercase text by translating ranges?"},
-        {id:uid(),cmd:"tr -d '<chars>'",desc:"delete chars",q:"Strip specific characters?"},
         {id:uid(),cmd:"tr -s ' '",desc:"squeeze repeats",q:"Collapse repeated characters into one?"},
       ]},
       {id:uid(),name:"sort & uniq",color:null,entries:[
-        {id:uid(),cmd:"sort <file>",desc:"sort lines",q:"Sort lines alphabetically?"},
         {id:uid(),cmd:"sort -n <file>",desc:"numeric sort",q:"Sort lines by numeric value?"},
         {id:uid(),cmd:"sort -k2 -t, <file>",desc:"sort by column",q:"Sort on a specific delimited field?"},
         {id:uid(),cmd:"sort -u <file>",desc:"sort + dedupe",q:"Sort and drop duplicate lines?"},
         {id:uid(),cmd:"uniq -c <file>",desc:"count duplicates",q:"Count adjacent duplicate lines?"},
       ]},
       {id:uid(),name:"count & pipelines",color:null,entries:[
-        {id:uid(),cmd:"wc -l <file>",desc:"count lines",q:"Count the lines in a file?"},
         {id:uid(),cmd:"sort <file> | uniq -c | sort -rn",desc:"frequency ranking",q:"Rank lines by how often they occur?"},
         {id:uid(),cmd:"grep <pat> <file> | wc -l",desc:"count matches",q:"Count how many lines match?"},
         {id:uid(),cmd:"cut -d, -f1 <file> | sort | uniq -c",desc:"tally a column",q:"Tally distinct values in a CSV column?"},
@@ -3069,10 +3011,7 @@ const TEXT = () => ({
         {id:uid(),cmd:"rg -l <pat> | xargs <cmd>",desc:"act on matches",q:"Run a command on every file ripgrep matched?"},
       ]},
       {id:uid(),name:"head, tail, nl",color:null,entries:[
-        {id:uid(),cmd:"head -n <n> <file>",desc:"first n lines",q:"Show the first n lines?"},
-        {id:uid(),cmd:"tail -n <n> <file>",desc:"last n lines",q:"Show the last n lines?"},
         {id:uid(),cmd:"tail -n +<n> <file>",desc:"from line n",q:"Print from a line to the end (skip a header)?"},
-        {id:uid(),cmd:"nl <file>",desc:"number lines",q:"Number the non-blank lines?"},
       ]},
       {id:uid(),name:"join, column, base64",color:null,entries:[
         {id:uid(),cmd:"column -t -s, <file>",desc:"align columns",q:"Print delimited data in aligned columns?"},
@@ -3227,27 +3166,15 @@ const TOYS = () => ({
         {id:uid(),cmd:"<cmd> | wl-copy",desc:"copy (wayland)",q:"Copy to the clipboard under Wayland?"},
       ]},
       {id:uid(),name:"Better help",color:null,entries:[
-        {id:uid(),cmd:"tldr <cmd>",desc:"example-first help",q:"See practical examples instead of a full man page?"},
         {id:uid(),cmd:"cheat <cmd>",desc:"community cheats",q:"Look up community-written cheat sheets?"},
-        {id:uid(),cmd:"man <cmd>",desc:"the full manual",q:"Open the complete manual page?"},
         {id:uid(),cmd:"<cmd> --help | less",desc:"page the help",q:"Scroll through a command's help comfortably?"},
       ]},
       {id:uid(),name:"Disk & files",color:null,entries:[
-        {id:uid(),cmd:"ncdu",desc:"visual disk usage",q:"Explore what's eating your disk interactively?"},
-        {id:uid(),cmd:"tree -L 2",desc:"directory tree",q:"Draw a tree of folders two levels deep?"},
         {id:uid(),cmd:"duf",desc:"pretty df",q:"See mounted disks in a colorful table?"},
         {id:uid(),cmd:"fd <name>",desc:"friendly find",q:"Find files with a simpler, faster find?"},
       ]},
-      {id:uid(),name:"Bang history",color:null,entries:[
-        {id:uid(),cmd:"!!",desc:"rerun last command",q:"Repeat the previous command exactly?"},
-        {id:uid(),cmd:"sudo !!",desc:"rerun with sudo",q:"Rerun the last command, this time as root?"},
-        {id:uid(),cmd:"!$",desc:"last arg of last cmd",q:"Reuse just the final argument of the previous command?"},
-        {id:uid(),cmd:"!<n>",desc:"run history line n",q:"Re-run a specific numbered history entry?"},
-      ]},
       {id:uid(),name:"Quick fixes",color:null,entries:[
         {id:uid(),cmd:"^old^new",desc:"fix-and-rerun",q:"Rerun the last command with one substring swapped?"},
-        {id:uid(),cmd:"cd -",desc:"previous directory",q:"Jump back to the directory you were just in?"},
-        {id:uid(),cmd:"`Ctrl`+`r`",desc:"search history",q:"Fuzzy-search backwards through your shell history?"},
         {id:uid(),cmd:"fc",desc:"edit then run",q:"Open the last command in your editor to fix it?"},
       ]},
     ]},
@@ -3284,7 +3211,6 @@ const TOYS = () => ({
       ]},
       {id:uid(),name:"Text flips",color:null,entries:[
         {id:uid(),cmd:"tac <file>",desc:"cat, reversed",q:"Print a file from the last line to the first?"},
-        {id:uid(),cmd:"nl <file>",desc:"number the lines",q:"Add line numbers to a file's output?"},
         {id:uid(),cmd:"sort -R <file>",desc:"shuffle lines",q:"Randomly shuffle the lines of a file?"},
         {id:uid(),cmd:"column -t <file>",desc:"align columns",q:"Line up messy columns into a neat table?"},
       ]},
