@@ -3895,8 +3895,8 @@ function openHelp(){
   const left=document.createElement('div');left.className='help-left';
   left.innerHTML=
     '<div class="help-logo">'+$('.logo-mark').outerHTML+'<span>TermDecks</span></div>'
-    +'<p class="help-blurb">Build printable, poker-sized reference cards for the terminal. Group commands into categories and sections, then print double-sided decks — or study them with the built-in spaced-repetition quiz.</p>'
-    +'<a class="help-link" href="https://github.com/zntznt/termdecks" target="_blank" rel="noopener noreferrer">'+ico('folder',14)+'<span>View on GitHub</span></a>';
+    +'<p class="help-blurb">Build printable, poker-sized reference cards for the terminal. Group commands into categories and sections, then print double-sided decks — or study them with the built-in spaced-repetition quiz.</p>';
+  // ponytail: "View on GitHub" link hidden for now — repo link kept out of the UI
   const right=document.createElement('div');right.className='help-right';
   const rh=document.createElement('div');rh.className='fmh';rh.textContent='Keyboard shortcuts';right.appendChild(rh);
   const kb=document.createElement('div');kb.innerHTML=kbdHTML();right.appendChild(kb);
