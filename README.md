@@ -13,7 +13,7 @@ It's a single, dependency-free `index.html`. No build step, no server, no accoun
 ## Highlights
 
 - 🗂️ **Structured editor** — Categories → Sections → Entries (command + description + optional question). Drag to reorder or move between sections, duplicate, collapse, recolor. Keyboard-first: `cmd → desc → question → next entry`, all without the mouse.
-- 🃏 **Designed cards** — each section becomes a poker-sized card (2.5″ × 3.5″). Front = the commands; back = the section's questions. Backtick-wrapped keycaps render as `kbd` chips.
+- 🃏 **Designed cards** — each section becomes a poker-sized card (2.5″ × 3.5″), spilling onto extra cards when its entries don't all fit. Front = the commands; back = the section's questions. Backtick-wrapped keycaps render as `kbd` chips.
 - 🖨️ **Print / Save PDF** — lays cards out 9-up (3×3) per sheet with mirrored backs for double-sided printing, cut guides, US-Letter or A4. What you see (search + filters) is what prints.
 - 🧠 **Quiz mode with spaced repetition** — a Leitner-box study loop. Reveal the answer, grade *Again* / *Got it*, and weak cards resurface far more often than mastered ones. Tracks mastery per collection; shuffle and reset on demand.
 - ◆ **Two card-back styles** — *Questions* (study-forward) or *Navigator* (a bold category band for sorting a fanned/stacked deck), with the questions always visible.
@@ -58,11 +58,11 @@ To print, click **Print / Save PDF** and choose your printer or "Save as PDF" in
 ```
 Collection                     a library (e.g. "Linux Command Line")
 └─ Category                    a colored group (e.g. "Files & dirs")
-   └─ Section                  → becomes ONE card (e.g. "Navigate")
+   └─ Section                  → becomes one or more cards (e.g. "Navigate")
       └─ Entry                 a command + description + optional question
 ```
 
-- A **card** is a section. Its front lists the section's entries; its back shows their questions.
+- A **section** becomes a card — and if its entries don't all fit, it spills onto extra cards (each footed *page N of M*). The front lists the section's entries; the back shows their questions.
 - A **deck** is a named subset of one collection's cards — pick the sections you want with **Select cards** in the viewer.
 - **Quiz mode** is a viewer feature, not a card property: it never changes how cards render or print.
 
