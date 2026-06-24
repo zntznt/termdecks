@@ -1936,7 +1936,7 @@ const AI = () => ({
         {id:uid(),cmd:'Respond ONLY with JSON: <schema>',desc:'machine-readable',q:'Prompt to force JSON output?'},
         {id:uid(),cmd:'Output only code, no prose',desc:'no chatter',q:'Prompt to suppress explanations?'},
         {id:uid(),cmd:'Answer in <n> words or fewer',desc:'cap length',q:'Prompt to keep it short?'},
-        {id:uid(),cmd:'If unsure, say so — do not guess',desc:'less hallucination',q:'Prompt to allow “not sure”?'},
+        {id:uid(),cmd:'If unsure, say so rather than guess',desc:'less hallucination',q:'Prompt to allow “not sure”?'},
         {id:uid(),cmd:'Think step by step, then answer',desc:'reasoning',q:'Prompt for chain-of-thought?'},
       ]},
       {id:uid(),name:'Few-shot & role',color:null,entries:[
@@ -3752,7 +3752,7 @@ function kbdHTML(){return '<div class="kbd-list">'
     +'<div><kbd>Enter</kbd> Next field, then add a new entry</div>'
     +'<div><kbd>Tab</kbd> Move between fields</div>'
     +'<div><kbd>Esc</kbd> Clear search / close menus</div>'
-    +'<span class="kbd-hint">Quiz uses Leitner spaced repetition — weak cards recur more often. Drag handles to reorder entries.</span>'
+    +'<span class="kbd-hint">Quiz uses Leitner spaced repetition, so weak cards recur more often. Drag handles to reorder entries.</span>'
     +'</div>';}
 /* chip-based setting rows for the Card / Print popovers (no nested dropdowns) */
 // a label with an optional hover-info "?" that reveals the hint text in a small popover
@@ -3828,7 +3828,7 @@ function buildCardMenu(m){if(!m)return;
   rangeRow(m,'Card text size',7,11,0.25,()=>state.fs,v=>{state.fs=v;document.documentElement.style.setProperty('--card-fs',v+'px');refresh();},'px');
   settingRow(m,'Card back',()=>state.backStyle,v=>{state.backStyle=v;refresh();},
     [['minimal','Questions'],['navigator','Navigator']],
-    'Questions: the quiz prompts. Navigator: a bold category back for sorting decks — questions still shown below.');
+    'Questions: the quiz prompts. Navigator: a bold category back for sorting decks, with questions still shown below.');
 }
 function buildPrintMenu(m){if(!m)return;
   settingRow(m,'Paper size',()=>state.paper,v=>{state.paper=v;applyPageStyle();save();},[['letter','US Letter'],['a4','A4']]);
@@ -3872,9 +3872,9 @@ function openSettings(){
 function backupAll(){download('termdecks-backup-'+(activeCollection().title?slugify(activeCollection().title,'all'):'all')+'.json',JSON.stringify(store,null,2),'application/json');}
 // wipe everything, behind a typed-confirm safeguard
 function deleteAllData(){
-  styledConfirm('Delete ALL data on this device? Every collection, deck and study record will be erased. This cannot be undone — back up first if unsure.',()=>{
+  styledConfirm('Delete ALL data on this device? Every collection, deck and study record will be erased. This cannot be undone, so back up first if unsure.',()=>{
     styledPrompt('Type DELETE to confirm','',v=>{
-      if(v.trim().toUpperCase()!=='DELETE'){toast('Not deleted — confirmation text didn’t match.','warn');return;}
+      if(v.trim().toUpperCase()!=='DELETE'){toast('Not deleted. The confirmation text didn’t match.','warn');return;}
       try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
       try{localStorage.removeItem('cardcheat_v2');}catch(e){}
       try{indexedDB.deleteDatabase('termdecks_fs');}catch(e){}  // drop the file-sync handle too
@@ -3900,12 +3900,12 @@ function openHelp(){
   const how=(icon,html)=>'<li><span class="hi">'+ico(icon,15)+'</span><span>'+html+'</span></li>';
   left.innerHTML=
     '<div class="help-logo">'+$('.logo-mark').outerHTML+'<span>TermDecks</span></div>'
-    +'<p class="help-blurb">Build printable, poker-sized reference cards for the terminal — then study them with the built-in spaced-repetition quiz.</p>'
+    +'<p class="help-blurb">Build printable, poker-sized reference cards for the terminal, then study them with the built-in spaced-repetition quiz.</p>'
     +'<div class="fmh">How it works</div>'
     +'<ul class="help-how">'
-    +how('cards','Each <b>section</b> becomes a card — long sections spill onto extra cards automatically.')
+    +how('cards','Each <b>section</b> becomes a card. Long sections spill onto extra cards automatically.')
     +how('layers','Card <b>front</b> lists the commands; the <b>back</b> shows their questions.')
-    +how('printer','<b>Print</b> lays cards out 9-up and double-sided — what you see is what prints.')
+    +how('printer','<b>Print</b> lays cards out 9-up and double-sided. What you see is what prints.')
     +how('refresh','<b>Quiz mode</b> resurfaces weak cards more often (spaced repetition).')
     +'</ul>';
   // ponytail: "View on GitHub" link hidden for now — repo link kept out of the UI
@@ -4027,7 +4027,7 @@ function mergeExpansionInto(targetId,key){
   const {added}=mergeCategories(dst,t.make().categories);
   normalizeCollection(dst);
   if(store.activeId===targetId)applyCollectionSwitch(); else save();
-  toast('Merged '+t.name+' — added '+added+' entr'+(added===1?'y':'ies')+' to “'+(dst.title||'Untitled')+'”.','ok');
+  toast('Merged '+t.name+'. Added '+added+' entr'+(added===1?'y':'ies')+' to “'+(dst.title||'Untitled')+'”.','ok');
 }
 function newCollection(after){styledPrompt('Name this collection','My collection',nm=>{
   const c=blankCollection(nm);store.collections.push(c);store.activeId=c.id;applyCollectionSwitch();save();if(after)after();});}
@@ -4161,14 +4161,14 @@ function exportDeck(coll,d){
 }
 function importDeckFile(file,after){
   const r=new FileReader();
-  r.onload=()=>{let o;try{o=JSON.parse(r.result);}catch(e){alert('Could not read that file — is it a TermDecks deck export?');return;}
+  r.onload=()=>{let o;try{o=JSON.parse(r.result);}catch(e){alert('Could not read that file. Is it a TermDecks deck export?');return;}
     if(!o||!Array.isArray(o.categories)||typeof o.deck!=='string'){alert('That doesn’t look like a TermDecks deck file.');return;}
     pickCollection('Import deck “'+o.deck+'” into…',id=>{
       const dst=store.collections.find(c=>c.id===id);if(!dst)return;
       mergeDeckSlice(o,dst);
       if(dst.id===store.activeId)applyCollectionSwitch(); else save();
       const n=(dst.decks[dst.decks.length-1].secIds||[]).length;
-      toast('Imported deck “'+o.deck+'” into “'+(dst.title||'Untitled')+'” — '+n+' card'+(n===1?'':'s')+'.','ok');
+      toast('Imported deck “'+o.deck+'” ('+n+' card'+(n===1?'':'s')+') into “'+(dst.title||'Untitled')+'”.','ok');
       if(after)after();
     });
   };
@@ -4276,7 +4276,7 @@ function buildFilterMenu(){
     if(!inDeck)b.onclick=()=>{filters.deckMembership=v;buildFilterMenu();afterFilterChange();};seg.appendChild(b);});
   menu.appendChild(seg);
   if(inDeck){const hint=document.createElement('div');hint.className='set-hint';hint.style.padding='4px 4px 0';
-    hint.textContent='Showing one deck — switch to “Full collection” to filter by membership.';menu.appendChild(hint);}
+    hint.textContent='Showing one deck. Switch to “Full collection” to filter by membership.';menu.appendChild(hint);}
   const ft=document.createElement('div');ft.className='fmf';
   const rb=document.createElement('button');rb.className='btn ghost sm';rb.textContent='Reset filters';
   rb.onclick=()=>{filters.excludeCats.clear();filters.withQuestionOnly=false;filters.deckMembership='all';buildFilterMenu();afterFilterChange();};
@@ -4291,7 +4291,7 @@ function renderSelectGrid(){
   body.innerHTML='';curFlip=curFit=null;gridEls=[];
   const d=activeDeckObj();const all=getCards();let fc=all.filter(passFilters);if(search)fc=fc.filter(c=>cardMatches(c,search));
   const grid=document.createElement('div');grid.className='album-grid select-mode';
-  if(fc.length===0){grid.innerHTML='<div class="empty-note">'+(search?('No cards match “'+search+'”.'):'No cards to pick from yet — add a category on the left first.')+'</div>';body.appendChild(grid);return;}
+  if(fc.length===0){grid.innerHTML='<div class="empty-note">'+(search?('No cards match “'+search+'”.'):'No cards to pick from yet. Add a category on the left first.')+'</div>';body.appendChild(grid);return;}
   // A multi-page section produces several cards that share a secId; toggling one toggles them all.
   // Mark those as a group so the coupling is visible instead of surprising.
   const secCounts={};fc.forEach(c=>{secCounts[c.secId]=(secCounts[c.secId]||0)+1;});
@@ -4321,7 +4321,7 @@ function renderPreview(){
 function emptyStateMsg(){
   if(search)return 'No cards match “'+search+'”.';
   if(activeDeckObj()&&getCards().length)return 'This deck is empty.<br>Use <b>Select cards</b> above to add cards from the collection.';
-  return 'No cards yet —<br>add a category on the left.';
+  return 'No cards yet.<br>Add a category on the left.';
 }
 function renderSingle(){
   const body=$('#pvBody');body.innerHTML='';curFlip=curFit=null;
@@ -4409,7 +4409,7 @@ function renderQuiz(){
   const body=$('#pvBody');body.innerHTML='';curFlip=curFit=null;
   const items=quizItems();
   const stage=document.createElement('div');stage.className='quiz-stage';
-  if(items.length===0){stage.innerHTML='<div class="empty-note">'+(deck().length?'No questions to study yet — add a question (?) to an entry on the left.':emptyStateMsg())+'</div>';body.appendChild(stage);return;}
+  if(items.length===0){stage.innerHTML='<div class="empty-note">'+(deck().length?'No questions to study yet. Add a question (?) to an entry on the left.':emptyStateMsg())+'</div>';body.appendChild(stage);return;}
   ensureQuizOrder(items.length,items);
   const it=items[quizOrder[quizPos]];
   // progress header: mastery + a box pip row for the current card
@@ -4434,8 +4434,8 @@ function renderQuiz(){
     card.appendChild(ans);
     // self-grade — drives the Leitner box
     const grade=document.createElement('div');grade.className='quiz-grade';
-    const again=document.createElement('button');again.className='btn quiz-again';again.innerHTML='↺ Again';again.title='Missed it — back to box 1 (1)';again.onclick=()=>srGrade(it.id,false);
-    const got=document.createElement('button');got.className='btn primary quiz-got';got.innerHTML='✓ Got it';got.title='Recalled it — promote a box (2)';got.onclick=()=>srGrade(it.id,true);
+    const again=document.createElement('button');again.className='btn quiz-again';again.innerHTML='↺ Again';again.title='Sends it back to box 1 (1)';again.onclick=()=>srGrade(it.id,false);
+    const got=document.createElement('button');got.className='btn primary quiz-got';got.innerHTML='✓ Got it';got.title='Promotes it one box (2)';got.onclick=()=>srGrade(it.id,true);
     grade.append(again,got);card.appendChild(grade);
   }else{
     const reveal=document.createElement('button');reveal.className='btn primary quiz-reveal';reveal.textContent='Reveal answer';
@@ -4666,7 +4666,7 @@ const fileBackup=(()=>{
   // toast once on the rising edge of failure so a silent autosave stoppage is
   // visible even when the Collections modal (the only other status surface) is closed
   function fail(){const was=failed;failed=true;updateUI();if(!was&&!notified){notified=true;
-    if(typeof toast==='function')toast('File sync paused — the backup file was moved, deleted, or lost permission. Open Collections to fix.','warn');}}
+    if(typeof toast==='function')toast('File sync paused. The backup file was moved, deleted, or lost permission. Open Collections to fix.','warn');}}
   async function write(){if(!handle)return;
     if(!await ensurePerm()){fail();return;}
     // Probe that the target still exists. If the user renamed/deleted it,
@@ -4679,12 +4679,12 @@ const fileBackup=(()=>{
   function updateUI(el){const b=el||$('#syncFileBtn');if(!b)return;
     const st=!handle?'off':failed?'fail':'on';
     const icon={off:'download',on:'check',fail:'alert'}[st];
-    const label={off:'Sync to file…',on:'Syncing to file',fail:'Sync paused — fix'}[st];
+    const label={off:'Sync to file…',on:'Syncing to file',fail:'Sync paused'}[st];
     b.innerHTML=ico(icon,14)+'<span>'+label+'</span>';
     b.classList.toggle('danger',st==='fail');
     b.title={off:'Auto-save backups to a file on disk',
       on:'Auto-saving to '+(handle&&handle.name||'file')+' · click to stop',
-      fail:'Sync stopped — the file was renamed, moved, or permission was lost. Click to re-pick.'}[st];}
+      fail:'Sync stopped. The file was renamed, moved, or permission was lost. Click to re-pick.'}[st];}
   return {supported,restore,write,active:()=>!!handle,
     toggle(){failed?pick():handle?stop():pick();},updateUI};
 })();
@@ -4695,7 +4695,7 @@ function showCsvPreview(items){
   const box=document.createElement('div');box.className='modal';
   const h=document.createElement('h3');h.textContent='Import preview';box.appendChild(h);
   const p=document.createElement('p');p.className='modal-sub';
-  if(sum.entries===0){p.textContent='No rows to import — the file has a header but no entries.';}
+  if(sum.entries===0){p.textContent='No rows to import. The file has a header but no entries.';}
   else{p.innerHTML='Adds <b>'+sum.entries+'</b> entr'+(sum.entries===1?'y':'ies')+' · <b>'+sum.newCats+'</b> new categor'+(sum.newCats===1?'y':'ies')+' · <b>'+sum.newSecs+'</b> new section'+(sum.newSecs===1?'':'s')+'.<br>Existing cards are never changed or removed.';}
   box.appendChild(p);
   if(sum.entries>0){const list=document.createElement('div');list.className='modal-list';
@@ -4733,7 +4733,7 @@ function colorControl(getColor,setColor,resetable,label){
   sw.appendChild(inp);wrap.appendChild(sw);
   // low-contrast cue: ring the swatch + explain in its tooltip, instead of an inline orange chip
   function updateWarn(){const low=lowContrastWarning(getColor());sw.classList.toggle('lowc',low);
-    sw.title=low?'Low-contrast color — fine for the edge band, but hard to read as text':what;}
+    sw.title=low?'Low-contrast color. Fine for the edge band, but hard to read as text.':what;}
   updateWarn();
   if(resetable){const rb=document.createElement('button');rb.type='button';rb.className='autobadge';rb.textContent='auto';
     rb.title='Reset to automatic color';rb.setAttribute('aria-label','Reset '+what+' to automatic');
@@ -4977,7 +4977,7 @@ function bindToolbar(){
   window.addEventListener('keydown',e=>{if(e.key==='Escape'&&pane.classList.contains('full')){pane.classList.remove('full');requestAnimationFrame(applyFit);}});
 
   $('#printBtn').addEventListener('click',()=>{
-    if(!deck().length){toast(search||filtersActive()?'Nothing to print — no cards match the current search/filters.':'Nothing to print — add some cards first.','warn');return;}
+    if(!deck().length){toast(search||filtersActive()?'Nothing to print. No cards match the current search/filters.':'Nothing to print. Add some cards first.','warn');return;}
     renderPrint();setTimeout(()=>window.print(),60);});
   window.addEventListener('beforeprint',renderPrint);
 
@@ -4992,7 +4992,7 @@ function bindToolbar(){
       if(added){store.activeId=store.collections[store.collections.length-1].id;applyCollectionSwitch();save();
         toast('Imported '+added+' collection'+(added===1?'':'s')+'.','ok');}
       document.querySelectorAll('.modal-ov').forEach(m=>m.remove());
-    }catch(e){alert('Could not read that file — is it a TermDecks collection export?');}};
+    }catch(e){alert('Could not read that file. Is it a TermDecks collection export?');}};
     r.readAsText(f);ev.target.value='';
   });
 
