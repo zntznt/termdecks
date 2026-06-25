@@ -3388,8 +3388,87 @@ const TOYS = () => ({
     ]},
   ]
 });
+// Depth-only SSH layer. The base deck already teaches first-day SSH (ssh / -p /
+// -i / -L / -J / -X, keygen, copy-id, ssh-add, ~/.ssh/config path, chmod 600,
+// scp). This expansion holds only what the base lacks: config-file power, the
+// remaining tunnel types, agent/multiplexing, file sync, and rescue. No section
+// name collides with a base SSH section, so base + this = 0 duplicate commands.
+const SSH = () => ({
+  title:"SSH",
+  paper:'letter', palette:'graphite', font:'jb', fs:8.5, duplex:'long', guides:true,
+  backStyle:'minimal', decks:[], activeDeck:null, collapsed:{cats:[],secs:[]},
+  categories:[
+    {id:uid(),name:"~/.ssh/config",color:null,sections:[
+      {id:uid(),name:"Host stanza",color:null,entries:[
+        {id:uid(),cmd:"Host <alias>",desc:"start a host block",q:"Begin a per-host block in ~/.ssh/config?"},
+        {id:uid(),cmd:"HostName <real-host>",desc:"actual address",q:"Map an alias to a real hostname or IP?"},
+        {id:uid(),cmd:"User <name>",desc:"default login user",q:"Set the default user for a host?"},
+        {id:uid(),cmd:"Port <n>",desc:"default port",q:"Set the default port for a host?"},
+        {id:uid(),cmd:"IdentityFile <key>",desc:"which key to use",q:"Pin a specific key to a host?"},
+        {id:uid(),cmd:"Host *.example.com",desc:"wildcard match",q:"Apply settings to every host in a domain?"},
+      ]},
+      {id:uid(),name:"Useful options",color:null,entries:[
+        {id:uid(),cmd:"ProxyJump <bastion>",desc:"jump host in config",q:"Route through a bastion without typing -J?"},
+        {id:uid(),cmd:"ForwardAgent yes",desc:"agent forwarding",q:"Forward your agent to a host by config?"},
+        {id:uid(),cmd:"IdentitiesOnly yes",desc:"only the listed key",q:"Stop the agent from offering every key?"},
+        {id:uid(),cmd:"AddKeysToAgent yes",desc:"auto-load on use",q:"Add a key to the agent the first time it’s used?"},
+        {id:uid(),cmd:"ServerAliveInterval 60",desc:"keep-alive ping",q:"Keep an idle connection from dropping?"},
+        {id:uid(),cmd:"Include ~/.ssh/conf.d/*",desc:"split the config",q:"Split your SSH config across many files?"},
+      ]},
+    ]},
+    {id:uid(),name:"Tunnels & forwarding",color:null,sections:[
+      {id:uid(),name:"Port forwards",color:null,entries:[
+        {id:uid(),cmd:"ssh -R <rport>:localhost:<lport> <host>",desc:"remote → local",q:"Expose a local port on the remote side?"},
+        {id:uid(),cmd:"ssh -D <port> <host>",desc:"SOCKS proxy",q:"Turn an SSH session into a SOCKS proxy?"},
+        {id:uid(),cmd:"ssh -N <host>",desc:"forward, no shell",q:"Set up forwarding without opening a shell?"},
+        {id:uid(),cmd:"ssh -f -N <host>",desc:"background tunnel",q:"Run a tunnel in the background?"},
+        {id:uid(),cmd:"ssh -g -L …",desc:"share the forward",q:"Let other hosts use your local forward?"},
+      ]},
+      {id:uid(),name:"Run & escape",color:null,entries:[
+        {id:uid(),cmd:"ssh <host> <cmd>",desc:"run one command",q:"Run a single remote command and exit?"},
+        {id:uid(),cmd:"ssh -t <host> <cmd>",desc:"force a TTY",q:"Run an interactive remote command (e.g. top)?"},
+        {id:uid(),cmd:"~.",desc:"force-close session",q:"Kill a hung SSH session from the keyboard?"},
+        {id:uid(),cmd:"~C",desc:"open command line",q:"Add a port forward to a live session?"},
+        {id:uid(),cmd:"ssh -v <host>",desc:"verbose (debug)",q:"Debug why a connection fails?"},
+      ]},
+    ]},
+    {id:uid(),name:"Agent & speed",color:null,sections:[
+      {id:uid(),name:"ssh-agent",color:null,entries:[
+        {id:uid(),cmd:"eval \"$(ssh-agent -s)\"",desc:"start an agent",q:"Start an ssh-agent in the current shell?"},
+        {id:uid(),cmd:"ssh-add -l",desc:"list loaded keys",q:"List the keys the agent is holding?"},
+        {id:uid(),cmd:"ssh-add -t <secs> <key>",desc:"expiring key",q:"Load a key that auto-expires?"},
+        {id:uid(),cmd:"ssh-add -D",desc:"drop all keys",q:"Remove every key from the agent?"},
+        {id:uid(),cmd:"ssh -A <host>",desc:"forward the agent",q:"Use your local keys to hop to a third host?"},
+      ]},
+      {id:uid(),name:"Multiplexing",color:null,entries:[
+        {id:uid(),cmd:"ControlMaster auto",desc:"reuse one connection",q:"Make repeat connections to a host instant?"},
+        {id:uid(),cmd:"ControlPath ~/.ssh/cm-%r@%h:%p",desc:"socket path",q:"Where does a multiplexed connection live?"},
+        {id:uid(),cmd:"ControlPersist 10m",desc:"keep master alive",q:"Keep the shared connection open after you log out?"},
+        {id:uid(),cmd:"ssh -O check <host>",desc:"is master up?",q:"Check whether a master connection is running?"},
+        {id:uid(),cmd:"ssh -O exit <host>",desc:"close master",q:"Tear down a persistent master connection?"},
+      ]},
+    ]},
+    {id:uid(),name:"Files & keys",color:null,sections:[
+      {id:uid(),name:"Move files",color:null,entries:[
+        {id:uid(),cmd:"sftp <host>",desc:"interactive transfer",q:"Open an interactive file-transfer session?"},
+        {id:uid(),cmd:"rsync -e ssh -avz <src> <host>:<dst>",desc:"sync over a chosen ssh",q:"Rsync using a specific SSH command?"},
+        {id:uid(),cmd:"sshfs <host>:<dir> <mnt>",desc:"mount remote as local",q:"Mount a remote directory into your filesystem?"},
+        {id:uid(),cmd:"fusermount -u <mnt>",desc:"unmount sshfs",q:"Unmount an sshfs mount?"},
+        {id:uid(),cmd:"ssh <host> 'cat <f>' > <f>",desc:"stream a file back",q:"Pull a remote file’s contents to a local file?"},
+      ]},
+      {id:uid(),name:"Key hygiene",color:null,entries:[
+        {id:uid(),cmd:"ssh-keygen -lf <key>",desc:"fingerprint",q:"Show a key’s fingerprint?"},
+        {id:uid(),cmd:"ssh-keygen -y -f <key>",desc:"derive public key",q:"Recreate a public key from a private one?"},
+        {id:uid(),cmd:"ssh-keygen -p -f <key>",desc:"change passphrase",q:"Change a private key’s passphrase?"},
+        {id:uid(),cmd:"ssh-keyscan <host> >> ~/.ssh/known_hosts",desc:"pre-trust a host",q:"Add a host’s key before first connect?"},
+        {id:uid(),cmd:"ssh-keygen -R <host>",desc:"forget a host key",q:"Remove a stale/changed host key after a warning?"},
+      ]},
+    ]},
+  ]
+});
 const READYMADE = [
   {key:'linux',name:'Linux Command Line',blurb:'Files, processes, networking, packages, scripting, Vim, Git, tmux…',make:SAMPLE},
+  {key:'ssh',name:'SSH & remote',blurb:'~/.ssh/config stanzas, ProxyJump, tunnels (-R/-D), agent forwarding, multiplexing, sshfs, key hygiene…',make:SSH},
   {key:'toys',name:'Terminal Toys',blurb:'cowsay, lolcat, cmatrix, sl, ASCII Star Wars, wttr.in, fortune, party tricks & hidden built-ins…',make:TOYS},
   {key:'devops',name:'DevOps',blurb:'Docker, Kubernetes, Helm, Git, CI, Terraform, Ansible, cloud, TLS…',make:DEVOPS},
   {key:'ai',name:'AI-Assisted Engineering',blurb:'Claude Code, aider, Copilot, ollama, prompting, APIs, MCP, RAG, evals…',make:AI},
