@@ -22,11 +22,17 @@ Card **front** lists the section's commands; the **back** shows their questions.
 
 ## Expansions are additive
 
-Each expansion (`toys, devops, ai, vim, tmux, git, text`) is a full collection merged ON TOP of the base starter deck (the `linux`/SAMPLE collection). The base holds the fundamentals; an expansion holds only the depth the base lacks. So an expansion must contain nothing the base already covers. Strip every base-covered command, both literal and semantic (e.g. the base's Vim keycap `` `dd` `` equals an expansion's bare `dd`).
+There are 12 readymade collections in `READYMADE` (order matters for the picker): `linux` (base/SAMPLE), `ssh`, `shell` (bash+zsh), `http`, `arch` (archives & transfer), `toys`, `devops`, `ai`, `vim`, `tmux`, `git`, `text`. Each non-base expansion is a full collection merged ON TOP of the `linux` base. The base holds the fundamentals; an expansion holds only the depth the base lacks. So an expansion must contain nothing the base already covers. Strip every base-covered command, both literal and semantic (e.g. the base's Vim keycap `` `dd` `` equals an expansion's bare `dd`).
 
 Invariant to preserve on any content edit:
 - every expansion has **0 base-overlap**, and
 - **base + any expansion = 0 duplicate commands on a card** (verify via the app's own `mergeCategories`).
+
+When verifying, normalize case-SENSITIVELY (strip backticks, collapse whitespace, do NOT lowercase): curl flags like `-I` vs `-i` are different commands and lowercasing falsely flags them as duplicates.
+
+Two cross-expansion rules:
+- curl REQUEST depth lives in the `http` deck, not `devops`. DevOps keeps only jq/yq under a "JSON & YAML" category, so `http + devops` loads with 0 curl overlap.
+- check a new deck against likely co-loaded decks too, not only the base (e.g. `ssh` and `arch` both touch rsync/scp).
 
 Legitimate exception: the same command may appear once per *tool or context card* (e.g. `/clear` on each assistant's card in the AI deck, or `git add` in both staging and conflict-resolution). Those are different cards, not redundancy.
 
@@ -41,3 +47,4 @@ Legitimate exception: the same command may appear once per *tool or context card
 - One task = one branch off `main`, then commit, push, PR. Commit trailer: `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
 - Smallest working diff. Mark deliberate simplifications with a `// ponytail:` comment.
 - `cd` into the repo prints a harmless zoxide warning; commands still run.
+- New-expansion PRs all edit the same two anchors (factory before `const READYMADE`, registry line after the `linux` row), so two open ones always conflict and stale once one merges. Merge expansion PRs one at a time, back to back, re-pulling `main` between them. Conflicts are positional only: resolve by union in branch order (each factory gets its own close, keep both registry lines), re-run the invariant, then `git push --force-with-lease`. GitHub's mergeable flag lags a force-push, so trust a local `git merge --no-commit --no-ff` dry-run against `origin/main`.
