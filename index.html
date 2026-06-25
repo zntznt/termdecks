@@ -3675,11 +3675,92 @@ const HTTP = () => ({
     ]},
   ]
 });
+// Depth-only archives & transfer layer. The base teaches the everyday cases
+// (tar -czf/-xzf/-tzf/-C/--exclude, gzip/gunzip, zip/unzip, xz, rsync -avz to a
+// host, scp). This deck adds the modern codecs and power flags: zstd/lz4, tar
+// transforms & piping, 7z/encryption, split, dd, checksums, rsync depth.
+const ARCH = () => ({
+  title:"Archives & transfer",
+  paper:'letter', palette:'pastel', font:'jb', fs:8.5, duplex:'long', guides:true,
+  backStyle:'minimal', decks:[], activeDeck:null, collapsed:{cats:[],secs:[]},
+  categories:[
+    {id:uid(),name:"tar power",color:null,sections:[
+      {id:uid(),name:"Create & place",color:null,entries:[
+        {id:uid(),cmd:"tar -czf <out>.tgz -C <dir> .",desc:"create from another dir",q:"Build a tarball whose paths start inside a chosen directory?"},
+        {id:uid(),cmd:"tar --strip-components=1 -xzf <f>",desc:"drop top folder",q:"Extract but skip the leading directory level?"},
+        {id:uid(),cmd:"tar -tvf <f>",desc:"verbose listing",q:"List an archive with sizes and permissions?"},
+        {id:uid(),cmd:"tar -xzf <f> <member>",desc:"extract one file",q:"Pull a single file out of a tarball?"},
+        {id:uid(),cmd:"tar --exclude-from=<list> -czf …",desc:"exclude by file",q:"Exclude many paths listed in a file?"},
+        {id:uid(),cmd:"tar -czpf <out>.tgz <dir>",desc:"preserve permissions",q:"Keep exact permissions when archiving?"},
+      ]},
+      {id:uid(),name:"Pipe & verify",color:null,entries:[
+        {id:uid(),cmd:"tar -cf - <dir> | ssh <host> 'tar -xf - -C <dst>'",desc:"stream to a host",q:"Copy a directory tree over SSH without a temp file?"},
+        {id:uid(),cmd:"tar -czf - <dir> | wc -c",desc:"size without writing",q:"Measure a compressed tarball without saving it?"},
+        {id:uid(),cmd:"tar --use-compress-program=zstd -cf <out>.tar.zst <dir>",desc:"tar + zstd",q:"Make a zstd-compressed tarball?"},
+        {id:uid(),cmd:"tar -df <f>",desc:"diff vs disk",q:"Check which archived files differ from disk?"},
+        {id:uid(),cmd:"tar -rf <f>.tar <new>",desc:"append a file",q:"Add a file to an existing uncompressed tar?"},
+      ]},
+    ]},
+    {id:uid(),name:"Modern codecs",color:null,sections:[
+      {id:uid(),name:"zstd & lz4",color:null,entries:[
+        {id:uid(),cmd:"zstd <file>",desc:"compress → .zst",q:"Compress a file with zstd?"},
+        {id:uid(),cmd:"zstd -d <file>.zst",desc:"decompress",q:"Decompress a .zst file?"},
+        {id:uid(),cmd:"zstd -<n> <file>",desc:"level 1..19 (–22 ultra)",q:"Trade speed for ratio with a zstd level?"},
+        {id:uid(),cmd:"zstd -T0 <file>",desc:"all cores",q:"Use every CPU core to compress?"},
+        {id:uid(),cmd:"lz4 <file>",desc:"very fast compress",q:"Compress with the fastest common codec?"},
+        {id:uid(),cmd:"zstdcat <file>.zst",desc:"stream contents",q:"Read a .zst file without decompressing to disk?"},
+      ]},
+      {id:uid(),name:"7-Zip & encryption",color:null,entries:[
+        {id:uid(),cmd:"7z a <out>.7z <dir>",desc:"create a 7z archive",q:"Make a 7-Zip archive?"},
+        {id:uid(),cmd:"7z x <f>.7z",desc:"extract (keep paths)",q:"Extract a 7z keeping its directory structure?"},
+        {id:uid(),cmd:"7z l <f>.7z",desc:"list contents",q:"List a 7z archive’s contents?"},
+        {id:uid(),cmd:"7z a -p <out>.7z <dir>",desc:"encrypt with a password",q:"Create a password-protected 7z?"},
+        {id:uid(),cmd:"zip -er <out>.zip <dir>",desc:"encrypted zip",q:"Make an encrypted zip archive?"},
+        {id:uid(),cmd:"unzip -P <pass> <f>.zip",desc:"extract with password",q:"Extract a password-protected zip?"},
+      ]},
+    ]},
+    {id:uid(),name:"Bytes & integrity",color:null,sections:[
+      {id:uid(),name:"Split & copy",color:null,entries:[
+        {id:uid(),cmd:"split -b <size> <file> <pre>",desc:"split into chunks",q:"Break a large file into fixed-size pieces?"},
+        {id:uid(),cmd:"cat <pre>* > <file>",desc:"rejoin chunks",q:"Reassemble split pieces into the original file?"},
+        {id:uid(),cmd:"dd if=<in> of=<out> bs=4M status=progress",desc:"copy with a progress bar",q:"Clone a file or device and watch progress?"},
+        {id:uid(),cmd:"dd if=<img> of=<dev> bs=4M conv=fsync",desc:"flush to disk",q:"Write an image to a device and make sure it lands?"},
+        {id:uid(),cmd:"pv <file> > <out>",desc:"pipe with a meter",q:"Show throughput while moving data through a pipe?"},
+      ]},
+      {id:uid(),name:"Checksums",color:null,entries:[
+        {id:uid(),cmd:"sha256sum <file>",desc:"compute a digest",q:"Compute a file’s SHA-256 checksum?"},
+        {id:uid(),cmd:"sha256sum <files> > SHA256SUMS",desc:"record digests",q:"Save checksums for a set of files?"},
+        {id:uid(),cmd:"sha256sum -c SHA256SUMS",desc:"verify against record",q:"Verify files match their recorded checksums?"},
+        {id:uid(),cmd:"md5sum <file>",desc:"quick (non-secure) digest",q:"Get a fast MD5 sum for a sanity check?"},
+        {id:uid(),cmd:"cmp <a> <b>",desc:"byte-compare two files",q:"Find the first byte where two files differ?"},
+        {id:uid(),cmd:"b3sum <file>",desc:"BLAKE3 (fast)",q:"Hash a large file with a fast modern algorithm?"},
+      ]},
+    ]},
+    {id:uid(),name:"rsync power",color:null,sections:[
+      {id:uid(),name:"Safety & preview",color:null,entries:[
+        {id:uid(),cmd:"rsync -avn <src>/ <dst>/",desc:"dry run",q:"See what rsync would do without changing anything?"},
+        {id:uid(),cmd:"rsync -a --delete <src>/ <dst>/",desc:"mirror, prune extras",q:"Make the destination an exact mirror of the source?"},
+        {id:uid(),cmd:"rsync -a --info=progress2 <src>/ <dst>/",desc:"overall progress",q:"Watch total progress across a whole transfer?"},
+        {id:uid(),cmd:"rsync -a --partial --append-verify <src> <dst>",desc:"resume a transfer",q:"Resume a large transfer that got interrupted?"},
+        {id:uid(),cmd:"rsync -a --backup --backup-dir=<dir> <src>/ <dst>/",desc:"keep replaced files",q:"Sync but stash anything it would overwrite?"},
+      ]},
+      {id:uid(),name:"Select & tune",color:null,entries:[
+        {id:uid(),cmd:"rsync -a --exclude='<pat>' <src>/ <dst>/",desc:"skip paths",q:"Exclude matching paths from a sync?"},
+        {id:uid(),cmd:"rsync -a --exclude-from=<file> <src>/ <dst>/",desc:"skip by list",q:"Exclude many patterns from a file?"},
+        {id:uid(),cmd:"rsync -a --files-from=<list> <src>/ <dst>/",desc:"only these files",q:"Transfer just the files named in a list?"},
+        {id:uid(),cmd:"rsync -a -e 'ssh -p <port>' <src> <host>:<dst>",desc:"custom ssh",q:"Rsync over SSH on a non-default port?"},
+        {id:uid(),cmd:"rsync -a --bwlimit=<KBps> <src> <dst>",desc:"throttle bandwidth",q:"Cap how much bandwidth a sync uses?"},
+        {id:uid(),cmd:"rsync -aHAX <src>/ <dst>/",desc:"links, ACLs, xattrs",q:"Preserve hardlinks, ACLs and extended attributes?"},
+      ]},
+    ]},
+  ]
+});
 const READYMADE = [
   {key:'linux',name:'Linux Command Line',blurb:'Files, processes, networking, packages, scripting, Vim, Git, tmux…',make:SAMPLE},
   {key:'ssh',name:'SSH & remote',blurb:'~/.ssh/config stanzas, ProxyJump, tunnels (-R/-D), agent forwarding, multiplexing, sshfs, key hygiene…',make:SSH},
   {key:'shell',name:'Bash & zsh power',blurb:'History expansion, parameter expansion, [[ ]] & arithmetic, arrays, heredocs, process substitution, traps, globbing, zsh…',make:SHELL},
   {key:'http',name:'HTTP & APIs',blurb:'curl methods/bodies/headers/auth, status & timing, retries & TLS, HTTPie, SSE & raw sockets, websocat…',make:HTTP},
+  {key:'arch',name:'Archives & transfer',blurb:'tar power & piping, zstd/lz4, 7z & encryption, split/dd/pv, checksums (sha256/b3sum), rsync power flags…',make:ARCH},
   {key:'toys',name:'Terminal Toys',blurb:'cowsay, lolcat, cmatrix, sl, ASCII Star Wars, wttr.in, fortune, party tricks & hidden built-ins…',make:TOYS},
   {key:'devops',name:'DevOps',blurb:'Docker, Kubernetes, Helm, Git, CI, Terraform, Ansible, cloud, TLS…',make:DEVOPS},
   {key:'ai',name:'AI-Assisted Engineering',blurb:'Claude Code, aider, Copilot, ollama, prompting, APIs, MCP, RAG, evals…',make:AI},
