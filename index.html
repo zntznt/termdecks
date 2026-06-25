@@ -1158,7 +1158,6 @@ const SAMPLE = () => ({
         {id:uid(),cmd:'`gg` / `G`',desc:'file top / bottom',q:'Jump to top / bottom of file?'},
         {id:uid(),cmd:'`Ctrl`+`d` / `Ctrl`+`u`',desc:'half page down / up',q:'Scroll half a page down / up?'},
         {id:uid(),cmd:'`{` / `}`',desc:'paragraph back / fwd',q:'Move by paragraph?'},
-        {id:uid(),cmd:'`%`',desc:'matching bracket',q:'Jump to the matching bracket?'},
       ]},
       {id:uid(),name:'Editing',color:null,entries:[
         {id:uid(),cmd:'`i` / `a`',desc:'insert before / after',q:'Enter insert mode before / after cursor?'},
@@ -1177,7 +1176,6 @@ const SAMPLE = () => ({
         {id:uid(),cmd:'`n` / `N`',desc:'next / prev match',q:'Jump to the next / previous match?'},
         {id:uid(),cmd:'`*`',desc:'word under cursor',q:'Search for the word under the cursor?'},
         {id:uid(),cmd:':%s/<old>/<new>/g',desc:'replace all',q:'Replace every occurrence in the file?'},
-        {id:uid(),cmd:':%s/<old>/<new>/gc',desc:'replace, confirm',q:'Replace all, confirming each one?'},
       ]},
       {id:uid(),name:'Visual',color:null,entries:[
         {id:uid(),cmd:'`v` / `V`',desc:'char / line select',q:'Start character / line visual select?'},
@@ -1211,7 +1209,6 @@ const SAMPLE = () => ({
         {id:uid(),cmd:'git switch <branch>',desc:'change branch',q:'Switch to an existing branch?'},
         {id:uid(),cmd:'git merge <branch>',desc:'merge into HEAD',q:'Merge a branch into the current one?'},
         {id:uid(),cmd:'git restore <file>',desc:'discard changes',q:'Throw away local edits to a file?'},
-        {id:uid(),cmd:'git commit --amend',desc:'fix last commit',q:'Change the most recent commit?'},
       ]},
     ]},
     {id:uid(),name:'tmux',color:null,sections:[
@@ -2051,6 +2048,7 @@ const VIM = () => ({
       {id:uid(),name:"Sentences & blocks",color:null,entries:[
         {id:uid(),cmd:"( )",desc:"sentence back/fwd",q:"Move by sentences?"},
         {id:uid(),cmd:"{ }",desc:"paragraph back/fwd",q:"Move by blank-line-delimited paragraphs?"},
+        {id:uid(),cmd:"%",desc:"matching bracket",q:"Jump to the matching bracket, paren, or brace?"},
         {id:uid(),cmd:"H M L",desc:"top/mid/bottom",q:"Jump to the top, middle, or bottom of the screen?"},
       ]},
       {id:uid(),name:"File & line jumps",color:null,entries:[
@@ -2648,6 +2646,7 @@ const GIT = () => ({
         {id:uid(),cmd:"git commit -S -m \"<msg>\"",desc:"sign the commit",q:"Create a GPG/SSH-signed commit?"},
       ]},
       {id:uid(),name:"Amend & fixup",color:null,entries:[
+        {id:uid(),cmd:"git commit --amend",desc:"amend, edit message",q:"Change the most recent commit and its message?"},
         {id:uid(),cmd:"git commit --amend --no-edit",desc:"amend, keep msg",q:"Add staged changes to the last commit, same message?"},
         {id:uid(),cmd:"git commit --fixup <commit>",desc:"mark a fixup",q:"Create a fixup commit for later autosquash?"},
         {id:uid(),cmd:"git commit --squash <commit>",desc:"mark a squash",q:"Create a squash commit for later autosquash?"},
