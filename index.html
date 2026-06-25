@@ -1498,20 +1498,9 @@ const DEVOPS = () => ({
         {id:uid(),cmd:'az vm start -g <grp> -n <vm>',desc:'start a VM',q:'Start an Azure VM?'},
       ]},
     ]},
-    {id:uid(),name:'curl & jq',color:null,sections:[
-      {id:uid(),name:'curl requests',color:null,entries:[
-        {id:uid(),cmd:'curl <url>',desc:'GET a URL',q:'Make a simple GET request?'},
-        {id:uid(),cmd:'curl -X POST <url>',desc:'POST',q:'Send a POST request?'},
-        {id:uid(),cmd:'curl -d \'<data>\' <url>',desc:'send a body',q:'Send a request body?'},
-        {id:uid(),cmd:'curl -o <file> <url>',desc:'save to file',q:'Save a response to a file?'},
-        {id:uid(),cmd:'curl -I <url>',desc:'headers only',q:'Fetch only the response headers?'},
-      ]},
-      {id:uid(),name:'curl headers & auth',color:null,entries:[
-        {id:uid(),cmd:'curl -H "<k>: <v>" <url>',desc:'custom header',q:'Add a custom request header?'},
-        {id:uid(),cmd:'curl -u <user>:<pass> <url>',desc:'basic auth',q:'Send HTTP basic auth?'},
-        {id:uid(),cmd:'curl -H "Authorization: Bearer <tok>" <url>',desc:'bearer token',q:'Send a bearer token?'},
-        {id:uid(),cmd:'curl -w "%{http_code}" <url>',desc:'print status',q:'Print just the HTTP status code?'},
-      ]},
+    // curl depth moved to the dedicated HTTP & APIs expansion; this category keeps
+    // only the JSON/YAML querying a DevOps user reaches for after a request.
+    {id:uid(),name:'JSON & YAML',color:null,sections:[
       {id:uid(),name:'jq & yq',color:null,entries:[
         {id:uid(),cmd:'jq \'.\' <file>',desc:'pretty-print JSON',q:'Pretty-print a JSON file?'},
         {id:uid(),cmd:'jq \'.<key>\' <file>',desc:'a field',q:'Extract a field from JSON?'},
@@ -3600,10 +3589,97 @@ const SHELL = () => ({
     ]},
   ]
 });
+// Dedicated HTTP layer. The base teaches download-style curl (-O / -L / -fsSL,
+// wget) in Networking > Transfer; this deck owns request-shaping curl (methods,
+// bodies, headers, auth, timing) plus HTTPie, status/debug, and websockets.
+// The curl request/auth sections that used to live in the DevOps expansion were
+// moved here, so HTTP + DevOps load with 0 curl overlap.
+const HTTP = () => ({
+  title:"HTTP & APIs",
+  paper:'letter', palette:'vibrant', font:'jb', fs:8.5, duplex:'long', guides:true,
+  backStyle:'minimal', decks:[], activeDeck:null, collapsed:{cats:[],secs:[]},
+  categories:[
+    {id:uid(),name:"curl requests",color:null,sections:[
+      {id:uid(),name:"Methods & bodies",color:null,entries:[
+        {id:uid(),cmd:"curl <url>",desc:"GET a URL",q:"Make a simple GET request?"},
+        {id:uid(),cmd:"curl -X POST <url>",desc:"choose the method",q:"Send a request with a specific HTTP method?"},
+        {id:uid(),cmd:"curl -d '<data>' <url>",desc:"form body (implies POST)",q:"Send a urlencoded body?"},
+        {id:uid(),cmd:"curl --json '<json>' <url>",desc:"JSON body + headers",q:"POST JSON and set the JSON headers in one flag?"},
+        {id:uid(),cmd:"curl --data-binary @<file> <url>",desc:"raw file body",q:"Send a file as the request body, unaltered?"},
+        {id:uid(),cmd:"curl -F file=@<path> <url>",desc:"multipart upload",q:"Upload a file as multipart form data?"},
+        {id:uid(),cmd:"curl -G -d <k>=<v> <url>",desc:"build a query string",q:"Turn data fields into a GET query string?"},
+      ]},
+      {id:uid(),name:"Headers & auth",color:null,entries:[
+        {id:uid(),cmd:"curl -H \"<k>: <v>\" <url>",desc:"custom header",q:"Add a custom request header?"},
+        {id:uid(),cmd:"curl -u <user>:<pass> <url>",desc:"basic auth",q:"Send HTTP basic auth?"},
+        {id:uid(),cmd:"curl -H \"Authorization: Bearer <tok>\" <url>",desc:"bearer token",q:"Send a bearer token?"},
+        {id:uid(),cmd:"curl -b <cookies> -c <cookies> <url>",desc:"send & save cookies",q:"Reuse and persist cookies across calls?"},
+        {id:uid(),cmd:"curl -A \"<agent>\" <url>",desc:"user agent",q:"Set a custom User-Agent?"},
+        {id:uid(),cmd:"curl -e <referer> <url>",desc:"referer header",q:"Send a Referer header?"},
+      ]},
+      {id:uid(),name:"Inspect & debug",color:null,entries:[
+        {id:uid(),cmd:"curl -i <url>",desc:"headers + body",q:"Show response headers along with the body?"},
+        {id:uid(),cmd:"curl -I <url>",desc:"headers only (HEAD)",q:"Fetch only the response headers?"},
+        {id:uid(),cmd:"curl -v <url>",desc:"full request/response",q:"See the whole request and response, headers and all?"},
+        {id:uid(),cmd:"curl -w \"%{http_code}\\n\" -o /dev/null -s <url>",desc:"status only",q:"Print just the status code, nothing else?"},
+        {id:uid(),cmd:"curl -w \"%{time_total}\\n\" -o /dev/null -s <url>",desc:"total time",q:"Measure how long a request takes?"},
+        {id:uid(),cmd:"curl --trace-ascii - <url>",desc:"byte-level trace",q:"Dump the raw bytes sent and received?"},
+      ]},
+    ]},
+    {id:uid(),name:"Reliability",color:null,sections:[
+      {id:uid(),name:"Redirects & TLS",color:null,entries:[
+        {id:uid(),cmd:"curl -L <url>",desc:"follow redirects",q:"Follow 3xx redirects to the final URL?"},
+        {id:uid(),cmd:"curl -k <url>",desc:"skip cert check",q:"Ignore an invalid TLS certificate (testing only)?"},
+        {id:uid(),cmd:"curl --resolve <host>:443:<ip> <url>",desc:"pin the IP",q:"Force a hostname to resolve to a chosen IP?"},
+        {id:uid(),cmd:"curl --cacert <file> <url>",desc:"custom CA",q:"Trust a private certificate authority?"},
+        {id:uid(),cmd:"curl --http2 <url>",desc:"force HTTP/2",q:"Make the request over HTTP/2?"},
+      ]},
+      {id:uid(),name:"Retries & limits",color:null,entries:[
+        {id:uid(),cmd:"curl --retry <n> <url>",desc:"retry on failure",q:"Retry a failing request a few times?"},
+        {id:uid(),cmd:"curl --retry-all-errors <url>",desc:"retry any error",q:"Retry even on non-transient errors?"},
+        {id:uid(),cmd:"curl --max-time <s> <url>",desc:"hard time cap",q:"Abort a request that runs too long?"},
+        {id:uid(),cmd:"curl --connect-timeout <s> <url>",desc:"connect cap",q:"Limit how long to wait for a connection?"},
+        {id:uid(),cmd:"curl -f <url>",desc:"fail on HTTP error",q:"Make curl exit non-zero on a 4xx/5xx?"},
+        {id:uid(),cmd:"curl --limit-rate <r> <url>",desc:"throttle bandwidth",q:"Cap the transfer rate of a download?"},
+      ]},
+    ]},
+    {id:uid(),name:"HTTPie",color:null,sections:[
+      {id:uid(),name:"Requests",color:null,entries:[
+        {id:uid(),cmd:"http <url>",desc:"GET, pretty output",q:"Make a request with colorized, formatted output?"},
+        {id:uid(),cmd:"http POST <url> <k>=<v>",desc:"JSON field",q:"POST a JSON body from key=value pairs?"},
+        {id:uid(),cmd:"http <url> <k>==<v>",desc:"query param",q:"Add a URL query parameter the HTTPie way?"},
+        {id:uid(),cmd:"http <url> <K>:<v>",desc:"header",q:"Set a request header in HTTPie?"},
+        {id:uid(),cmd:"http -a <user>:<pass> <url>",desc:"basic auth",q:"Send basic auth with HTTPie?"},
+        {id:uid(),cmd:"http --download <url>",desc:"save like wget",q:"Download a file to disk with HTTPie?"},
+      ]},
+      {id:uid(),name:"Inspect",color:null,entries:[
+        {id:uid(),cmd:"http -v <url>",desc:"show request too",q:"Print the request as well as the response?"},
+        {id:uid(),cmd:"http -h <url>",desc:"headers only",q:"Show only the response headers in HTTPie?"},
+        {id:uid(),cmd:"http -b <url>",desc:"body only",q:"Print only the response body?"},
+        {id:uid(),cmd:"http --offline POST <url> <k>=<v>",desc:"build, don’t send",q:"Preview the request without sending it?"},
+        {id:uid(),cmd:"https <url>",desc:"force HTTPS",q:"Make an HTTPie request over HTTPS explicitly?"},
+      ]},
+    ]},
+    {id:uid(),name:"Streams & sockets",color:null,sections:[
+      {id:uid(),name:"Server-sent & raw",color:null,entries:[
+        {id:uid(),cmd:"curl -N <url>",desc:"no buffering (SSE)",q:"Stream a server-sent-events response live?"},
+        {id:uid(),cmd:"curl -H \"Accept: text/event-stream\" -N <url>",desc:"ask for SSE",q:"Request and follow an event stream?"},
+        {id:uid(),cmd:"nc <host> <port>",desc:"raw TCP",q:"Talk to a port with a raw connection?"},
+        {id:uid(),cmd:"printf 'GET / HTTP/1.0\\r\\n\\r\\n' | nc <host> 80",desc:"hand-write a request",q:"Send an HTTP request by hand over nc?"},
+      ]},
+      {id:uid(),name:"WebSockets",color:null,entries:[
+        {id:uid(),cmd:"websocat <ws-url>",desc:"connect to a socket",q:"Open an interactive WebSocket session?"},
+        {id:uid(),cmd:"websocat -t ws-l:127.0.0.1:<port> -",desc:"local echo server",q:"Spin up a quick WebSocket server?"},
+        {id:uid(),cmd:"curl --include --no-buffer -H \"Upgrade: websocket\" <url>",desc:"curl WS handshake",q:"Do a WebSocket upgrade with curl?"},
+      ]},
+    ]},
+  ]
+});
 const READYMADE = [
   {key:'linux',name:'Linux Command Line',blurb:'Files, processes, networking, packages, scripting, Vim, Git, tmux…',make:SAMPLE},
   {key:'ssh',name:'SSH & remote',blurb:'~/.ssh/config stanzas, ProxyJump, tunnels (-R/-D), agent forwarding, multiplexing, sshfs, key hygiene…',make:SSH},
   {key:'shell',name:'Bash & zsh power',blurb:'History expansion, parameter expansion, [[ ]] & arithmetic, arrays, heredocs, process substitution, traps, globbing, zsh…',make:SHELL},
+  {key:'http',name:'HTTP & APIs',blurb:'curl methods/bodies/headers/auth, status & timing, retries & TLS, HTTPie, SSE & raw sockets, websocat…',make:HTTP},
   {key:'toys',name:'Terminal Toys',blurb:'cowsay, lolcat, cmatrix, sl, ASCII Star Wars, wttr.in, fortune, party tricks & hidden built-ins…',make:TOYS},
   {key:'devops',name:'DevOps',blurb:'Docker, Kubernetes, Helm, Git, CI, Terraform, Ansible, cloud, TLS…',make:DEVOPS},
   {key:'ai',name:'AI-Assisted Engineering',blurb:'Claude Code, aider, Copilot, ollama, prompting, APIs, MCP, RAG, evals…',make:AI},
