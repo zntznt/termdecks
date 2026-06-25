@@ -3466,9 +3466,144 @@ const SSH = () => ({
     ]},
   ]
 });
+// Depth-only shell layer. The base deck already teaches first-day shell across
+// Bash keys, Bash I/O, Shell scripting, and Environment (redirection, simple
+// history !! / !$, $(...), ${v:-def}, set -euo pipefail, if/for/while/case,
+// alias, export, source). This expansion holds only the depth the base lacks:
+// full history expansion, parameter expansion, arithmetic, [[ ]] tests, arrays,
+// here-docs, process substitution, traps/getopts, globbing, and a zsh layer.
+// No section name collides with a base shell section, so base + this = 0 dupes.
+const SHELL = () => ({
+  title:"Bash & zsh power",
+  paper:'letter', palette:'catppuccin', font:'jb', fs:8.5, duplex:'long', guides:true,
+  backStyle:'minimal', decks:[], activeDeck:null, collapsed:{cats:[],secs:[]},
+  categories:[
+    {id:uid(),name:"History expansion",color:null,sections:[
+      {id:uid(),name:"Designators",color:null,entries:[
+        {id:uid(),cmd:"!<str>",desc:"last cmd starting with str",q:"Re-run the last command that began with some text?"},
+        {id:uid(),cmd:"!?<str>?",desc:"last cmd containing str",q:"Re-run the last command containing some text?"},
+        {id:uid(),cmd:"!*",desc:"all args of last cmd",q:"Reuse every argument of the previous command?"},
+        {id:uid(),cmd:"!:<n>",desc:"the nth argument",q:"Reuse one specific argument by position?"},
+        {id:uid(),cmd:"!:2-3",desc:"a range of args",q:"Reuse a range of arguments from the last command?"},
+        {id:uid(),cmd:"^old^new",desc:"fix & rerun last cmd",q:"Re-run the last command with a quick substitution?"},
+      ]},
+      {id:uid(),name:"Word modifiers",color:null,entries:[
+        {id:uid(),cmd:"!$:h",desc:"head (dir part)",q:"Strip the filename, keep the directory, off the last arg?"},
+        {id:uid(),cmd:"!$:t",desc:"tail (file part)",q:"Keep just the filename of the last argument?"},
+        {id:uid(),cmd:"!$:r",desc:"root (drop extension)",q:"Drop the extension from the last argument?"},
+        {id:uid(),cmd:"!!:gs/a/b/",desc:"global substitute",q:"Replace text everywhere in the previous command?"},
+        {id:uid(),cmd:"!#:1",desc:"earlier word, this line",q:"Reuse a word typed earlier on the current line?"},
+      ]},
+    ]},
+    {id:uid(),name:"Parameter expansion",color:null,sections:[
+      {id:uid(),name:"Slice & length",color:null,entries:[
+        {id:uid(),cmd:"${#v}",desc:"string length",q:"Get the length of a variable’s value?"},
+        {id:uid(),cmd:"${v:2:3}",desc:"substring (offset,len)",q:"Take a substring by offset and length?"},
+        {id:uid(),cmd:"${v: -4}",desc:"last 4 chars",q:"Grab the last few characters of a value?"},
+        {id:uid(),cmd:"${!prefix*}",desc:"names by prefix",q:"List variable names sharing a prefix?"},
+        {id:uid(),cmd:"${!ref}",desc:"indirect lookup",q:"Read the variable whose name another variable holds?"},
+      ]},
+      {id:uid(),name:"Trim & replace",color:null,entries:[
+        {id:uid(),cmd:"${v#<pat>}",desc:"strip prefix (short)",q:"Remove the shortest matching prefix?"},
+        {id:uid(),cmd:"${v##<pat>}",desc:"strip prefix (long)",q:"Remove the longest matching prefix (e.g. a path)?"},
+        {id:uid(),cmd:"${v%<pat>}",desc:"strip suffix (short)",q:"Remove the shortest matching suffix?"},
+        {id:uid(),cmd:"${v%%<pat>}",desc:"strip suffix (long)",q:"Remove the longest matching suffix?"},
+        {id:uid(),cmd:"${v/<a>/<b>}",desc:"replace first",q:"Replace the first match inside a value?"},
+        {id:uid(),cmd:"${v//<a>/<b>}",desc:"replace all",q:"Replace every match inside a value?"},
+      ]},
+      {id:uid(),name:"Defaults & case",color:null,entries:[
+        {id:uid(),cmd:"${v:=<def>}",desc:"assign if unset",q:"Use a default and also store it back into the variable?"},
+        {id:uid(),cmd:"${v:?<msg>}",desc:"error if unset",q:"Abort with a message when a variable is missing?"},
+        {id:uid(),cmd:"${v:+<alt>}",desc:"alt if set",q:"Use a value only when the variable is set?"},
+        {id:uid(),cmd:"${v^^}",desc:"upper-case",q:"Upper-case a value with pure expansion?"},
+        {id:uid(),cmd:"${v,,}",desc:"lower-case",q:"Lower-case a value with pure expansion?"},
+      ]},
+    ]},
+    {id:uid(),name:"Tests & math",color:null,sections:[
+      {id:uid(),name:"[[ ]] conditions",color:null,entries:[
+        {id:uid(),cmd:"[[ <a> == <pat> ]]",desc:"glob match",q:"Test a string against a glob pattern?"},
+        {id:uid(),cmd:"[[ <s> =~ <regex> ]]",desc:"regex match",q:"Test a string against a regular expression?"},
+        {id:uid(),cmd:"${BASH_REMATCH[1]}",desc:"captured group",q:"Read a capture group from the last regex test?"},
+        {id:uid(),cmd:"[[ <a> -gt <b> ]]",desc:"numeric greater",q:"Compare two numbers inside a test?"},
+        {id:uid(),cmd:"[[ <a> && <b> ]]",desc:"combine tests",q:"Combine two conditions in one test?"},
+        {id:uid(),cmd:"[[ -n <s> ]]",desc:"non-empty string",q:"Test that a string is not empty?"},
+      ]},
+      {id:uid(),name:"Arithmetic",color:null,entries:[
+        {id:uid(),cmd:"$(( <expr> ))",desc:"arithmetic expansion",q:"Evaluate a maths expression into a value?"},
+        {id:uid(),cmd:"(( i++ ))",desc:"arithmetic command",q:"Increment a counter without echo/expr?"},
+        {id:uid(),cmd:"(( a > b )) && …",desc:"numeric branch",q:"Branch on a numeric comparison cleanly?"},
+        {id:uid(),cmd:"$(( RANDOM % <n> ))",desc:"random 0..n-1",q:"Get a random number in a range?"},
+        {id:uid(),cmd:"i+=1",desc:"compound assign",q:"Add to a variable in place (with declare -i)?"},
+      ]},
+    ]},
+    {id:uid(),name:"Data & redirection",color:null,sections:[
+      {id:uid(),name:"Arrays",color:null,entries:[
+        {id:uid(),cmd:"arr=(a b c)",desc:"make an array",q:"Create an indexed array?"},
+        {id:uid(),cmd:"\"${arr[@]}\"",desc:"all elements safely",q:"Expand every element, quoting each one?"},
+        {id:uid(),cmd:"${#arr[@]}",desc:"element count",q:"Count the elements in an array?"},
+        {id:uid(),cmd:"declare -A m",desc:"associative array",q:"Declare a key→value map?"},
+        {id:uid(),cmd:"\"${m[<key>]}\"",desc:"look up by key",q:"Read a value from a map by its key?"},
+        {id:uid(),cmd:"mapfile -t arr < <file>",desc:"file → array",q:"Read a file’s lines into an array?"},
+      ]},
+      {id:uid(),name:"Heredocs & substitution",color:null,entries:[
+        {id:uid(),cmd:"cat <<EOF … EOF",desc:"here-doc",q:"Feed a multi-line block to a command?"},
+        {id:uid(),cmd:"cat <<-EOF",desc:"strip leading tabs",q:"Indent a here-doc but strip the tabs?"},
+        {id:uid(),cmd:"cat <<'EOF'",desc:"no expansion",q:"Write a here-doc that doesn’t expand variables?"},
+        {id:uid(),cmd:"<cmd> <<< \"<str>\"",desc:"here-string",q:"Send a single string to a command’s stdin?"},
+        {id:uid(),cmd:"diff <(<a>) <(<b>)",desc:"process substitution",q:"Compare the output of two commands directly?"},
+        {id:uid(),cmd:"<cmd> > >(<sink>)",desc:"output to a process",q:"Pipe output into a process as if it were a file?"},
+      ]},
+    ]},
+    {id:uid(),name:"Scripting power",color:null,sections:[
+      {id:uid(),name:"Traps & options",color:null,entries:[
+        {id:uid(),cmd:"trap '<cmd>' EXIT",desc:"run on exit",q:"Run cleanup whenever the script exits?"},
+        {id:uid(),cmd:"trap '<cmd>' INT TERM",desc:"catch signals",q:"React to Ctrl-C or a kill signal?"},
+        {id:uid(),cmd:"set -x / set +x",desc:"trace on / off",q:"Print each command as it runs, then stop?"},
+        {id:uid(),cmd:"IFS=$'\\n'",desc:"split on newlines only",q:"Make word-splitting break only on newlines?"},
+        {id:uid(),cmd:"local <var>",desc:"function-scoped var",q:"Keep a variable inside one function?"},
+      ]},
+      {id:uid(),name:"Args & input",color:null,entries:[
+        {id:uid(),cmd:"while getopts \"ab:\" o; do …",desc:"parse flags",q:"Parse -a and -b<val> style options?"},
+        {id:uid(),cmd:"shift",desc:"drop $1, shuffle down",q:"Consume a positional argument and move on?"},
+        {id:uid(),cmd:"\"$#\"",desc:"argument count",q:"Count how many arguments a script got?"},
+        {id:uid(),cmd:"while read -r line; do …",desc:"read lines safely",q:"Loop over input lines without mangling backslashes?"},
+        {id:uid(),cmd:"${BASH_SOURCE[0]}",desc:"this script’s path",q:"Find the path of the running script itself?"},
+      ]},
+    ]},
+    {id:uid(),name:"Globbing",color:null,sections:[
+      {id:uid(),name:"Patterns",color:null,entries:[
+        {id:uid(),cmd:"shopt -s globstar",desc:"enable **",q:"Turn on recursive ** matching in bash?"},
+        {id:uid(),cmd:"**/*.txt",desc:"recursive glob",q:"Match files at any depth below here?"},
+        {id:uid(),cmd:"shopt -s extglob",desc:"enable extended globs",q:"Turn on extended glob patterns?"},
+        {id:uid(),cmd:"!(<pat>)",desc:"anything but pat",q:"Match every file except a pattern?"},
+        {id:uid(),cmd:"shopt -s nullglob",desc:"empty if no match",q:"Make a non-matching glob expand to nothing?"},
+        {id:uid(),cmd:"shopt -s dotglob",desc:"include dotfiles",q:"Include hidden files in glob matches?"},
+      ]},
+    ]},
+    {id:uid(),name:"zsh",color:null,sections:[
+      {id:uid(),name:"Globbing & expansion",color:null,entries:[
+        {id:uid(),cmd:"ls **/*.log",desc:"recursive glob (built-in)",q:"Match files at any depth in zsh without a flag?"},
+        {id:uid(),cmd:"ls *(.)",desc:"glob qualifier: files",q:"Match only plain files with a glob qualifier?"},
+        {id:uid(),cmd:"ls *(/)",desc:"qualifier: dirs only",q:"Match only directories with a qualifier?"},
+        {id:uid(),cmd:"ls *(.om[1])",desc:"newest file",q:"Pick the single most recently modified file?"},
+        {id:uid(),cmd:"ls **/*(.mh-1)",desc:"changed last hour",q:"Match files modified within the last hour?"},
+        {id:uid(),cmd:"${(s.:.)PATH}",desc:"split on a string",q:"Split a value on a delimiter into words (zsh)?"},
+      ]},
+      {id:uid(),name:"Config & tools",color:null,entries:[
+        {id:uid(),cmd:"~/.zshrc",desc:"interactive zsh config",q:"Which file configures each interactive zsh?"},
+        {id:uid(),cmd:"autoload -Uz compinit && compinit",desc:"enable completion",q:"Turn on zsh’s completion system?"},
+        {id:uid(),cmd:"setopt AUTO_CD",desc:"cd by typing a dir",q:"Change directory just by typing its name?"},
+        {id:uid(),cmd:"setopt HIST_IGNORE_DUPS",desc:"dedupe history",q:"Stop duplicate lines piling up in history?"},
+        {id:uid(),cmd:"bindkey -v",desc:"vi keybindings",q:"Switch the line editor to vi mode?"},
+        {id:uid(),cmd:"print -rl -- <glob>",desc:"safe one-per-line print",q:"Print matches one per line without surprises?"},
+      ]},
+    ]},
+  ]
+});
 const READYMADE = [
   {key:'linux',name:'Linux Command Line',blurb:'Files, processes, networking, packages, scripting, Vim, Git, tmux…',make:SAMPLE},
   {key:'ssh',name:'SSH & remote',blurb:'~/.ssh/config stanzas, ProxyJump, tunnels (-R/-D), agent forwarding, multiplexing, sshfs, key hygiene…',make:SSH},
+  {key:'shell',name:'Bash & zsh power',blurb:'History expansion, parameter expansion, [[ ]] & arithmetic, arrays, heredocs, process substitution, traps, globbing, zsh…',make:SHELL},
   {key:'toys',name:'Terminal Toys',blurb:'cowsay, lolcat, cmatrix, sl, ASCII Star Wars, wttr.in, fortune, party tricks & hidden built-ins…',make:TOYS},
   {key:'devops',name:'DevOps',blurb:'Docker, Kubernetes, Helm, Git, CI, Terraform, Ansible, cloud, TLS…',make:DEVOPS},
   {key:'ai',name:'AI-Assisted Engineering',blurb:'Claude Code, aider, Copilot, ollama, prompting, APIs, MCP, RAG, evals…',make:AI},
