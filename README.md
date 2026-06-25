@@ -17,7 +17,7 @@ It's a single, dependency-free `index.html`. No build step, no server, no accoun
 - 🖨️ **Print / Save PDF**: lays cards out 9-up (3×3) per sheet with mirrored backs for double-sided printing, cut guides, US-Letter or A4. What you see (search + filters) is what prints.
 - 🧠 **Quiz mode with spaced repetition**: a Leitner-box study loop. Reveal the answer, grade *Again* / *Got it*, and weak cards resurface far more often than mastered ones. Tracks mastery per collection; shuffle and reset on demand.
 - ◆ **Two card-back styles**: *Questions* (study-forward) or *Navigator* (a bold category band for sorting a fanned/stacked deck), with the questions always visible.
-- 📦 **Collections & Decks**: keep multiple libraries; carve any library into named **decks** (subsets of cards). A dedicated Decks window manages every deck across all collections, so you can create, rename, delete, copy between collections, and import/export individual decks.
+- 📦 **Collections & Decks**: keep multiple libraries; carve any library into named **decks** (the sections you pick, which become its cards). A dedicated Decks window manages every deck across all collections, so you can create, rename, delete, copy between collections, and import/export individual decks.
 - ➕ **Expansions**: twelve ready-made decks to start from or fold into your own. Linux is the base starter; the rest layer on top, adding only the depth the base leaves out. Terminal fundamentals: SSH & remote, Bash & zsh power, HTTP & APIs, Archives & transfer. Tools: DevOps, AI-Assisted Engineering, Vim & Neovim, tmux, Git (deep), jq + awk/sed/grep. Plus Terminal Toys for fun.
 - 📑 **CSV & JSON import/export**: bring commands in from a spreadsheet, or back up everything to a file. A "Back up all" / "Delete all" pair lives in Settings.
 - 🎨 **Themes & fonts**: Auto/Nord/Catppuccin/Solarized/Pastel/Vibrant/Graphite palettes; JetBrains Mono, IBM Plex Mono, Fira Code, or system monospace.
@@ -63,7 +63,7 @@ Collection                     a library (e.g. "Linux Command Line")
 ```
 
 - A **section** becomes a card, and if its entries don't all fit, it spills onto extra cards (each footed *page N of M*). The front lists the section's entries; the back shows their questions.
-- A **deck** is a named subset of one collection's cards. Pick the sections you want with **Select cards** in the viewer.
+- A **deck** is a named subset of one collection's sections (those sections become the deck's cards). Pick the ones you want with **Select cards** in the viewer.
 - **Quiz mode** is a viewer feature, not a card property: it never changes how cards render or print.
 
 ### Keyboard shortcuts
