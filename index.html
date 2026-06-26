@@ -530,12 +530,31 @@ mark{background:#ffd54a;color:#1a1500;border-radius:2px;padding:0 1px}
   .sheet{page-break-after:always;break-after:page}
   .sheet:last-child{page-break-after:auto;break-after:auto}
 }
-.sheet{width:7.5in;height:10.5in;display:grid;
-  grid-template-columns:repeat(3,var(--cw));grid-template-rows:repeat(3,var(--ch));gap:0;margin:0 auto;background:#fff}
-.sheet .slot{width:var(--cw);height:var(--ch);overflow:hidden}
+/* Gutter between cards so each card gets its OWN cut line with slack: a small
+   printer skew no longer makes one shared line miss two cards. --gut is set per
+   sheet by the print menu (Gutter setting). Sheet grows by 2 gutters each way. */
+.sheet{--gut:0.08in;
+  width:calc(3*var(--cw) + 2*var(--gut));height:calc(3*var(--ch) + 2*var(--gut));
+  display:grid;grid-template-columns:repeat(3,var(--cw));grid-template-rows:repeat(3,var(--ch));
+  gap:var(--gut);margin:0 auto;background:#fff;position:relative}
+.sheet .slot{width:var(--cw);height:var(--ch);overflow:hidden;position:relative}
 .sheet .card{border-radius:0}
-.sheet.guides .card{border:0.5pt solid #9aa3b2;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.sheet.guides .slot{box-shadow:0 0 0 0.5pt #b7bdc8 inset}
+
+/* Cut guides. The cut line is the card's own edge, so each card is bordered on
+   all four sides (a solid hairline drawn just inside the slot via outline, which
+   prints reliably; box-shadows are dropped by many print paths). The gutter shows
+   two parallel lines, one per neighbouring card, exactly where you trim. */
+.sheet.guides{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.sheet.guides .slot{outline:0.5pt solid #6b7280;outline-offset:0}
+
+/* Crop-mark style adds short ticks reaching into the gutter at every slot corner,
+   so a guillotine has a registration mark at the trim edge, not just the box. */
+.sheet.crop .slot::before,.sheet.crop .slot::after{content:"";position:absolute;
+  background:#6b7280;-webkit-print-color-adjust:exact;print-color-adjust:exact;pointer-events:none}
+.sheet.crop .slot::before{top:0;left:0;width:100%;height:0.5pt;
+  background:linear-gradient(to right,#6b7280 0 0.09in,transparent 0.09in calc(100% - 0.09in),#6b7280 calc(100% - 0.09in) 100%)}
+.sheet.crop .slot::after{top:0;left:0;width:0.5pt;height:100%;
+  background:linear-gradient(to bottom,#6b7280 0 0.09in,transparent 0.09in calc(100% - 0.09in),#6b7280 calc(100% - 0.09in) 100%)}
 </style>
 </head>
 <body>
@@ -3769,7 +3788,7 @@ const READYMADE = [
   {key:'text',name:'jq + awk/sed/grep',blurb:'jq queries, awk one-liners, sed substitution, grep & ripgrep, cut/sort/uniq, xargs…',make:TEXT},
 ];
 function blankCollection(name){return {id:uid(),title:name||'Untitled',paper:'letter',palette:'nord',font:'jb',fs:8.5,
-  duplex:'long',guides:true,backStyle:'minimal',gridZoom:1.25,decks:[],activeDeck:null,collapsed:{cats:[],secs:[]},study:{boxes:{}},categories:[]};}
+  duplex:'long',guides:true,cutStyle:'edges',gutter:0.08,backStyle:'minimal',gridZoom:1.25,decks:[],activeDeck:null,collapsed:{cats:[],secs:[]},study:{boxes:{}},categories:[]};}
 
 let state, store;
 const STORAGE_KEY='cardcheat_v3';
@@ -3779,6 +3798,9 @@ function normalizeCollection(c){
   c.paper=c.paper||'letter';c.palette=c.palette||'nord';c.font=c.font||'jb';
   if(typeof c.fs!=='number')c.fs=8.5; c.duplex=c.duplex||'long';
   if(typeof c.guides!=='boolean')c.guides=true; c.backStyle=(c.backStyle==='navigator')?'navigator':'minimal';
+  // cut guides upgraded from a boolean to a style + gutter size; migrate the old flag.
+  if(!['none','edges','crop'].includes(c.cutStyle))c.cutStyle=(c.guides===false?'none':'edges');
+  if(typeof c.gutter!=='number'||!(c.gutter>=0&&c.gutter<=0.2))c.gutter=0.08;
   if(typeof c.gridZoom!=='number'||!(c.gridZoom>=0.9&&c.gridZoom<=1.8))c.gridZoom=1.25;
   if(!c.study||typeof c.study!=='object')c.study={boxes:{}};
   if(!c.study.boxes||typeof c.study.boxes!=='object')c.study.boxes={};
@@ -4205,7 +4227,12 @@ function buildPrintMenu(m){if(!m)return;
   settingRow(m,'Print sides',()=>state.duplex,v=>{state.duplex=v;save();},
     [['long','2-sided · long edge'],['short','2-sided · short edge'],['none','Single-sided']],
     'Long edge suits most printers; use short edge if backs print upside-down. Single-sided prints fronts only.');
-  toggleRow(m,'Show cut guides',()=>state.guides,v=>{state.guides=v;save();});
+  settingRow(m,'Cut guides',()=>state.cutStyle,v=>{state.cutStyle=v;state.guides=(v!=='none');refresh();save();},
+    [['none','Off'],['edges','Card edges'],['crop','Crop marks']],
+    'Card edges: a hairline around each card to cut along. Crop marks: adds corner ticks for a guillotine. Each card has its own line, so a small skew will not spoil two cards.');
+  settingRow(m,'Gutter',()=>state.gutter,v=>{state.gutter=v;applyPageStyle();refresh();save();},
+    [[0,'None'],[0.06,'Thin'],[0.08,'Normal'],[0.12,'Wide']],
+    'Space between cards. A gutter gives each card its own cut line with slack, so cuts stay clean even if the printer is slightly off.');
 }
 function openSettings(){
   closeAllMenus();
@@ -4850,7 +4877,12 @@ function backOrder(slots,edge){
   return back;
 }
 function makeSheet(slots,kind){
-  const sheet=document.createElement('div');sheet.className='sheet'+(state.guides?' guides':'');
+  // cutStyle: 'none' | 'edges' (border each card) | 'crop' (edges + corner ticks).
+  // Legacy state.guides===false maps to 'none', true maps to 'edges'.
+  const cut=state.cutStyle||(state.guides===false?'none':'edges');
+  const sheet=document.createElement('div');
+  sheet.className='sheet'+(cut==='none'?'':(cut==='crop'?' guides crop':' guides'));
+  sheet.style.setProperty('--gut',(state.gutter||0.08)+'in');
   slots.forEach(c=>{
     const slot=document.createElement('div');slot.className='slot';
     if(c){const faces=cardFaces(c,'');slot.appendChild(kind==='front'?faces.front:faces.back);}
@@ -5280,9 +5312,17 @@ function applyFont(){
   setTimeout(()=>{invalidate();renderPreview();},400);
 }
 function applyPageStyle(){
-  const letter={w:8.5,h:11,mv:0.25,mh:0.5}, a4={w:8.27,h:11.69,mv:0.595,mh:0.385};
-  const p=state.paper==='a4'?a4:letter;
-  $('#pageStyle').textContent='@page{size:'+p.w+'in '+p.h+'in;margin:'+p.mv+'in '+p.mh+'in;}';
+  // The 3x3 sheet is (3 cards + 2 gutters) each way. Page margins are derived from
+  // the gutter so the sheet always fits the printable area with a little slack, and
+  // the top margin keeps the top row off the page edge. Order is top right bottom left.
+  const paper=state.paper==='a4'?{w:8.27,h:11.69}:{w:8.5,h:11};
+  const gut=(typeof state.gutter==='number')?state.gutter:0.08;
+  const sheetW=3*2.5+2*gut, sheetH=3*3.5+2*gut;        // inches
+  const mh=Math.max(0.12,(paper.w-sheetW)/2);          // centre horizontally, clamp to a safe min
+  const vSlack=Math.max(0,paper.h-sheetH);             // total vertical room to spend
+  const mt=Math.min(0.3,vSlack*0.6), mb=Math.max(0,vSlack-mt); // bias top so the top row is not flush
+  const r=n=>Math.round(n*1000)/1000;
+  $('#pageStyle').textContent='@page{size:'+paper.w+'in '+paper.h+'in;margin:'+r(mt)+'in '+r(mh)+'in '+r(mb)+'in '+r(mh)+'in;}';
 }
 function applyAll(){
   document.documentElement.style.setProperty('--card-fs',state.fs+'px');
